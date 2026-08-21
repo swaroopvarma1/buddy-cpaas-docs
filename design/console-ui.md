@@ -76,6 +76,13 @@ phase 2, ADR 0016).
     dispatch time, ADR 0018).
 - Timeline reads the spine (`event_raw` projections) — it never re-derives history
   by phone-matching at read (ADR 0017 rule).
+- **Card dispatch is `source_kind`, never sniffing.** V01 rows carry their origin as
+  a literal stamped by each union arm (`event` · `message` · `call` · `consent` ·
+  later `chat`); the timeline renders `switch (source_kind)` and `(source_kind, id)`
+  deep-links to the underlying row. For `event` rows, the timeline API extracts the
+  card's display fields (order total, item count) from the raw payload for the
+  current page only — bounded display decoding, gone in P2 when TRIGGER materializes
+  the summary as columns.
 
 ## U4 — Template manager (`/channels/whatsapp/templates`)
 

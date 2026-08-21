@@ -26,3 +26,4 @@ is; these records say *why we chose*, wherever we filled a gap or deviated.
 | [0017](0017-voice-plugs-into-spine-phase-1.md) | Voice plugs into the spine in phase 1: call-lifecycle events + resolve() stamping + journey voice arm (takeover still deferred) | Accepted |
 | [0018](0018-gate-mechanics.md) | Gate mechanics: dispatch-time verdicts · timezone ladder (+91→IST) · 9–21 marketing / txn exempt · 1/day·4/wk caps · defer-once | Accepted |
 | [0019](0019-console-extends-loom.md) | Phase-1 console extends loom: Customers top-level + templates under Channels · per-merchant flag · loom theme contract · U1 collapses to wiring | Accepted |
+| [0020](0020-journey-commerce-arm-event-raw-stamp.md) | Journey commerce arm: nullable `customer_id` stamped on event_raw at processing time; V01 gains the `event` arm (T13/V01 canon amendment) | Accepted |

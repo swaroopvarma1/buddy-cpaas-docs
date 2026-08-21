@@ -45,11 +45,11 @@ order-confirmation sends live; STOP honored.
 | A5 | `/crm` router mount + admin/S2S auth dependency | A1 |
 | A6 | `crm.customer` (T05) + `resolve()` (probe order, partial uniques, race re-probe) | A1 |
 | A7 | `assert_facts()` + attributes history + materialized winners (names for the UI) | A6 |
-| A8 | `event_raw` (T13): partitions, dedupe, quarantine, `replay()` | A1 |
+| A8 | `event_raw` (T13): partitions, dedupe, quarantine, `replay()`, nullable `customer_id` + partial index (ADR 0020) | A1 |
 | A9 | Ingest front door: breeze-crm s2s + **Shopify relay adapter** (with anchor, X1) | A8 |
-| A10 | Extractor registry + resolve processor consumer | A6, A8, A2 |
+| A10 | Extractor registry + resolve processor consumer — stamps `customer_id` on the event_raw row it decodes (ADR 0020) | A6, A8, A2 |
 | A11 | *(absorbed into A14)* | — |
-| A12 | **Journey view w/ voice arm**: per-customer timeline over event_raw events + manifest sends + lead_call_tracker calls read in place (joined by stamped customer_id) — inbound/outbound, attempted or not, outcome on the card | A6, A8, C3, A15 |
+| A12 | **Journey view w/ voice arm**: per-customer timeline — V01 unions manifest sends, lead_call_tracker calls read in place, consent moments, and the commerce arm (event_raw commerce topics via the ADR 0020 `customer_id` stamp) — inbound/outbound, attempted or not, outcome on the card | A6, A8, A10, C3, A15 |
 | A13 | **Transactional send consumer**: `orders/create` → template send via gate (no walker) | A10, C4, B5 |
 | A14 | **Voice event mirroring** (ADR 0017): lead machine emits `lead.pushed` · `call.attempted` · `call.completed` · `call.inbound` into event_raw at existing choke points, forward-only | A8 |
 | A15 | **Voice identity stamping** (ADR 0017): push handler + inbound answer call `resolve()` (sync door) and stamp `customer_id` on lead_call_tracker (one nullable column; buddy writes its own table) | A6 |

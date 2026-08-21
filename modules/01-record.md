@@ -21,6 +21,11 @@ the consumer runtime · `replay()` · (later) the journey view. Diagram:
   replay is the recovery mechanism that survives being wrong about a schema.
 - **Extractors are pure functions** registered per (source, topic): payload →
   `{handles, facts}`. Adding a channel = one adapter + one extractor registration.
+- **The processor stamps `customer_id`** (nullable, ADR 0020) on the event_raw row in
+  the same update that sets `processed_at`, right after `resolve()`. This is how the
+  journey's commerce arm finds "order placed" per customer: resolve once at processing
+  time, plain indexed read forever after. Replay re-stamps; unresolved rows stay NULL
+  and appear on no timeline.
 - **Mirrors are forward-only**: lead machine call events (ADR 0017), send()'s
   `message.queued`, later chat turns. No backfill exists anywhere in this plan.
 

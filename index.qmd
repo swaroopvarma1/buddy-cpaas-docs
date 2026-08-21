@@ -4,7 +4,7 @@ toc: false
 ---
 
 The complete design corpus for the Buddy CPaaS build: the sealed table canon, every
-architecture decision (ADR 0001–0019), the design docs, per-module build guides,
+architecture decision (ADR 0001–0020), the design docs, per-module build guides,
 and the system diagrams.
 
 ::: {.callout-note title="This site is temporary — by design"}

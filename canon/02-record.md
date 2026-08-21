@@ -3,9 +3,9 @@
 Everything that happens lands as an event; the journey is a view over the sources; memory is
 what the agent carries between conversations.
 
-### crm.event_raw (T13) — 11 columns
+### crm.event_raw (T13) — 12 columns
 
-Everything that arrives, verbatim and immutable. Replay is the only recovery mechanism that survives being wrong about the schema.
+Everything that arrives, verbatim and immutable. Replay is the only recovery mechanism that survives being wrong about the schema. (The payload is immutable; the envelope carries processing state — `processed_at`, `quarantine_reason`, and since ADR 0020 the `customer_id` stamp.)
 
 | # | column | type | keys | notes |
 |---|---|---|---|---|
@@ -20,6 +20,7 @@ Everything that arrives, verbatim and immutable. Replay is the only recovery mec
 | 9 | `occurred_at` | timestamptz |  | Event time when the source credibly gives one; falls back to received_at. Triggered sends measure wake_at from this, never from processing time. A claim, clamped — never later than received_at |
 | 10 | `processed_at` | timestamptz |  | NULL = pending — the partial index on this IS the work queue |
 | 12 | `quarantine_reason` | text |  | NULL = clean; NOT NULL = quarantined, and why — one column carries the state and the answer |
+| 14 | `customer_id` | uuid | IX | Nullable — stamped by the processor right after `resolve()`, same pattern as lead_call_tracker (ADR 0017). NULL = arrived but not yet (or never) resolved to a person. The journey's commerce arm reads `WHERE customer_id IS NOT NULL`; replay re-stamps. Partial index `(merchant_id, customer_id, occurred_at)`. Added 21 Aug 2026, ADR 0020 |
 
 
 **Wiring**
@@ -34,6 +35,8 @@ Everything that arrives, verbatim and immutable. Replay is the only recovery mec
   forward-only), CSV importer side-effects.
 - Consumers subscribe to **topics, never source tables**: resolve-and-journey processors,
   `record_consent` (STOP/START keywords), workflow entry rules, delivery-status consumer.
+- The resolve-and-journey processor stamps `customer_id` onto the row it just decoded
+  (ADR 0020) — identity is resolved once, at processing time, never at read time.
 - Monthly RANGE partitions on `received_at`.
 
 ### crm.journey_event — VIEW (V01) — 12 columns
@@ -53,13 +56,14 @@ One ordered history per customer — a union over stores that already exist; con
 | 10 | `outcome` | text |  | The card’s one-line verdict — resolved · callback promised · no answer. Consent rows carry granted \| withdrawn here |
 | 11 | `recording_ref` | text |  | The card’s play button — the ink that proves |
 | 12 | `transcript_ref` | text |  | The card’s read-transcript link |
-| 17 | `source_kind` | text |  | call · chat · message · consent — which store this row came from. (source_kind, id) is every arm’s provenance; replaces the legacy_* pair, which covered two arms of four |
+| 17 | `source_kind` | text |  | call · chat · message · consent · **event** — which store this row came from. (source_kind, id) is every arm’s provenance; replaces the legacy_* pair. The `event` arm (ADR 0020) carries commerce moments — order placed, checkout abandoned |
 
 
 **Wiring**
-- A VIEW — moves no data, cannot drift from its sources. Unifies chat sessions, call records
-  and `crm.message` into one ordered stream per `(merchant_id, customer_id)`, keyset-ordered
-  `(occurred_at, id)`.
+- A VIEW — moves no data, cannot drift from its sources. Unifies chat sessions, call records,
+  `crm.message`, consent moments **and the commerce arm** — `event_raw` filtered to commerce
+  topics `WHERE customer_id IS NOT NULL` (the T13 stamp, ADR 0020) — into one ordered stream
+  per `(merchant_id, customer_id)`, keyset-ordered `(occurred_at, id)`.
 - Read by the timeline API (console 360) and by the agent's context assembly. Rows that
   resolve no customer are excluded, not faked.
 

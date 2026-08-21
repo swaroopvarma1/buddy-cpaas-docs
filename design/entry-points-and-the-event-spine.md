@@ -109,6 +109,37 @@ walker, same gate, same send path. Same writers, same exit; only the entry door 
 - **WhatsApp:** ALL webhooks (statuses, template updates — and later inbound messages)
   land in event_raw from day one, so phase-2 inbound is a new consumer, not new plumbing.
 
+## What the spine is NOT — through it, not from it
+
+Everything from outside goes THROUGH event_raw (no exceptions, including phase-3
+inbound messages). Almost nothing is SERVED from it. The letters/ledgers rule,
+asked and settled 21 Aug 2026:
+
+**A moment can be read from the spine; a state machine needs a domain table.**
+
+| Thing | Moment or state? | Serve from |
+|---|---|---|
+| Order placed, checkout abandoned | Moment — happened once, never changes | T13 directly via the ADR 0020 stamp (V01 event arm) |
+| Outbound message status | State machine — queued to sent to delivered to read, one webhook PER transition | `crm.message` (T16), walker updates one row; the 4 letters stay in T13 |
+| Consent | State — the gate needs "may I?" in a millisecond, not a ledger replay | T08 resolved state; T07 is the ledger; T13 keeps the letters |
+| Inbound message (P3) | State — threading, read state, assignment, open/closed | `crm.conversation` + `conversation_message` (ADR 0014/0015); T13 keeps the letter |
+
+Why domain tables must exist at all:
+1. **Claims vs current state.** The spine records what was said; domain tables hold
+   what is true now. Aggregating N letters per read does not scale past a demo.
+2. **Raw jsonb vs real columns.** Serving reads from payloads means every
+   schema_version parser lives on the read path forever. Decoded is a verb —
+   decode once at processing time, consequences land in columns.
+3. **Invariants.** The spine's law is fail-safe: store everything, reject nothing —
+   so it can enforce nothing. CHECKs, FKs and uniques live where understanding lives.
+4. **Replay safety.** replay() is only safe because its output lands elsewhere.
+   If live state lived in event_raw, replay would overwrite what it is meant to heal.
+
+The ADR 0020 customer_id stamp is an index into the mailbox, not a promotion of the
+mailbox into a database. If a new feature needs updates, lifecycle, invariants or
+joins beyond the customer, it projects into a domain table — the spine keeps the
+letter.
+
 ## Worked example — one Shopify order, end to end (every table it touches)
 
 Ravi buys sneakers (Rs 2,499) at Kicks & Co, phone +91 98765 43210. The whole

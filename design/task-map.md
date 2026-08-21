@@ -77,13 +77,13 @@ order-confirmation sends live; STOP honored.
 | C7 | **WABA template registry + Tech Provider APIs** + status sync (ADR 0011) | C1 |
 | C8 | `/crm/connectors` endpoint (embedded signup mints door+pipe; ops path meanwhile) | C1, C2 |
 
-### UI lane (Swaroop + Claude)
+### UI lane (Swaroop + Claude) — in loom, not a new app (ADR 0019; design: [console-ui](console-ui.md))
 | ID | Task | Depends on |
 |---|---|---|
-| U1 | Console shell + auth (existing JWT) | A5 |
-| U2 | **Customers list** (search, handles, consent glance) | A6 |
-| U3 | **Customer 360**: profile + journey timeline + sends w/ delivery ticks + why-didn't-it-send (decision_log reason) | A12, B4 |
-| U4 | Template manager screen (create/submit/status) | C7 |
+| U1 | CRM wiring in loom: routes + `/crm/*` API client + scope.ts tenancy + per-merchant feature flag (shell/auth already exist) | A5 |
+| U2 | **Customers list** `/customers`: search + segment-ready predicate filters (consent, reachability, source, activity) | A6 |
+| U3 | **Customer 360** `/customers/[id]`: unified timeline (messages/calls/orders/consent) + state rail + live gate check + inline why-didn't-it-send (decision_log reason) | A12, B4 |
+| U4 | Template manager `/channels/whatsapp/templates`: full lifecycle — list w/ Meta status+rejection reason, guided create, WhatsApp-style preview | C7 |
 
 **Phase-1 integration milestone** (Swaroop owns): Shopify event → resolve → consent
 import → order-confirmation template → gate → send → manifest → delivery ticks →

@@ -108,3 +108,51 @@ walker, same gate, same send path. Same writers, same exit; only the entry door 
   (per 07-wiring); not phase 1.
 - **WhatsApp:** ALL webhooks (statuses, template updates — and later inbound messages)
   land in event_raw from day one, so phase-2 inbound is a new consumer, not new plumbing.
+
+## Worked example — one Shopify order, end to end (every table it touches)
+
+Ravi buys sneakers (Rs 2,499) at Kicks & Co, phone +91 98765 43210. The whole
+machine, step by step. (Added 21 Aug 2026 alongside ADR 0020.)
+
+**Write path — the fact comes in**
+
+| # | What happens | Table / contract |
+|---|---|---|
+| 1 | Shopify fires `orders/create`; anchor relays (X1) to the ingest door (A9) | no CRM table — anchor is a pipe |
+| 2 | Front door: verify signature → stamp envelope → store the letter RAW → 200. `customer_id = NULL` at this moment | `crm.event_raw` (T13): source=shopify, topic=orders/create, external_id=webhook id, payload verbatim |
+| 3 | Consumer drains `processed_at IS NULL` (partial index, SKIP LOCKED) | reads T13 |
+| 4 | The (shopify, orders/create) extractor pulls `{handles: phone/email, facts: name}` | extractor registry (pure function) |
+| 5 | `resolve()`: known handle → existing id; unknown → new customer + identity rows | `platform.identity` (T02) + `crm.customer` (T05) |
+| 6 | `assert_facts()` records the name claim; winners materialise | T05 `attributes` + materialised columns |
+| 7 | Consent import if the order carries opt-in (ADR 0008) | `crm.consent_event` (T07) → `crm.consent_state` (T08) |
+| 8 | **The stamp (ADR 0020):** one UPDATE sets `customer_id` AND `processed_at` on the event row | T13, same row as step 2 |
+
+**Consequence — the message the order causes**
+
+| # | What happens | Table / contract |
+|---|---|---|
+| 9 | Transactional send consumer (A13, topic orders/create) picks the order-confirmation template | reads T13, template registry (C7) |
+| 10 | The gate renders its verdict AT DISPATCH (ADR 0018) — recorded either way; this is "why didn't it send" | reads T08 → writes `crm.decision_log` (T14) |
+| 11 | PASS → `send()` writes the manifest row, **born with customer_id, never resolved** — adapter delivers via the merchant's number | `crm.message` (T16) · T11/T12 (which door, which number) |
+| 12 | Meta status webhooks (one per transition per wamid) arrive as new letters; the receipt walker moves status monotonically | new T13 rows (message.status) → updates T16 |
+
+**Read path — the 360 timeline**
+
+| # | What happens | Table / contract |
+|---|---|---|
+| 13 | Console U3 asks the timeline API for the customer | `crm.journey_event` (V01) — a VIEW, moves no data |
+| 14 | V01 unions five arms, every one joined by an already-stamped `customer_id`, never phone-matched at read (ADR 0017): event=T13 commerce topics · message=T16 · call=lead_call_tracker · consent=T07 · chat=phase 3 | keyset `(occurred_at, id)` |
+| 15 | One card per row: "Order placed · Rs 2,499 · Shopify", then "Order confirmation · delivered" right beneath it | rendered by U3 |
+
+**Where `customer_id` may be NULL — deliberately different answers per table**
+
+| Table | Nullable? | NULL means |
+|---|---|---|
+| `event_raw` (T13) | **Yes, by design** | (a) just arrived, not yet processed — every row starts NULL; (b) processed but not about a person (template.status, receipts) — NULL forever, correctly; (c) quarantined / no handle found — kept, replay re-stamps |
+| `crm.message` (T16) | **Never** | a send is born addressed; no customer_id → you may not call `send()` |
+| `lead_call_tracker` | Yes | pre-CRM rows + not-yet-resolved calls (ADR 0017 stamp is forward-only) |
+| `journey_event` (V01) | Moot for the 360 | the timeline query is `WHERE customer_id = X`; NULL rows cannot appear — excluded, not faked |
+
+The rule of thumb: **NULL on the spine is a truthful state ("arrived, not yet tied
+to a person"); NULL on the manifest is a bug.** The spine keeps everything; the
+timeline shows only what is genuinely resolved.

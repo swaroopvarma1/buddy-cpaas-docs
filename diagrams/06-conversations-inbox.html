@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Conversations &amp; inbox — the thread, the agent, the team</title>
+<style>
+:root{
+  --canvas:#eef1f6; --panel:#e5e9f1; --card:#ffffff; --card-border:#e2e6ee;
+  --shadow:0 1px 3px rgba(31,42,68,.10),0 4px 14px rgba(31,42,68,.06);
+  --ink:#1f2a44; --ink-soft:#4b5568; --muted:#8a93a6; --line:#3a4661;
+  --purple:#7c3aed; --purple-soft:#ede4ff; --purple-ink:#5b21b6;
+  --blue:#2563eb;   --blue-soft:#dce7fd;   --blue-ink:#1d4ed8;
+  --green:#10b981;  --green-soft:#d8f3e6;  --green-ink:#047857;
+  --teal:#0d9488;   --teal-soft:#d3f0ec;   --teal-ink:#0f766e;
+  --amber:#f59e0b;  --amber-soft:#ffeacb;  --amber-ink:#92400e;
+  --font:"Inter","SF Pro Text",-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+body{margin:0;background:var(--canvas);font-family:var(--font);color:var(--ink);}
+.page{position:relative;width:1330px;height:780px;}
+.hdr{position:absolute;top:0;left:0;right:0;padding:22px 32px 0;}
+.hdr h1{margin:0;font-size:22px;}
+.hdr p{margin:4px 0 0;font-size:13px;color:var(--muted);}
+.pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2px 8px;border-radius:999px;}
+.p-purple{background:var(--purple-soft);color:var(--purple-ink);}
+.p-blue{background:var(--blue-soft);color:var(--blue-ink);}
+.p-green{background:var(--green-soft);color:var(--green-ink);}
+.p-teal{background:var(--teal-soft);color:var(--teal-ink);}
+.p-amber{background:var(--amber-soft);color:var(--amber-ink);}
+.p-ph{background:#dfe3ea;color:#4b5568;}
+.lane{position:absolute;top:120px;height:600px;width:230px;background:var(--panel);border-radius:14px;}
+.lane h2{position:absolute;top:12px;left:16px;margin:0;font-size:11px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.card{position:absolute;background:var(--card);border:1px solid var(--card-border);
+  border-radius:10px;box-shadow:var(--shadow);padding:9px 12px;width:198px;box-sizing:border-box;}
+.card h3{margin:0 0 3px;font-size:12.5px;color:var(--ink);}
+.card p{margin:0;font-size:10.5px;line-height:1.4;color:var(--ink-soft);}
+.card .pill{position:absolute;top:-9px;right:10px;}
+.card .ph{position:absolute;top:-9px;left:10px;}
+.card.note{border:1.5px dashed var(--muted);box-shadow:none;background:transparent;}
+.card.note p{color:var(--muted);}
+svg.wires{position:absolute;inset:0;pointer-events:none;}
+svg.wires path{stroke:var(--line);stroke-width:1.5;fill:none;}
+svg.wires path.dash{stroke-dasharray:5 4;}
+.ftr{position:absolute;left:32px;bottom:12px;font-size:10px;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="hdr">
+    <h1>Conversations &amp; inbox &mdash; the thread, the agent, the team (P3)</h1>
+    <p>the thread always lives in crm tables; chat_session comes and goes as the AI picks up and puts down the phone (ADR 0012&ndash;0015).</p>
+  </div>
+
+  <div class="lane" style="left:24px;"><h2>1 &middot; Channel</h2></div>
+  <div class="lane" style="left:278px;"><h2>2 &middot; Spine &amp; projector</h2></div>
+  <div class="lane" style="left:532px;"><h2>3 &middot; Thread stores</h2></div>
+  <div class="lane" style="left:786px;"><h2>4 &middot; The agent</h2></div>
+  <div class="lane" style="left:1040px;"><h2>5 &middot; The team</h2></div>
+
+  <svg class="wires" width="1330" height="780">
+    <defs>
+      <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L8,4 L0,8 z" fill="#3a4661"/>
+      </marker>
+    </defs>
+    <path d="M238,205 H266 V200 H294" marker-end="url(#ah)"/>
+    <path class="dash" d="M238,404 H260 V225 H294" marker-end="url(#ah)"/>
+    <path d="M393,252 V268" marker-end="url(#ah)"/>
+    <path d="M492,300 H520 V216 H548" marker-end="url(#ah)"/>
+    <path d="M492,330 H526 V330 H548" marker-end="url(#ah)"/>
+    <path d="M492,185 H512 V152 H772 V200 H802" marker-end="url(#ah)"/>
+    <path d="M901,252 V268" marker-end="url(#ah)"/>
+    <path d="M746,190 H766 V158 H1032 V200 H1056" marker-end="url(#ah)"/>
+    <path d="M1056,300 H1028 V260 H746" marker-end="url(#ah)"/>
+    <path class="dash" d="M1056,285 H1034 V300 H1000" marker-end="url(#ah)"/>
+    <path d="M1056,400 H1022 V376 H746" marker-end="url(#ah)"/>
+    <path class="dash" d="M1056,495 H1016 V340 H1000" marker-end="url(#ah)"/>
+    <path d="M802,340 H774 V440 H746" marker-end="url(#ah)"/>
+  </svg>
+
+  <div class="card" style="left:40px;top:168px;height:74px;"><span class="pill ph p-ph">P3</span>
+    <h3>Customer &middot; WhatsApp</h3><p>inbound message arrives</p></div>
+  <div class="card note" style="left:40px;top:268px;height:84px;">
+    <p>replies reach the customer via the ONE send path: gate &rarr; send() &rarr; manifest &rarr; provider</p></div>
+  <div class="card" style="left:40px;top:372px;height:64px;"><span class="pill ph p-ph">P3+</span>
+    <h3>Instagram DM</h3><p>fast-follow: new door, same map</p></div>
+
+  <div class="card" style="left:294px;top:168px;height:84px;"><span class="pill p-blue">spine</span><span class="pill ph p-ph">P3</span>
+    <h3>event_raw topics</h3><p>message.inbound &middot; message.queued mirror (body rides it)</p></div>
+  <div class="card" style="left:294px;top:268px;height:96px;"><span class="pill p-blue">bridge</span>
+    <h3>Conversation projector</h3><p>conversation upsert (reopen if resolved) &middot; timeline insert &mdash; partial uniques = idempotent replay &middot; SSE pub</p></div>
+  <div class="card note" style="left:294px;top:384px;height:56px;">
+    <p>projector reads events ONLY &mdash; never chat_message</p></div>
+
+  <div class="card" style="left:548px;top:168px;height:96px;"><span class="pill p-teal">store</span><span class="pill ph p-ph">P3</span>
+    <h3>crm.conversation</h3><p>open / pending / resolved &middot; assignee NULL = agent &middot; 24h window = predicate &middot; bot_session_id pointer</p></div>
+  <div class="card" style="left:548px;top:284px;height:96px;"><span class="pill p-teal">store</span>
+    <h3>conversation_message</h3><p>inbound decoded &middot; outbound = manifest ref + body cache &middot; internal notes</p></div>
+  <div class="card" style="left:548px;top:400px;height:74px;"><span class="pill p-teal">store</span>
+    <h3>customer_memory</h3><p>agent-only shelf &middot; index &rarr; note &rarr; upsert</p></div>
+
+  <div class="card" style="left:802px;top:168px;height:84px;"><span class="pill p-green">agent</span><span class="pill ph p-ph">P3</span>
+    <h3>Responder</h3><p>assignee NULL? &rarr; mint / resume cockpit session &middot; session_ended &rarr; mint new + repoint</p></div>
+  <div class="card" style="left:802px;top:268px;height:96px;"><span class="pill p-green">agent</span>
+    <h3>The brain</h3><p>run_chat_turn unchanged &middot; replies via gate + send &middot; writes memory &middot; goes silent on takeover</p></div>
+  <div class="card note" style="left:802px;top:384px;height:56px;">
+    <p>cockpit = chat_session / chat_message &mdash; comes and goes</p></div>
+
+  <div class="card" style="left:1056px;top:168px;height:74px;"><span class="pill p-green">view</span><span class="pill ph p-ph">P3</span>
+    <h3>Inbox</h3><p>open threads &middot; needs-attention queue &middot; live via SSE</p></div>
+  <div class="card" style="left:1056px;top:258px;height:84px;"><span class="pill p-green">action</span>
+    <h3>Takeover</h3><p>CAS claim &rarr; assignee = me &middot; bot session ENDS &middot; exclusive = collision guard</p></div>
+  <div class="card" style="left:1056px;top:358px;height:84px;"><span class="pill p-green">action</span>
+    <h3>Reply &amp; notes</h3><p>reply via gate + send (window: free-form in, template out) &middot; notes &rarr; timeline</p></div>
+  <div class="card" style="left:1056px;top:458px;height:74px;"><span class="pill p-green">action</span>
+    <h3>Handback</h3><p>fresh session + human-era slice as context</p></div>
+  <div class="card note" style="left:1056px;top:552px;height:56px;">
+    <p>bot reasoning: read-only deep link into the cockpit</p></div>
+
+  <div class="ftr">Source: design/inbox-and-conversations.md &middot; ADR 0012 / 0013 / 0014 (adversarially verified) / 0015</div>
+</div>
+</body>
+</html>

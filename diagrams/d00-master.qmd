@@ -1,0 +1,11 @@
+---
+title: "00 · Master system map"
+format:
+  html:
+    page-layout: full
+    toc: false
+---
+
+[Open standalone ↗](00-master-system.html){target=_blank}
+
+<iframe src="00-master-system.html" style="width:100%;height:1060px;border:1px solid #e2e6ee;border-radius:12px;background:#eef1f6;"></iframe>

@@ -1,0 +1,88 @@
+# The record — events, journey, memory
+
+Everything that happens lands as an event; the journey is a view over the sources; memory is
+what the agent carries between conversations.
+
+### crm.event_raw (T13) — 11 columns
+
+Everything that arrives, verbatim and immutable. Replay is the only recovery mechanism that survives being wrong about the schema.
+
+| # | column | type | keys | notes |
+|---|---|---|---|---|
+| 1 | `id` | uuid | PK | The handle replay(event_id) takes |
+| 2 | `merchant_id` | text | UQ | NOT NULL — every event arrives through a merchant-owned door (T11), so every row has an owner by construction. Made NOT NULL 18 Aug 2026 when col 13 retired; see the trail |
+| 3 | `source` | text | UQ | shopify · juspay · whatsapp · telephony · widget · linktrack — half the dedupe key, and the parser router |
+| 4 | `topic` | text |  | The routing key — what parsers, workers and workflow entry rules subscribe to: orders/create · message.delivered · link.clicked · optin.granted |
+| 5 | `schema_version` | text |  | Stamped at ingest from the source’s own header, never inferred later — the column that makes replaying two years of events survivable when the parser was wrong |
+| 6 | `external_id` | text | UQ | Idempotency — webhook id, CallSid, wamid + status (Meta sends one webhook per status transition on the same wamid). The unique key is (merchant_id, source, external_id) — plain UNIQUE, since merchant_id is NOT NULL |
+| 7 | `payload` | jsonb |  | Raw, always — the letter they sent, never our understanding of it. Decoded is a verb, not a noun: decode(payload, schema_version) runs at processing time and its consequences land in the domain tables |
+| 8 | `received_at` | timestamptz | PART | RANGE partition key, monthly |
+| 9 | `occurred_at` | timestamptz |  | Event time when the source credibly gives one; falls back to received_at. Triggered sends measure wake_at from this, never from processing time. A claim, clamped — never later than received_at |
+| 10 | `processed_at` | timestamptz |  | NULL = pending — the partial index on this IS the work queue |
+| 12 | `quarantine_reason` | text |  | NULL = clean; NOT NULL = quarantined, and why — one column carries the state and the answer |
+
+
+**Wiring**
+- The front door: verify signature → stamp envelope (merchant from the receiving credential,
+  `source`, `topic`, `schema_version`, `external_id`) → store raw payload → return 200
+  **before anything is understood**. One POST may fan out to N rows.
+- Dedupe: `UNIQUE (merchant_id, source, external_id)` — conflict = silent drop, still 200.
+- Decode failure = `quarantine_reason` set, row kept — never reject. `replay(event_id)`
+  re-runs the current parser over stored raw; alert on quarantine rate, not per row.
+- Producers: Shopify webhooks (orders/checkouts/customers topics), WhatsApp webhooks
+  (message.inbound, message.status per wamid, template.status), chat turns (mirrored
+  forward-only), CSV importer side-effects.
+- Consumers subscribe to **topics, never source tables**: resolve-and-journey processors,
+  `record_consent` (STOP/START keywords), workflow entry rules, delivery-status consumer.
+- Monthly RANGE partitions on `received_at`.
+
+### crm.journey_event — VIEW (V01) — 12 columns
+
+One ordered history per customer — a union over stores that already exist; consent grants and withdrawals join the union as first-class moments. A view, deliberately: the table is the customer-event stream NAMED TRIGGER (P2’s first event-recency segment), built then as a rebuildable projection.
+
+| # | column | type | keys | notes |
+|---|---|---|---|---|
+| 1 | `id` | uuid |  | The underlying row’s id — the deep link every card needs; with source_kind, the provenance pair |
+| 2 | `merchant_id` | text |  |  |
+| 3 | `customer_id` | uuid |  | → customer. NULL for chat sessions until identity reaches chat — see wiring R1 |
+| 4 | `channel` | text |  | The card’s icon — call vs whatsapp vs instagram |
+| 5 | `direction` | text |  | inbound \| outbound — she reached out vs we did; the card reads differently |
+| 7 | `handled_by` | text |  | agent \| human \| both — "you spoke with the assistant" vs "Meera replied"; the takeover story |
+| 8 | `started_at` | timestamptz |  | THE clock — every union arm exposes it; the timeline’s sort key and pagination cursor |
+| 9 | `ended_at` | timestamptz |  | The call card’s "2m 40s" — NULL where duration is meaningless |
+| 10 | `outcome` | text |  | The card’s one-line verdict — resolved · callback promised · no answer. Consent rows carry granted \| withdrawn here |
+| 11 | `recording_ref` | text |  | The card’s play button — the ink that proves |
+| 12 | `transcript_ref` | text |  | The card’s read-transcript link |
+| 17 | `source_kind` | text |  | call · chat · message · consent — which store this row came from. (source_kind, id) is every arm’s provenance; replaces the legacy_* pair, which covered two arms of four |
+
+
+**Wiring**
+- A VIEW — moves no data, cannot drift from its sources. Unifies chat sessions, call records
+  and `crm.message` into one ordered stream per `(merchant_id, customer_id)`, keyset-ordered
+  `(occurred_at, id)`.
+- Read by the timeline API (console 360) and by the agent's context assembly. Rows that
+  resolve no customer are excluded, not faked.
+
+### crm.customer_memory (T09) — 6 columns
+
+One row per (merchant, customer, slug): a named markdown note the agent keeps — like Claude’s own memory. The agent scans the index, opens what matters, rewrites notes as a side-effect of the conversation. Nothing mechanical ever reads a note.
+
+| # | column | type | keys | notes |
+|---|---|---|---|---|
+| 1 | `merchant_id` | text | PK |  |
+| 2 | `customer_id` | uuid | PK·FK | → customer · CASCADE — erasure deletes the shelf with the row |
+| 3 | `slug` | text | PK | The note’s name: profile · promises · topics the agent coins (delivery-issues, diwali-order). profile and promises are reserved — always loaded, never auto-trimmed |
+| 4 | `summary` | text | CK | One line, ≤200 chars — the index. The agent scans every summary before opening anything: retrieval by reading, not by similarity |
+| 5 | `body` | text | CK | Markdown, ≤4,000 chars by CHECK — the note itself. Guesses live under a marked "steer — never say" heading, hedged, by convention |
+| 6 | `updated_at` | timestamptz | IX | The shelf’s one clock — staleness is visible per note; the console sorts by it |
+
+
+**Wiring**
+- Contract (agent-only): `index() -> [{slug, summary}]` · `note(slug) -> body` ·
+  `upsert_note(slug, body, summary)`. No segment, campaign or console logic may query it.
+- Conversation start: index + relevant notes (always `promises`) load into agent context.
+  After each turn: extraction upserts what was learned; speculative content goes under a
+  hedged "guesses" heading — steers tone, never quoted to the customer.
+- Structured facts (name, locale, timezone) do NOT live here — they go through
+  `assert_facts()` on T05.
+- Trim never drops an open commitment (the promises guard); a resolved commitment may age out.

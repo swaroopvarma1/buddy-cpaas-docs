@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Identity module — who people are</title>
+<style>
+:root{
+  --canvas:#eef1f6; --panel:#e5e9f1; --card:#ffffff; --card-border:#e2e6ee;
+  --shadow:0 1px 3px rgba(31,42,68,.10),0 4px 14px rgba(31,42,68,.06);
+  --ink:#1f2a44; --ink-soft:#4b5568; --muted:#8a93a6; --line:#3a4661;
+  --purple:#7c3aed; --purple-soft:#ede4ff; --purple-ink:#5b21b6;
+  --blue:#2563eb;   --blue-soft:#dce7fd;   --blue-ink:#1d4ed8;
+  --green:#10b981;  --green-soft:#d8f3e6;  --green-ink:#047857;
+  --teal:#0d9488;   --teal-soft:#d3f0ec;   --teal-ink:#0f766e;
+  --amber:#f59e0b;  --amber-soft:#ffeacb;  --amber-ink:#92400e;
+  --font:"Inter","SF Pro Text",-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+body{margin:0;background:var(--canvas);font-family:var(--font);color:var(--ink);}
+.page{position:relative;width:1080px;height:760px;}
+.hdr{position:absolute;top:0;left:0;right:0;padding:22px 32px 0;}
+.hdr h1{margin:0;font-size:22px;}
+.hdr p{margin:4px 0 0;font-size:13px;color:var(--muted);}
+.pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2px 8px;border-radius:999px;}
+.p-purple{background:var(--purple-soft);color:var(--purple-ink);}
+.p-blue{background:var(--blue-soft);color:var(--blue-ink);}
+.p-green{background:var(--green-soft);color:var(--green-ink);}
+.p-teal{background:var(--teal-soft);color:var(--teal-ink);}
+.p-ph{background:#dfe3ea;color:#4b5568;}
+.lane{position:absolute;top:120px;height:560px;width:230px;background:var(--panel);border-radius:14px;}
+.lane h2{position:absolute;top:12px;left:16px;margin:0;font-size:11px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.card{position:absolute;background:var(--card);border:1px solid var(--card-border);
+  border-radius:10px;box-shadow:var(--shadow);padding:9px 12px;width:198px;box-sizing:border-box;}
+.card h3{margin:0 0 3px;font-size:12.5px;color:var(--ink);}
+.card p{margin:0;font-size:10.5px;line-height:1.4;color:var(--ink-soft);}
+.card .pill{position:absolute;top:-9px;right:10px;}
+.card .ph{position:absolute;top:-9px;left:10px;}
+.card.note{border:1.5px dashed var(--muted);box-shadow:none;background:transparent;}
+.card.note p{color:var(--muted);}
+svg.wires{position:absolute;inset:0;pointer-events:none;}
+svg.wires path{stroke:var(--line);stroke-width:1.5;fill:none;}
+svg.wires path.dash{stroke-dasharray:5 4;}
+.ftr{position:absolute;left:32px;bottom:12px;font-size:10px;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="hdr">
+    <h1>Identity &mdash; who people are</h1>
+    <p>every entry path funnels into ONE deterministic creator; profile beliefs carry evidence; merges staple, never melt.</p>
+  </div>
+
+  <div class="lane" style="left:24px;"><h2>1 &middot; Callers</h2></div>
+  <div class="lane" style="left:278px;"><h2>2 &middot; The contracts</h2></div>
+  <div class="lane" style="left:532px;"><h2>3 &middot; The store</h2></div>
+  <div class="lane" style="left:786px;"><h2>4 &middot; Readers</h2></div>
+
+  <svg class="wires" width="1080" height="760">
+    <defs>
+      <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L8,4 L0,8 z" fill="#3a4661"/>
+      </marker>
+    </defs>
+    <path d="M238,205 H266 V210 H294" marker-end="url(#ah)"/>
+    <path d="M238,295 H266 V235 H294" marker-end="url(#ah)"/>
+    <path class="dash" d="M238,380 H266 V255 H294" marker-end="url(#ah)"/>
+    <path class="dash" d="M238,460 H266 V270 H294" marker-end="url(#ah)"/>
+    <path d="M492,223 H548" marker-end="url(#ah)"/>
+    <path d="M492,346 H520 V355 H548" marker-end="url(#ah)"/>
+    <path d="M492,462 H526 V260 H548" marker-end="url(#ah)"/>
+    <path d="M746,200 H758 V200 H802" marker-end="url(#ah)"/>
+    <path d="M746,225 H764 V280 H802" marker-end="url(#ah)"/>
+    <path d="M746,250 H770 V360 H802" marker-end="url(#ah)"/>
+    <path d="M746,275 H776 V440 H802" marker-end="url(#ah)"/>
+  </svg>
+
+  <div class="card" style="left:40px;top:168px;height:74px;"><span class="pill ph p-ph">P1</span>
+    <h3>Extractors (spine)</h3><p>shopify &middot; whatsapp &middot; lead-api topics &rarr; handles{}</p></div>
+  <div class="card" style="left:40px;top:258px;height:74px;"><span class="pill ph p-ph">P1</span>
+    <h3>Buddy sync callers</h3><p>push_lead_handler &middot; inbound answer (ADR 0017)</p></div>
+  <div class="card" style="left:40px;top:348px;height:64px;"><span class="pill ph p-ph">P3</span>
+    <h3>Conversation runtime</h3><p>needs the customer NOW</p></div>
+  <div class="card" style="left:40px;top:428px;height:64px;"><span class="pill ph p-ph">P2</span>
+    <h3>CSV import</h3><p>row-by-row resolve()</p></div>
+
+  <div class="card" style="left:294px;top:168px;height:110px;"><span class="pill p-green">identity</span><span class="pill ph p-ph">P1</span>
+    <h3>resolve(merchant, handles)</h3><p>probe order: phone &rarr; email &rarr; igsid &rarr; shopify_customer_id &rarr; external_ref &mdash; each vs its partial unique WHERE active</p></div>
+  <div class="card" style="left:294px;top:298px;height:96px;"><span class="pill p-green">identity</span>
+    <h3>assert_facts()</h3><p>evidence ladder: declared &gt; observed &gt; imported &gt; inferred (&le;0.5, CHECK) &middot; winners materialise: name, locale, timezone</p></div>
+  <div class="card" style="left:294px;top:414px;height:96px;"><span class="pill p-green">identity</span>
+    <h3>merge = staple</h3><p>younger: merged_away + merged_into_id &middot; survivor = older &middot; one-hop compression &middot; undo = one UPDATE</p></div>
+  <div class="card note" style="left:294px;top:530px;height:48px;">
+    <p>hit = attach &middot; miss = create &middot; race = re-probe &mdash; idempotent</p></div>
+
+  <div class="card" style="left:548px;top:168px;height:130px;"><span class="pill p-teal">store</span><span class="pill ph p-ph">P1</span>
+    <h3>crm.customer</h3><p>one row = one relationship &middot; handles as COLUMNS: phone (E.164 CHECK), email, igsid, shopify_customer_id, external_ref &middot; status: active / merged_away / erased</p></div>
+  <div class="card" style="left:548px;top:318px;height:74px;"><span class="pill p-teal">store</span>
+    <h3>attributes (jsonb)</h3><p>assertion history per attribute &mdash; master data, never trimmed</p></div>
+  <div class="card note" style="left:548px;top:412px;height:52px;">
+    <p>the partial uniques ARE the duplicate detector</p></div>
+
+  <div class="card" style="left:802px;top:168px;height:64px;"><span class="pill p-green">view</span><span class="pill ph p-ph">P1</span>
+    <h3>Journey view</h3><p>keys on (merchant, customer)</p></div>
+  <div class="card" style="left:802px;top:248px;height:64px;"><span class="pill p-green">gate</span><span class="pill ph p-ph">P1</span>
+    <h3>Gate &amp; friends</h3><p>consent_state &middot; enrolments &middot; memory all key on the pair</p></div>
+  <div class="card" style="left:802px;top:328px;height:64px;"><span class="pill p-green">view</span><span class="pill ph p-ph">P2</span>
+    <h3>Segments</h3><p>read attributes + events &middot; inferred REJECTED</p></div>
+  <div class="card" style="left:802px;top:408px;height:64px;"><span class="pill p-green">view</span><span class="pill ph p-ph">P1</span>
+    <h3>Customer 360 UI</h3><p>profile &middot; handles &middot; timeline</p></div>
+
+  <div class="ftr">Source: cpaas-build-overview/01-identity.md (T02, T05) &middot; ADR 0017 &middot; entry-points-and-the-event-spine.md</div>
+</div>
+</body>
+</html>

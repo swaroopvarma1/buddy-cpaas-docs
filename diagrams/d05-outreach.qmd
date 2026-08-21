@@ -1,0 +1,11 @@
+---
+title: "05 · Outreach"
+format:
+  html:
+    page-layout: full
+    toc: false
+---
+
+[Open standalone ↗](05-outreach.html){target=_blank}
+
+<iframe src="05-outreach.html" style="width:100%;height:840px;border:1px solid #e2e6ee;border-radius:12px;background:#eef1f6;"></iframe>

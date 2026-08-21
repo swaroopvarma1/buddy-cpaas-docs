@@ -1,0 +1,46 @@
+---
+title: "Buddy CPaaS — Design Corpus"
+toc: false
+---
+
+The complete design corpus for the Buddy CPaaS build: the sealed table canon, every
+architecture decision (ADR 0001–0018), the design docs, per-module build guides,
+and the system diagrams.
+
+::: {.callout-note title="This site is temporary — by design"}
+This Quarto site is the **single source of truth for the corpus until phase-1 code
+starts landing in clairvoyance**. At that point `modules/` and `decisions/` migrate
+into `clairvoyance/docs/crm/` (so guide-changes ship in the same PR as code), and this
+site retires or becomes a rendered mirror. Decided 2026-08-21.
+:::
+
+## Day-1 reading order (≈ 30 minutes to productive)
+
+1. **[The master system map](diagrams/d00-master.qmd)** — the whole machine on one
+   canvas. Facts flow left to right; commands take the sync door; consequences
+   re-enter as facts.
+2. **[Module rules](modules/00-module-rules.md)** — the laws EVERY module obeys, each
+   traced to a scar we already have.
+3. **Your module's build guide + diagram** — how to build it, how NOT to build it:
+   [record](modules/01-record.md) · [identity](modules/02-identity.md) ·
+   [permission](modules/03-permission.md) · [connectivity](modules/04-connectivity.md) ·
+   [outreach](modules/05-outreach.md) · [conversations/inbox](modules/06-conversations-inbox.md)
+4. **[The task map](design/task-map.md)** — pods, phases, dependencies, milestones.
+   The Slack CPAAS list is the work surface; this map is its source of truth.
+5. When you disagree with a rule: **[the ADRs](decisions/README.md)** are the why.
+   Nothing here is taste — every rule has a decision record behind it.
+
+## The phases (ADR 0016)
+
+| Phase | Ships |
+|---|---|
+| **0** | PgBouncer · fail-closed DND · migration CI · reseller backfill · small fixes |
+| **1** | Customers end-to-end WITH UI · WhatsApp transactional outbound · the event spine · journey view (voice included, ADR 0017) |
+| **2** | Static flows (walker, click branching) · segments · broadcast · flow-builder UI |
+| **3** | WhatsApp inbound · the AI agent plugin · the team inbox · customer memory · Instagram |
+
+## The one-sentence architecture
+
+**Edges translate · the spine records · bridges call contracts · contracts write** —
+and every outbound, from any source, passes one fail-closed gate and lands on one
+manifest.

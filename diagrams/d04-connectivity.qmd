@@ -1,0 +1,11 @@
+---
+title: "04 · Connectivity"
+format:
+  html:
+    page-layout: full
+    toc: false
+---
+
+[Open standalone ↗](04-connectivity.html){target=_blank}
+
+<iframe src="04-connectivity.html" style="width:100%;height:820px;border:1px solid #e2e6ee;border-radius:12px;background:#eef1f6;"></iframe>

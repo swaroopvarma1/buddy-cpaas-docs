@@ -1,0 +1,63 @@
+/* Buddy CPaaS visual language — design tokens
+   Extracted 2026-08-19 from the four reference images (Semantix platform
+   diagram, dark gradient roadmap poster, node-card lineage board).
+   Canonical copy. Diagrams INLINE these tokens so every file stays
+   self-contained — update here first, then re-sync inlined copies. */
+
+:root {
+  /* ---- Canvas & surfaces (refs 1, 4 — light "system flow" mode) ---- */
+  --canvas:      #eef1f6;   /* page background — pale blue-gray            */
+  --panel:       #e5e9f1;   /* swimlane / column panel, one step darker    */
+  --card:        #ffffff;   /* node card                                   */
+  --card-border: #e2e6ee;   /* hairline card border                        */
+  --shadow:      0 1px 3px rgba(31, 42, 68, .10), 0 4px 14px rgba(31, 42, 68, .06);
+
+  /* ---- Ink ---- */
+  --ink:         #1f2a44;   /* primary text + connector pills — deep navy  */
+  --ink-soft:    #4b5568;   /* secondary text                              */
+  --muted:       #8a93a6;   /* captions, panel titles                      */
+  --line:        #3a4661;   /* connector stroke                            */
+
+  /* ---- Accents (module colors — STABLE, never re-assign) ----
+     purple = sources / edges / adapters      (Semantix datasources)
+     blue   = spine / record / core platform  (Semantix platform core)
+     green  = outputs / sends / success       (Semantix sharing, roadmap end)
+     teal   = storage / tables
+     amber  = external providers (Meta, Shopify, telephony)
+     red    = refusals / fail-closed / errors                              */
+  --purple:      #7c3aed;  --purple-soft: #ede4ff;  --purple-ink: #5b21b6;
+  --blue:        #2563eb;  --blue-soft:   #dce7fd;  --blue-ink:   #1d4ed8;
+  --green:       #10b981;  --green-soft:  #d8f3e6;  --green-ink:  #047857;
+  --teal:        #0d9488;  --teal-soft:   #d3f0ec;  --teal-ink:   #0f766e;
+  --amber:       #f59e0b;  --amber-soft:  #ffeacb;  --amber-ink:  #92400e;
+  --red:         #ef4444;  --red-soft:    #ffdcdc;  --red-ink:    #b91c1c;
+
+  /* ---- Typography ----
+     Geometric/humanist sans like the references. No webfont dependency —
+     files must stay self-contained. */
+  --font: "Inter", "SF Pro Text", -apple-system, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+  --fs-title: 22px;  /* page title, 700 */
+  --fs-sub:   13px;  /* page subtitle, 400, --muted */
+  --fs-lane:  11px;  /* panel/lane titles, 700, uppercase, letter-spacing .08em */
+  --fs-card:  13px;  /* card title, 700 */
+  --fs-body:  11px;  /* card body, 400, --ink-soft, line-height 1.45 */
+  --fs-pill:  9.5px; /* tag pills, 700, uppercase, letter-spacing .06em */
+
+  /* ---- Shape ---- */
+  --r-card: 10px;    /* card corner radius       */
+  --r-pill: 999px;   /* pills fully rounded      */
+  --r-panel: 14px;   /* lane panel radius        */
+  --stroke-w: 1.5px; /* connector width          */
+
+  /* ---- Dark "roadmap" mode (refs 2/3) — posters & phase timelines only */
+  --dk-bg:        #1a1a1e;
+  --dk-card:      #232329;
+  --dk-ink:       #f5f5f7;   /* headings, 700, uppercase */
+  --dk-body:      #9ca3af;   /* body text                */
+  --dk-path-1:    #7c3aed;   /* gradient start (purple)  */
+  --dk-path-2:    #a78bfa;   /* gradient mid (violet)    */
+  --dk-path-3:    #34d399;   /* gradient end (green)     */
+  --dk-path-w:    26px;      /* snake path thickness     */
+  --dk-badge:     #2b2b33;   /* circular icon badge fill */
+}

@@ -1,0 +1,11 @@
+---
+title: "03 · Permission & the gate"
+format:
+  html:
+    page-layout: full
+    toc: false
+---
+
+[Open standalone ↗](03-permission.html){target=_blank}
+
+<iframe src="03-permission.html" style="width:100%;height:820px;border:1px solid #e2e6ee;border-radius:12px;background:#eef1f6;"></iframe>

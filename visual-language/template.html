@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Buddy CPaaS visual language — template</title>
+<style>
+/* ===== tokens (inlined from tokens.css — keep in sync) ===== */
+:root{
+  --canvas:#eef1f6; --panel:#e5e9f1; --card:#ffffff; --card-border:#e2e6ee;
+  --shadow:0 1px 3px rgba(31,42,68,.10),0 4px 14px rgba(31,42,68,.06);
+  --ink:#1f2a44; --ink-soft:#4b5568; --muted:#8a93a6; --line:#3a4661;
+  --purple:#7c3aed; --purple-soft:#ede4ff; --purple-ink:#5b21b6;
+  --blue:#2563eb;   --blue-soft:#dce7fd;   --blue-ink:#1d4ed8;
+  --green:#10b981;  --green-soft:#d8f3e6;  --green-ink:#047857;
+  --teal:#0d9488;   --teal-soft:#d3f0ec;   --teal-ink:#0f766e;
+  --amber:#f59e0b;  --amber-soft:#ffeacb;  --amber-ink:#92400e;
+  --red:#ef4444;    --red-soft:#ffdcdc;    --red-ink:#b91c1c;
+  --font:"Inter","SF Pro Text",-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --dk-bg:#1a1a1e; --dk-card:#232329; --dk-ink:#f5f5f7; --dk-body:#9ca3af;
+  --dk-path-1:#7c3aed; --dk-path-2:#a78bfa; --dk-path-3:#34d399; --dk-badge:#2b2b33;
+}
+/* ===== base components ===== */
+body{margin:0;background:var(--canvas);font-family:var(--font);color:var(--ink);}
+.hdr{padding:26px 32px 14px;}
+.hdr h1{margin:0;font-size:22px;}
+.hdr p{margin:4px 0 0;font-size:13px;color:var(--muted);}
+section{padding:10px 32px 26px;}
+section>h2{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 12px;}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:3px 9px;border-radius:999px;}
+.p-purple{background:var(--purple-soft);color:var(--purple-ink);}
+.p-blue{background:var(--blue-soft);color:var(--blue-ink);}
+.p-green{background:var(--green-soft);color:var(--green-ink);}
+.p-teal{background:var(--teal-soft);color:var(--teal-ink);}
+.p-amber{background:var(--amber-soft);color:var(--amber-ink);}
+.p-red{background:var(--red-soft);color:var(--red-ink);}
+.stage{position:relative;height:300px;}
+.lane{position:absolute;background:var(--panel);border-radius:14px;}
+.lane h3{position:absolute;top:12px;left:16px;margin:0;font-size:11px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.lane .sub{position:absolute;top:29px;left:16px;font-size:10px;color:var(--muted);}
+.card{position:absolute;background:var(--card);border:1px solid var(--card-border);
+  border-radius:10px;box-shadow:var(--shadow);padding:10px 12px;width:198px;box-sizing:border-box;}
+.card h4{margin:0 0 4px;font-size:13px;color:var(--ink);}
+.card p{margin:0;font-size:11px;line-height:1.45;color:var(--ink-soft);}
+.card .pill{position:absolute;top:-9px;right:10px;}
+.card.note{border:1.5px dashed var(--muted);box-shadow:none;background:transparent;}
+.card.note p{color:var(--muted);}
+svg.wires{position:absolute;inset:0;pointer-events:none;}
+svg.wires path{stroke:var(--line);stroke-width:1.5;fill:none;}
+svg.wires path.dash{stroke-dasharray:5 4;}
+.wlbl{position:absolute;background:var(--ink);color:#fff;font-size:9.5px;font-weight:600;
+  padding:2px 8px;border-radius:999px;transform:translate(-50%,-50%);white-space:nowrap;}
+/* ===== dark roadmap mode ===== */
+.roadmap{background:var(--dk-bg);border-radius:14px;position:relative;height:220px;overflow:hidden;}
+.rm-title{position:absolute;top:22px;left:28px;color:var(--dk-ink);font-weight:800;
+  font-size:20px;letter-spacing:.02em;}
+.rm-seg{position:absolute;top:104px;height:22px;border-radius:999px;}
+.rm-badge{position:absolute;top:93px;width:44px;height:44px;border-radius:50%;
+  background:var(--dk-badge);border:2px solid #3a3a44;color:var(--dk-ink);
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;}
+.rm-step{position:absolute;top:152px;width:180px;}
+.rm-step h5{margin:0 0 3px;color:var(--dk-ink);font-size:11.5px;font-weight:800;
+  letter-spacing:.06em;text-transform:uppercase;}
+.rm-step p{margin:0;color:var(--dk-body);font-size:10px;line-height:1.5;}
+</style>
+</head>
+<body>
+  <div class="hdr">
+    <h1>Buddy CPaaS visual language — template</h1>
+    <p>Component gallery + scaffold. Copy this file to start any new visual; keep tokens in sync with tokens.css.</p>
+  </div>
+
+  <section>
+    <h2>Tag pills — the module color law (never re-assign)</h2>
+    <div class="row">
+      <span class="pill p-purple">sources / edges</span>
+      <span class="pill p-blue">spine / core</span>
+      <span class="pill p-green">contracts / sends</span>
+      <span class="pill p-teal">stores / tables</span>
+      <span class="pill p-amber">external providers</span>
+      <span class="pill p-red">refusals / fail-closed</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>System flow mode (light) — lanes, cards, wires</h2>
+    <div class="stage">
+      <div class="lane" style="left:0;top:0;width:230px;height:280px;">
+        <h3>1 &middot; Sources</h3><span class="sub">translate</span>
+      </div>
+      <div class="lane" style="left:254px;top:0;width:230px;height:280px;">
+        <h3>2 &middot; Spine</h3><span class="sub">record</span>
+      </div>
+      <div class="lane" style="left:508px;top:0;width:230px;height:280px;">
+        <h3>3 &middot; Contracts</h3><span class="sub">write</span>
+      </div>
+      <svg class="wires" width="100%" height="100%">
+        <defs>
+          <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0,0 L8,4 L0,8 z" fill="#3a4661"/>
+          </marker>
+        </defs>
+        <path d="M214,101 H240 V101 H270" marker-end="url(#ah)"/>
+        <path class="dash" d="M214,196 H494 V150 H524" marker-end="url(#ah)"/>
+      </svg>
+      <div class="card" style="left:16px;top:64px;">
+        <span class="pill p-purple">fact</span>
+        <h4>WhatsApp webhooks</h4>
+        <p>statuses &middot; template updates &middot; inbound (ph 2)</p>
+      </div>
+      <div class="card" style="left:16px;top:160px;">
+        <span class="pill p-purple">cmd</span>
+        <h4>Lead push API</h4>
+        <p>POST /leads &mdash; call this person</p>
+      </div>
+      <div class="card" style="left:270px;top:66px;">
+        <span class="pill p-blue">spine</span>
+        <h4>crm.event_raw</h4>
+        <p>dedupe once &middot; quarantine + replay()</p>
+      </div>
+      <div class="card" style="left:524px;top:120px;">
+        <span class="pill p-green">identity</span>
+        <h4>resolve()</h4>
+        <p>the only creator of customers</p>
+      </div>
+      <div class="card note" style="left:524px;top:206px;height:64px;">
+        <p>dashed card = callout / caveat<br>dashed wire = command / deferred</p>
+      </div>
+      <span class="wlbl" style="left:400px;top:196px;">sync door</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Roadmap mode (dark) — phases &amp; timelines ONLY</h2>
+    <div class="roadmap">
+      <div class="rm-title">ROADMAP</div>
+      <div class="rm-seg" style="left:60px;width:210px;background:var(--dk-path-1);"></div>
+      <div class="rm-seg" style="left:290px;width:210px;background:var(--dk-path-2);"></div>
+      <div class="rm-seg" style="left:520px;width:210px;background:var(--dk-path-3);"></div>
+      <div class="rm-badge" style="left:143px;">0</div>
+      <div class="rm-badge" style="left:373px;">1</div>
+      <div class="rm-badge" style="left:603px;">2</div>
+      <div class="rm-step" style="left:75px;">
+        <h5>Phase 0 &mdash; base</h5>
+        <p>PgBouncer &middot; fail-closed DND &middot; migration CI &middot; reseller backfill</p>
+      </div>
+      <div class="rm-step" style="left:305px;">
+        <h5>Phase 1 &mdash; skeleton</h5>
+        <p>app/crm scaffold &middot; WhatsApp outbound &middot; gate + manifest</p>
+      </div>
+      <div class="rm-step" style="left:535px;">
+        <h5>Phase 2 &mdash; flows</h5>
+        <p>pilot flows &middot; broadcast &middot; inbound WhatsApp</p>
+      </div>
+    </div>
+  </section>
+</body>
+</html>

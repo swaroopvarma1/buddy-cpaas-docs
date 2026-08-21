@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Buddy CPaaS — the event spine</title>
+<style>
+:root{
+  --canvas:#eef1f6; --panel:#e5e9f1; --card:#ffffff; --card-border:#e2e6ee;
+  --shadow:0 1px 3px rgba(31,42,68,.10),0 4px 14px rgba(31,42,68,.06);
+  --ink:#1f2a44; --ink-soft:#4b5568; --muted:#8a93a6; --line:#3a4661;
+  --purple:#7c3aed; --purple-soft:#ede4ff; --purple-ink:#5b21b6;
+  --blue:#2563eb;   --blue-soft:#dce7fd;   --blue-ink:#1d4ed8;
+  --green:#10b981;  --green-soft:#d8f3e6;  --green-ink:#047857;
+  --teal:#0d9488;   --teal-soft:#d3f0ec;   --teal-ink:#0f766e;
+  --amber:#f59e0b;  --amber-soft:#ffeacb;  --amber-ink:#92400e;
+  --font:"Inter","SF Pro Text",-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+body{margin:0;background:var(--canvas);font-family:var(--font);color:var(--ink);}
+.page{position:relative;width:1560px;height:952px;}
+.hdr{position:absolute;top:0;left:0;right:0;padding:24px 32px 0;}
+.hdr h1{margin:0;font-size:22px;}
+.hdr p{margin:4px 0 0;font-size:13px;color:var(--muted);}
+.legend{position:absolute;top:28px;right:32px;display:flex;gap:8px;align-items:center;
+  font-size:10px;color:var(--ink-soft);}
+.legend .ln{width:26px;height:0;border-top:1.5px solid var(--line);}
+.legend .ln.dash{border-top-style:dashed;}
+.pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2px 8px;border-radius:999px;}
+.p-purple{background:var(--purple-soft);color:var(--purple-ink);}
+.p-blue{background:var(--blue-soft);color:var(--blue-ink);}
+.p-green{background:var(--green-soft);color:var(--green-ink);}
+.p-teal{background:var(--teal-soft);color:var(--teal-ink);}
+.p-amber{background:var(--amber-soft);color:var(--amber-ink);}
+.lane{position:absolute;top:120px;height:750px;width:230px;background:var(--panel);border-radius:14px;}
+.lane h2{position:absolute;top:12px;left:16px;margin:0;font-size:11px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.lane .sub{position:absolute;top:29px;left:16px;font-size:10px;color:var(--muted);}
+.card{position:absolute;background:var(--card);border:1px solid var(--card-border);
+  border-radius:10px;box-shadow:var(--shadow);padding:10px 12px;width:198px;box-sizing:border-box;}
+.card h3{margin:0 0 4px;font-size:13px;color:var(--ink);}
+.card p{margin:0;font-size:11px;line-height:1.45;color:var(--ink-soft);}
+.card .pill{position:absolute;top:-9px;right:10px;}
+.card.note{border:1.5px dashed var(--muted);box-shadow:none;background:transparent;}
+.card.note p{color:var(--muted);}
+.seclbl{position:absolute;font-size:10px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);}
+svg.wires{position:absolute;inset:0;pointer-events:none;}
+svg.wires path{stroke:var(--line);stroke-width:1.5;fill:none;}
+svg.wires path.dash{stroke-dasharray:5 4;}
+svg.wires path.purple{stroke:var(--purple);}
+svg.wires path.amber{stroke:var(--amber);}
+.wlbl{position:absolute;background:var(--ink);color:#fff;font-size:9.5px;font-weight:600;
+  padding:2px 8px;border-radius:999px;transform:translate(-50%,-50%);white-space:nowrap;}
+.ftr{position:absolute;left:32px;bottom:14px;font-size:10px;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="hdr">
+    <h1>Buddy CPaaS &mdash; the event spine</h1>
+    <p>edges translate &middot; the spine records &middot; bridges call contracts &middot; contracts write &mdash; commands take the sync door; consequences re-enter as facts</p>
+  </div>
+  <div class="legend">
+    <span class="pill p-purple">source</span><span class="pill p-blue">spine</span>
+    <span class="pill p-green">contract</span><span class="pill p-teal">store</span>
+    <span class="pill p-amber">external</span>
+    <span class="ln"></span>facts<span class="ln dash"></span>commands / deferred
+  </div>
+
+  <div class="lane" style="left:24px;"><h2>1 &middot; Sources</h2></div>
+  <div class="lane" style="left:278px;"><h2>2 &middot; Adapters</h2><span class="sub">translate</span></div>
+  <div class="lane" style="left:532px;"><h2>3 &middot; Spine</h2><span class="sub">record</span></div>
+  <div class="lane" style="left:786px;"><h2>4 &middot; Consumers</h2><span class="sub">bridge &middot; worker: CRM_CONSUMERS</span></div>
+  <div class="lane" style="left:1040px;"><h2>5 &middot; Contracts</h2><span class="sub">the only writers</span></div>
+  <div class="lane" style="left:1294px;"><h2>6 &middot; Stores &amp; exit</h2><span class="sub">tables &middot; providers</span></div>
+
+  <svg class="wires" width="1560" height="952">
+    <defs>
+      <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L8,4 L0,8 z" fill="#3a4661"/>
+      </marker>
+      <marker id="ahp" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L8,4 L0,8 z" fill="#7c3aed"/>
+      </marker>
+      <marker id="aha" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L8,4 L0,8 z" fill="#f59e0b"/>
+      </marker>
+    </defs>
+    <!-- facts into adapter -->
+    <path d="M238,212 H266 V235 H294" marker-end="url(#ah)"/>
+    <path d="M238,316 H266 V275 H294" marker-end="url(#ah)"/>
+    <!-- adapter -> event_raw -->
+    <path d="M492,257 H548" marker-end="url(#ah)"/>
+    <!-- event_raw -> consumers -->
+    <path d="M746,225 H774 V212 H802" marker-end="url(#ah)"/>
+    <path d="M746,248 H774 V309 H802" marker-end="url(#ah)"/>
+    <path d="M746,270 H774 V399 H802" marker-end="url(#ah)"/>
+    <path d="M746,293 H774 V489 H802" marker-end="url(#ah)"/>
+    <!-- consumers -> contracts -->
+    <path d="M1000,212 H1056" marker-end="url(#ah)"/>
+    <path d="M1000,309 H1056" marker-end="url(#ah)"/>
+    <path d="M1000,399 H1056" marker-end="url(#ah)"/>
+    <!-- receipt processor -> manifest -->
+    <path d="M1000,489 H1014 V615 H1274 V510 H1310" marker-end="url(#ah)"/>
+    <!-- contracts -> stores -->
+    <path d="M1254,208 H1310" marker-end="url(#ah)"/>
+    <path d="M1254,309 H1282 V295 H1310" marker-end="url(#ah)"/>
+    <path d="M1254,385 H1310" marker-end="url(#ah)"/>
+    <path d="M1254,470 H1310" marker-end="url(#ah)"/>
+    <!-- enrol -> gate ; manifest -> provider -->
+    <path d="M1155,436 V452" marker-end="url(#ah)"/>
+    <path d="M1409,526 V542" marker-end="url(#ah)"/>
+    <!-- consequences loop: provider -> whatsapp webhooks -->
+    <path d="M1508,579 H1536 V830 H32 V316 H40" marker-end="url(#ah)"/>
+    <!-- command mirror (purple dashed) -->
+    <path class="dash purple" d="M238,430 H266 V368 H294" marker-end="url(#ahp)"/>
+    <!-- sync door (dashed): stubs join the bus -->
+    <path class="dash" d="M238,535 H258"/>
+    <path class="dash" d="M238,625 H258"/>
+    <path class="dash" d="M238,460 H258 V748 H1028 V420 H1056" marker-end="url(#ah)"/>
+    <!-- voice node bypass (amber dashed) -->
+    <path class="dash amber" d="M1254,420 H1266 V676 H1310" marker-end="url(#aha)"/>
+  </svg>
+
+  <!-- L1 SOURCES -->
+  <span class="seclbl" style="left:40px;top:150px;">Facts</span>
+  <div class="card" style="left:40px;top:168px;height:88px;">
+    <span class="pill p-purple">fact</span>
+    <h3>Shopify &mdash; anchor relay</h3>
+    <p>checkouts/create &middot; orders/create &middot; customer consent (ADR 0009)</p>
+  </div>
+  <div class="card" style="left:40px;top:272px;height:88px;">
+    <span class="pill p-purple">fact</span>
+    <h3>WhatsApp webhooks</h3>
+    <p>statuses &middot; template updates &middot; inbound msgs (phase 2)</p>
+  </div>
+  <span class="seclbl" style="left:40px;top:392px;">Commands</span>
+  <div class="card" style="left:40px;top:408px;height:74px;">
+    <span class="pill p-purple">cmd</span>
+    <h3>Lead push API</h3>
+    <p>POST /leads &mdash; call this person</p>
+  </div>
+  <div class="card" style="left:40px;top:498px;height:74px;">
+    <span class="pill p-purple">cmd</span>
+    <h3>Console / crm APIs</h3>
+    <p>consent capture &middot; broadcasts</p>
+  </div>
+  <div class="card" style="left:40px;top:588px;height:74px;">
+    <span class="pill p-purple">cmd</span>
+    <h3>CSV import</h3>
+    <p>static lists &middot; consent import</p>
+  </div>
+
+  <!-- L2 ADAPTERS -->
+  <div class="card" style="left:294px;top:200px;height:110px;">
+    <span class="pill p-purple">edge</span>
+    <h3>Adapter per source</h3>
+    <p>verify sig / s2s &rarr; stamp envelope &rarr; store RAW &rarr; 200.<br>
+       Never calls resolve() &middot; never touches domain tables.</p>
+  </div>
+  <div class="card note" style="left:294px;top:340px;height:56px;">
+    <p>mirror: a command emits a fact after executing (lead.pushed)</p>
+  </div>
+
+  <!-- L3 SPINE -->
+  <div class="card" style="left:548px;top:200px;height:118px;">
+    <span class="pill p-blue">spine</span>
+    <h3>crm.event_raw</h3>
+    <p>dedupe UNIQUE (merchant, source, external_id)<br>
+       quarantine + replay() &middot; monthly partitions</p>
+  </div>
+  <div class="card note" style="left:548px;top:348px;height:52px;">
+    <p>facts only &mdash; never a command bus</p>
+  </div>
+
+  <!-- L4 CONSUMERS -->
+  <div class="card" style="left:802px;top:168px;height:88px;">
+    <span class="pill p-blue">bridge</span>
+    <h3>Resolve processor</h3>
+    <p>extractor registry: (source, topic) &rarr; handles</p>
+  </div>
+  <div class="card" style="left:802px;top:272px;height:74px;">
+    <span class="pill p-blue">bridge</span>
+    <h3>Consent processor</h3>
+    <p>STOP / START &middot; importers</p>
+  </div>
+  <div class="card" style="left:802px;top:362px;height:74px;">
+    <span class="pill p-blue">bridge</span>
+    <h3>Entry-rule processor</h3>
+    <p>workflow entry matches</p>
+  </div>
+  <div class="card" style="left:802px;top:452px;height:74px;">
+    <span class="pill p-blue">bridge</span>
+    <h3>Receipt processor</h3>
+    <p>provider status ladder</p>
+  </div>
+  <div class="card note" style="left:802px;top:545px;height:56px;">
+    <p>drain: processed_at IS NULL &middot; FOR UPDATE SKIP LOCKED</p>
+  </div>
+
+  <!-- L5 CONTRACTS -->
+  <div class="card" style="left:1056px;top:168px;height:88px;">
+    <span class="pill p-green">identity</span>
+    <h3>resolve() + assert_facts()</h3>
+    <p>idempotent &mdash; racing callers converge</p>
+  </div>
+  <div class="card" style="left:1056px;top:272px;height:74px;">
+    <span class="pill p-green">permission</span>
+    <h3>record_consent()</h3>
+    <p>single ledger writer</p>
+  </div>
+  <div class="card" style="left:1056px;top:362px;height:74px;">
+    <span class="pill p-green">outreach</span>
+    <h3>enrol() + tick()</h3>
+    <p>the walker &middot; wake_at = timer + lease</p>
+  </div>
+  <div class="card" style="left:1056px;top:452px;height:88px;">
+    <span class="pill p-green">connectivity</span>
+    <h3>may_contact() &rarr; send()</h3>
+    <p>fail closed &middot; single provider call site</p>
+  </div>
+
+  <!-- L6 STORES & EXIT -->
+  <div class="card" style="left:1310px;top:168px;height:74px;">
+    <span class="pill p-teal">store</span>
+    <h3>crm.customer</h3>
+    <p>handles as columns</p>
+  </div>
+  <div class="card" style="left:1310px;top:258px;height:74px;">
+    <span class="pill p-teal">store</span>
+    <h3>consent ledger + state</h3>
+    <p>same transaction, never disagree</p>
+  </div>
+  <div class="card" style="left:1310px;top:348px;height:74px;">
+    <span class="pill p-teal">store</span>
+    <h3>workflow_enrollment</h3>
+    <p>one person's run</p>
+  </div>
+  <div class="card" style="left:1310px;top:438px;height:88px;">
+    <span class="pill p-teal">store</span>
+    <h3>crm.message manifest</h3>
+    <p>blocked sends are rows too</p>
+  </div>
+  <div class="card" style="left:1310px;top:542px;height:74px;">
+    <span class="pill p-amber">external</span>
+    <h3>WhatsApp Cloud API</h3>
+    <p>templates &middot; receipts by wamid</p>
+  </div>
+  <div class="card" style="left:1310px;top:632px;height:88px;">
+    <span class="pill p-amber">external</span>
+    <h3>Voice &mdash; lead machine</h3>
+    <p>outside the gate until takeover (ADR 0010)</p>
+  </div>
+
+  <!-- wire labels -->
+  <span class="wlbl" style="left:650px;top:748px;">sync door &mdash; commands call contracts directly</span>
+  <span class="wlbl" style="left:1150px;top:615px;">statuses</span>
+  <span class="wlbl" style="left:780px;top:830px;">consequences re-enter as facts</span>
+  <span class="wlbl" style="left:1250px;top:660px;">voice: no gate yet</span>
+
+  <div class="ftr">Sources: design/entry-points-and-the-event-spine.md &middot; design/app-crm-architecture.md &middot; ADR 0003 / 0004 / 0008 / 0009 / 0010</div>
+</div>
+</body>
+</html>

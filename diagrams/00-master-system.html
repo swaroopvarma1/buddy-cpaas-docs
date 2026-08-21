@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Buddy CPaaS — master system map</title>
+<style>
+:root{
+  --canvas:#eef1f6; --panel:#e5e9f1; --card:#ffffff; --card-border:#e2e6ee;
+  --shadow:0 1px 3px rgba(31,42,68,.10),0 4px 14px rgba(31,42,68,.06);
+  --ink:#1f2a44; --ink-soft:#4b5568; --muted:#8a93a6; --line:#3a4661;
+  --purple:#7c3aed; --purple-soft:#ede4ff; --purple-ink:#5b21b6;
+  --blue:#2563eb;   --blue-soft:#dce7fd;   --blue-ink:#1d4ed8;
+  --green:#10b981;  --green-soft:#d8f3e6;  --green-ink:#047857;
+  --teal:#0d9488;   --teal-soft:#d3f0ec;   --teal-ink:#0f766e;
+  --amber:#f59e0b;  --amber-soft:#ffeacb;  --amber-ink:#92400e;
+  --font:"Inter","SF Pro Text",-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+body{margin:0;background:var(--canvas);font-family:var(--font);color:var(--ink);}
+.page{position:relative;width:1810px;height:1000px;}
+.hdr{position:absolute;top:0;left:0;right:0;padding:22px 32px 0;}
+.hdr h1{margin:0;font-size:22px;}
+.hdr p{margin:4px 0 0;font-size:13px;color:var(--muted);}
+.legend{position:absolute;top:26px;right:32px;display:flex;gap:8px;align-items:center;
+  font-size:10px;color:var(--ink-soft);}
+.legend .ln{width:24px;height:0;border-top:1.5px solid var(--line);}
+.legend .ln.dash{border-top-style:dashed;}
+.pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2px 8px;border-radius:999px;}
+.p-purple{background:var(--purple-soft);color:var(--purple-ink);}
+.p-blue{background:var(--blue-soft);color:var(--blue-ink);}
+.p-green{background:var(--green-soft);color:var(--green-ink);}
+.p-teal{background:var(--teal-soft);color:var(--teal-ink);}
+.p-amber{background:var(--amber-soft);color:var(--amber-ink);}
+.p-ph{background:#dfe3ea;color:#4b5568;}
+.lane{position:absolute;top:120px;height:770px;width:230px;background:var(--panel);border-radius:14px;}
+.lane h2{position:absolute;top:12px;left:16px;margin:0;font-size:11px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.card{position:absolute;background:var(--card);border:1px solid var(--card-border);
+  border-radius:10px;box-shadow:var(--shadow);padding:9px 12px;width:198px;box-sizing:border-box;}
+.card h3{margin:0 0 3px;font-size:12.5px;color:var(--ink);}
+.card p{margin:0;font-size:10.5px;line-height:1.4;color:var(--ink-soft);}
+.card .pill{position:absolute;top:-9px;right:10px;}
+.card .ph{position:absolute;top:-9px;left:10px;}
+.card.note{border:1.5px dashed var(--muted);box-shadow:none;background:transparent;}
+.card.note p{color:var(--muted);}
+svg.wires{position:absolute;inset:0;pointer-events:none;}
+svg.wires path{stroke:var(--line);stroke-width:1.5;fill:none;}
+svg.wires path.dash{stroke-dasharray:5 4;}
+.wlbl{position:absolute;background:var(--ink);color:#fff;font-size:9.5px;font-weight:600;
+  padding:2px 8px;border-radius:999px;transform:translate(-50%,-50%);white-space:nowrap;}
+.ftr{position:absolute;left:32px;bottom:12px;font-size:10px;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="hdr">
+    <h1>Buddy CPaaS &mdash; master system map</h1>
+    <p>every touchpoint, channel, connector, store and view &mdash; facts flow left to right; commands take the sync door; consequences re-enter as facts. Phase badges: P1 / P2 / P3.</p>
+  </div>
+  <div class="legend">
+    <span class="pill p-purple">edge</span><span class="pill p-blue">spine</span>
+    <span class="pill p-green">engine</span><span class="pill p-teal">store</span>
+    <span class="pill p-amber">external</span><span class="pill p-ph">phase</span>
+    <span class="ln"></span>facts<span class="ln dash"></span>commands / deferred
+  </div>
+
+  <div class="lane" style="left:24px;"><h2>1 &middot; Touchpoints</h2></div>
+  <div class="lane" style="left:278px;"><h2>2 &middot; Edges &mdash; doors &amp; adapters</h2></div>
+  <div class="lane" style="left:532px;"><h2>3 &middot; Spine &mdash; record</h2></div>
+  <div class="lane" style="left:786px;"><h2>4 &middot; Bridges &mdash; consumers</h2></div>
+  <div class="lane" style="left:1040px;"><h2>5 &middot; Contracts &amp; engines</h2></div>
+  <div class="lane" style="left:1294px;"><h2>6 &middot; Stores</h2></div>
+  <div class="lane" style="left:1548px;"><h2>7 &middot; Views &amp; surfaces</h2></div>
+
+  <svg class="wires" width="1810" height="1000">
+    <defs>
+      <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L8,4 L0,8 z" fill="#3a4661"/>
+      </marker>
+    </defs>
+    <!-- touchpoints -> edges -->
+    <path d="M238,205 H266 V212 H294" marker-end="url(#ah)"/>
+    <path class="dash" d="M238,295 H266 V304 H294" marker-end="url(#ah)"/>
+    <path d="M238,385 H266 V396 H294" marker-end="url(#ah)"/>
+    <path d="M238,475 H266 V493 H294" marker-end="url(#ah)"/>
+    <path d="M238,565 H266 V575 H294" marker-end="url(#ah)"/>
+    <path d="M238,655 H266 V591 H294" marker-end="url(#ah)"/>
+    <!-- edges -> spine -->
+    <path d="M492,200 H520 V225 H548" marker-end="url(#ah)"/>
+    <path class="dash" d="M492,304 H512 V250 H548" marker-end="url(#ah)"/>
+    <path d="M492,396 H520 V275 H548" marker-end="url(#ah)"/>
+    <path d="M492,493 H520 V305 H548" marker-end="url(#ah)"/>
+    <!-- spine -> bridges (fan) -->
+    <path d="M746,215 H756 V198 H802" marker-end="url(#ah)"/>
+    <path d="M746,230 H762 V278 H802" marker-end="url(#ah)"/>
+    <path d="M746,245 H768 V358 H802" marker-end="url(#ah)"/>
+    <path d="M746,260 H774 V438 H802" marker-end="url(#ah)"/>
+    <path d="M746,275 H780 V518 H802" marker-end="url(#ah)"/>
+    <path d="M746,290 H786 V598 H802" marker-end="url(#ah)"/>
+    <path d="M746,305 H792 V678 H802" marker-end="url(#ah)"/>
+    <!-- bridges -> contracts / stores -->
+    <path d="M1000,198 H1056" marker-end="url(#ah)"/>
+    <path d="M1000,278 H1056" marker-end="url(#ah)"/>
+    <path d="M1000,358 H1056" marker-end="url(#ah)"/>
+    <path d="M1000,438 H1020 V410 H1310" marker-end="url(#ah)"/>
+    <path d="M1000,518 H1022 V458 H1056" marker-end="url(#ah)"/>
+    <path d="M1000,598 H1034 V476 H1056" marker-end="url(#ah)"/>
+    <path d="M1000,678 H1020 V700 H1274 V548 H1310" marker-end="url(#ah)"/>
+    <!-- contracts -> stores -->
+    <path d="M1254,204 H1282 V186 H1310" marker-end="url(#ah)"/>
+    <path d="M1254,286 H1282 V252 H1310" marker-end="url(#ah)"/>
+    <path d="M1254,352 H1278 V380 H1310" marker-end="url(#ah)"/>
+    <path d="M1254,388 H1290 V322 H1310" marker-end="url(#ah)"/>
+    <path d="M1254,452 H1282 V468 H1310" marker-end="url(#ah)"/>
+    <path d="M1254,540 H1282 V616 H1310" marker-end="url(#ah)"/>
+    <path d="M1254,650 H1290 V556 H1310" marker-end="url(#ah)"/>
+    <path d="M1254,572 H1268 V760 H1310" marker-end="url(#ah)"/>
+    <!-- stores -> views -->
+    <path d="M1508,186 H1536 V205 H1564" marker-end="url(#ah)"/>
+    <path d="M1508,322 H1536 V304 H1564" marker-end="url(#ah)"/>
+    <path d="M1508,468 H1536 V469 H1564" marker-end="url(#ah)"/>
+    <path d="M1508,556 H1536 V559 H1564" marker-end="url(#ah)"/>
+    <path class="dash" d="M1508,770 H1536 V644 H1564" marker-end="url(#ah)"/>
+    <!-- sync door (commands) -->
+    <path class="dash" d="M492,583 H510 V740 H1028 V367 H1056" marker-end="url(#ah)"/>
+  </svg>
+
+  <!-- L1 TOUCHPOINTS -->
+  <div class="card" style="left:40px;top:168px;height:74px;"><span class="pill ph p-ph">P1</span>
+    <h3>Customer &middot; WhatsApp</h3><p>messages, clicks, receipts</p></div>
+  <div class="card" style="left:40px;top:258px;height:74px;"><span class="pill ph p-ph">P3+</span>
+    <h3>Customer &middot; Instagram</h3><p>DMs &mdash; fast-follow</p></div>
+  <div class="card" style="left:40px;top:348px;height:74px;"><span class="pill ph p-ph">P1</span>
+    <h3>Voice caller</h3><p>inbound + outbound calls</p></div>
+  <div class="card" style="left:40px;top:438px;height:74px;"><span class="pill ph p-ph">P1</span>
+    <h3>Shopify store</h3><p>checkouts, orders, consent</p></div>
+  <div class="card" style="left:40px;top:528px;height:74px;"><span class="pill ph p-ph">P1</span>
+    <h3>Merchant team</h3><p>console &middot; inbox (P3)</p></div>
+  <div class="card" style="left:40px;top:618px;height:74px;"><span class="pill ph p-ph">P1</span>
+    <h3>API callers</h3><p>lead push &middot; CSV import</p></div>
+
+  <!-- L2 EDGES -->
+  <div class="card" style="left:294px;top:168px;height:88px;"><span class="pill p-amber">external</span><span class="pill ph p-ph">P1</span>
+    <h3>WhatsApp Cloud</h3><p>webhooks in &middot; sends out &middot; door + pipes + WABA templates</p></div>
+  <div class="card" style="left:294px;top:272px;height:64px;"><span class="pill p-amber">external</span><span class="pill ph p-ph">P3+</span>
+    <h3>Instagram connector</h3><p>new door + adapter</p></div>
+  <div class="card" style="left:294px;top:352px;height:88px;"><span class="pill p-purple">edge</span><span class="pill ph p-ph">P1</span>
+    <h3>Voice lead machine</h3><p>existing dispatcher &middot; mirrors call events &middot; resolve() at push / answer</p></div>
+  <div class="card" style="left:294px;top:456px;height:74px;"><span class="pill p-purple">edge</span><span class="pill ph p-ph">P1</span>
+    <h3>anchor relay</h3><p>Shopify topics, s2s-signed</p></div>
+  <div class="card" style="left:294px;top:546px;height:74px;"><span class="pill p-purple">edge</span><span class="pill ph p-ph">P1</span>
+    <h3>/crm APIs</h3><p>admin + S2S auth &middot; commands</p></div>
+  <div class="card" style="left:294px;top:636px;height:64px;"><span class="pill p-purple">edge</span><span class="pill ph p-ph">P1</span>
+    <h3>Embedded signup</h3><p>mints door + pipe</p></div>
+
+  <!-- L3 SPINE -->
+  <div class="card" style="left:548px;top:200px;height:118px;"><span class="pill p-blue">spine</span><span class="pill ph p-ph">P1</span>
+    <h3>crm.event_raw</h3><p>every fact, verbatim &middot; dedupe once &middot; quarantine + replay() &middot; topics route consumers</p></div>
+  <div class="card note" style="left:548px;top:348px;height:52px;">
+    <p>facts only &mdash; commands take the sync door below</p></div>
+
+  <!-- L4 BRIDGES -->
+  <div class="card" style="left:802px;top:166px;height:64px;"><span class="pill p-blue">bridge</span><span class="pill ph p-ph">P1</span>
+    <h3>Resolve processor</h3><p>extractor registry</p></div>
+  <div class="card" style="left:802px;top:246px;height:64px;"><span class="pill p-blue">bridge</span><span class="pill ph p-ph">P1</span>
+    <h3>Consent processor</h3><p>STOP/START &middot; importers</p></div>
+  <div class="card" style="left:802px;top:326px;height:64px;"><span class="pill p-blue">bridge</span><span class="pill ph p-ph">P1</span>
+    <h3>Transactional sender</h3><p>orders/create &rarr; send</p></div>
+  <div class="card" style="left:802px;top:406px;height:64px;"><span class="pill p-blue">bridge</span><span class="pill ph p-ph">P1</span>
+    <h3>Receipt processor</h3><p>status ladder &rarr; manifest</p></div>
+  <div class="card" style="left:802px;top:486px;height:64px;"><span class="pill p-blue">bridge</span><span class="pill ph p-ph">P2</span>
+    <h3>Click / branch</h3><p>button.reply &middot; link.clicked</p></div>
+  <div class="card" style="left:802px;top:566px;height:64px;"><span class="pill p-blue">bridge</span><span class="pill ph p-ph">P2</span>
+    <h3>Entry rules</h3><p>reactive enrolment</p></div>
+  <div class="card" style="left:802px;top:646px;height:64px;"><span class="pill p-blue">bridge</span><span class="pill ph p-ph">P3</span>
+    <h3>Conversation projector</h3><p>timeline writer</p></div>
+
+  <!-- L5 CONTRACTS & ENGINES -->
+  <div class="card" style="left:1056px;top:166px;height:74px;"><span class="pill p-green">identity</span><span class="pill ph p-ph">P1</span>
+    <h3>resolve() + assert_facts()</h3><p>only creator of customers</p></div>
+  <div class="card" style="left:1056px;top:256px;height:60px;"><span class="pill p-green">permission</span><span class="pill ph p-ph">P1</span>
+    <h3>record_consent()</h3><p>ledger + state, one txn</p></div>
+  <div class="card" style="left:1056px;top:332px;height:70px;"><span class="pill p-green">connectivity</span><span class="pill ph p-ph">P1</span>
+    <h3>may_contact() &rarr; send()</h3><p>fail closed &middot; one provider call site</p></div>
+  <div class="card" style="left:1056px;top:418px;height:70px;"><span class="pill p-green">outreach</span><span class="pill ph p-ph">P2</span>
+    <h3>Walker &middot; enrol() + tick()</h3><p>wake_at lease &middot; voice nodes &rarr; lead machine</p></div>
+  <div class="card" style="left:1056px;top:504px;height:86px;"><span class="pill p-green">agent</span><span class="pill ph p-ph">P3</span>
+    <h3>AI agent brain</h3><p>cockpit sessions &middot; replies via gate + send &middot; writes memory</p></div>
+  <div class="card" style="left:1056px;top:606px;height:72px;"><span class="pill p-green">inbox</span><span class="pill ph p-ph">P3</span>
+    <h3>Takeover / handback</h3><p>CAS claim &middot; session ends &middot; human replies via gate</p></div>
+  <div class="card note" style="left:1056px;top:706px;height:56px;">
+    <p>send() posts to the provider; receipts return through the edges as facts</p></div>
+
+  <!-- L6 STORES -->
+  <div class="card" style="left:1310px;top:158px;height:56px;"><span class="pill p-teal">store</span><span class="pill ph p-ph">P1</span>
+    <h3>crm.customer</h3><p>handles as columns</p></div>
+  <div class="card" style="left:1310px;top:228px;height:56px;"><span class="pill p-teal">store</span><span class="pill ph p-ph">P1</span>
+    <h3>consent ledger + state</h3><p>prove it &middot; may I, now</p></div>
+  <div class="card" style="left:1310px;top:296px;height:52px;"><span class="pill p-teal">store</span><span class="pill ph p-ph">P1</span>
+    <h3>decision_log</h3><p>every verdict</p></div>
+  <div class="card" style="left:1310px;top:364px;height:60px;"><span class="pill p-teal">store</span><span class="pill ph p-ph">P1</span>
+    <h3>crm.message manifest</h3><p>outbound only &middot; blocked = row</p></div>
+  <div class="card" style="left:1310px;top:440px;height:56px;"><span class="pill p-teal">store</span><span class="pill ph p-ph">P2</span>
+    <h3>workflows + runs</h3><p>the plan &middot; the token</p></div>
+  <div class="card" style="left:1310px;top:512px;height:60px;"><span class="pill p-teal">store</span><span class="pill ph p-ph">P3</span>
+    <h3>conversation + timeline</h3><p>the thread, forever</p></div>
+  <div class="card" style="left:1310px;top:588px;height:56px;"><span class="pill p-teal">store</span><span class="pill ph p-ph">P3</span>
+    <h3>customer_memory</h3><p>agent-only notes shelf</p></div>
+  <div class="card" style="left:1310px;top:660px;height:52px;"><span class="pill p-teal">store</span><span class="pill ph p-ph">P1</span>
+    <h3>platform.identity</h3><p>suppression only</p></div>
+  <div class="card" style="left:1310px;top:728px;height:64px;"><span class="pill p-teal">store</span><span class="pill ph p-ph">now</span>
+    <h3>chat cockpit (existing)</h3><p>bot runtime &middot; sessions come and go</p></div>
+
+  <!-- L7 VIEWS -->
+  <div class="card" style="left:1564px;top:168px;height:88px;"><span class="pill p-green">view</span><span class="pill ph p-ph">P1</span>
+    <h3>Customer 360 + journey</h3><p>events &middot; calls &middot; sends &middot; attempted or not</p></div>
+  <div class="card" style="left:1564px;top:272px;height:64px;"><span class="pill p-green">view</span><span class="pill ph p-ph">P1</span>
+    <h3>Why didn't it send</h3><p>decision_log reasons</p></div>
+  <div class="card" style="left:1564px;top:352px;height:64px;"><span class="pill p-green">view</span><span class="pill ph p-ph">P1</span>
+    <h3>Template manager</h3><p>create &middot; submit &middot; status</p></div>
+  <div class="card" style="left:1564px;top:432px;height:74px;"><span class="pill p-green">view</span><span class="pill ph p-ph">P2</span>
+    <h3>Flow builder + funnel</h3><p>static flows &middot; broadcasts &middot; segments</p></div>
+  <div class="card" style="left:1564px;top:522px;height:74px;"><span class="pill p-green">view</span><span class="pill ph p-ph">P3</span>
+    <h3>Team inbox</h3><p>threads &middot; takeover &middot; notes</p></div>
+  <div class="card" style="left:1564px;top:612px;height:64px;"><span class="pill p-green">view</span><span class="pill ph p-ph">P3</span>
+    <h3>Bot reasoning</h3><p>read-only cockpit deep link</p></div>
+
+  <span class="wlbl" style="left:770px;top:740px;">sync door &mdash; commands call contracts directly</span>
+
+  <div class="ftr">Sources: cpaas-build-overview (17 tables) &middot; ADR 0001&ndash;0017 &middot; design/{app-crm-architecture, entry-points-and-the-event-spine, inbox-and-conversations, task-map}.md &middot; module diagrams 01&ndash;06</div>
+</div>
+</body>
+</html>

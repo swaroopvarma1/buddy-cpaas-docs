@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Permission module — the ledger, the state, the gate</title>
+<style>
+:root{
+  --canvas:#eef1f6; --panel:#e5e9f1; --card:#ffffff; --card-border:#e2e6ee;
+  --shadow:0 1px 3px rgba(31,42,68,.10),0 4px 14px rgba(31,42,68,.06);
+  --ink:#1f2a44; --ink-soft:#4b5568; --muted:#8a93a6; --line:#3a4661;
+  --purple:#7c3aed; --purple-soft:#ede4ff; --purple-ink:#5b21b6;
+  --blue:#2563eb;   --blue-soft:#dce7fd;   --blue-ink:#1d4ed8;
+  --green:#10b981;  --green-soft:#d8f3e6;  --green-ink:#047857;
+  --teal:#0d9488;   --teal-soft:#d3f0ec;   --teal-ink:#0f766e;
+  --red:#ef4444;    --red-soft:#ffdcdc;    --red-ink:#b91c1c;
+  --font:"Inter","SF Pro Text",-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+body{margin:0;background:var(--canvas);font-family:var(--font);color:var(--ink);}
+.page{position:relative;width:1330px;height:760px;}
+.hdr{position:absolute;top:0;left:0;right:0;padding:22px 32px 0;}
+.hdr h1{margin:0;font-size:22px;}
+.hdr p{margin:4px 0 0;font-size:13px;color:var(--muted);}
+.pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2px 8px;border-radius:999px;}
+.p-purple{background:var(--purple-soft);color:var(--purple-ink);}
+.p-blue{background:var(--blue-soft);color:var(--blue-ink);}
+.p-green{background:var(--green-soft);color:var(--green-ink);}
+.p-teal{background:var(--teal-soft);color:var(--teal-ink);}
+.p-red{background:var(--red-soft);color:var(--red-ink);}
+.p-ph{background:#dfe3ea;color:#4b5568;}
+.lane{position:absolute;top:120px;height:580px;width:230px;background:var(--panel);border-radius:14px;}
+.lane h2{position:absolute;top:12px;left:16px;margin:0;font-size:11px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.card{position:absolute;background:var(--card);border:1px solid var(--card-border);
+  border-radius:10px;box-shadow:var(--shadow);padding:9px 12px;width:198px;box-sizing:border-box;}
+.card h3{margin:0 0 3px;font-size:12.5px;color:var(--ink);}
+.card p{margin:0;font-size:10.5px;line-height:1.4;color:var(--ink-soft);}
+.card .pill{position:absolute;top:-9px;right:10px;}
+.card .ph{position:absolute;top:-9px;left:10px;}
+.card.note{border:1.5px dashed var(--muted);box-shadow:none;background:transparent;}
+.card.note p{color:var(--muted);}
+svg.wires{position:absolute;inset:0;pointer-events:none;}
+svg.wires path{stroke:var(--line);stroke-width:1.5;fill:none;}
+svg.wires path.dash{stroke-dasharray:5 4;}
+.wlbl{position:absolute;background:var(--ink);color:#fff;font-size:9.5px;font-weight:600;
+  padding:2px 8px;border-radius:999px;transform:translate(-50%,-50%);white-space:nowrap;}
+.ftr{position:absolute;left:32px;bottom:12px;font-size:10px;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="hdr">
+    <h1>Permission &mdash; the ledger, the state, the gate</h1>
+    <p>two stores that can never disagree; one fail-closed predicate every outbound passes; every verdict a diary page. Owned by the pair.</p>
+  </div>
+
+  <div class="lane" style="left:24px;"><h2>1 &middot; Sources</h2></div>
+  <div class="lane" style="left:278px;"><h2>2 &middot; The writers</h2></div>
+  <div class="lane" style="left:532px;"><h2>3 &middot; Stores</h2></div>
+  <div class="lane" style="left:786px;"><h2>4 &middot; The gate</h2></div>
+  <div class="lane" style="left:1040px;"><h2>5 &middot; Consumers</h2></div>
+
+  <svg class="wires" width="1330" height="760">
+    <defs>
+      <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L8,4 L0,8 z" fill="#3a4661"/>
+      </marker>
+    </defs>
+    <path d="M238,200 H266 V205 H294" marker-end="url(#ah)"/>
+    <path d="M238,280 H266 V225 H294" marker-end="url(#ah)"/>
+    <path d="M238,365 H266 V245 H294" marker-end="url(#ah)"/>
+    <path d="M238,455 H266 V435 H294" marker-end="url(#ah)"/>
+    <path d="M492,205 H520 V200 H548" marker-end="url(#ah)"/>
+    <path d="M492,235 H526 V300 H548" marker-end="url(#ah)"/>
+    <path d="M492,435 H520 V405 H548" marker-end="url(#ah)"/>
+    <path d="M746,300 H774 V220 H802" marker-end="url(#ah)"/>
+    <path d="M746,405 H780 V250 H802" marker-end="url(#ah)"/>
+    <path d="M901,318 V338" marker-end="url(#ah)"/>
+    <path d="M890,318 V560 H770 V495 H746" marker-end="url(#ah)" transform="translate(0,0)"/>
+    <path d="M1000,375 H1016 V205 H1056" marker-end="url(#ah)"/>
+    <path d="M746,470 H1036 V290 H1056" marker-end="url(#ah)"/>
+  </svg>
+
+  <div class="card" style="left:40px;top:168px;height:64px;"><span class="pill ph p-ph">P1</span>
+    <h3>STOP / START</h3><p>keyword topics off the spine</p></div>
+  <div class="card" style="left:40px;top:248px;height:64px;"><span class="pill ph p-ph">P1</span>
+    <h3>Console capture</h3><p>teammate records consent</p></div>
+  <div class="card" style="left:40px;top:328px;height:74px;"><span class="pill ph p-ph">P1</span>
+    <h3>Importers</h3><p>pluggable (ADR 0008) &middot; Shopify first &middot; IMPORT class, artifact_ref</p></div>
+  <div class="card" style="left:40px;top:418px;height:74px;"><span class="pill ph p-ph">P1</span>
+    <h3>Suppression writers</h3><p>&quot;never contact me&quot; &middot; bounces &middot; blacklist dual-write</p></div>
+
+  <div class="card" style="left:294px;top:168px;height:110px;"><span class="pill p-green">writer</span><span class="pill ph p-ph">P1</span>
+    <h3>record_consent()</h3><p>THE single ledger writer &middot; validates channel/purpose vocab &middot; evidence ladder (IMPORT capped) &middot; ledger + state in ONE transaction</p></div>
+  <div class="card" style="left:294px;top:298px;height:84px;"><span class="pill p-green">rule</span>
+    <h3>State resolver</h3><p>most-specific wins &rarr; strictest on tie &rarr; fallback prohibited</p></div>
+  <div class="card" style="left:294px;top:398px;height:84px;"><span class="pill p-green">writer</span>
+    <h3>Suppression accessor</h3><p>recompute is_suppressed + append log, one txn &middot; DB error &rarr; treat as blocked</p></div>
+
+  <div class="card" style="left:548px;top:168px;height:84px;"><span class="pill p-teal">store</span><span class="pill ph p-ph">P1</span>
+    <h3>consent_event</h3><p>append-only (REVOKE + trigger) &middot; address column &middot; artifact_ref proves</p></div>
+  <div class="card" style="left:548px;top:268px;height:84px;"><span class="pill p-teal">store</span>
+    <h3>consent_state</h3><p>(m, customer, channel, purpose) &middot; expires_at read as a PREDICATE, never swept</p></div>
+  <div class="card" style="left:548px;top:368px;height:74px;"><span class="pill p-teal">store</span>
+    <h3>platform.identity</h3><p>is_suppressed boolean &mdash; the hot path</p></div>
+  <div class="card" style="left:548px;top:458px;height:74px;"><span class="pill p-teal">store</span>
+    <h3>decision_log</h3><p>every verdict, allow AND refuse &middot; retention = partition drop</p></div>
+
+  <div class="card" style="left:802px;top:168px;height:150px;"><span class="pill p-red">fail closed</span><span class="pill ph p-ph">P1</span>
+    <h3>may_contact()</h3><p>ALL inputs mandatory: consent_state probe &middot; suppression boolean &middot; frequency cap (Redis) &middot; quiet hours in the CUSTOMER's timezone. Any missing / NULL / error / unknown &rarr; NO. There is no override parameter.</p></div>
+  <div class="card" style="left:802px;top:338px;height:74px;"><span class="pill p-green">token</span>
+    <h3>Send token</h3><p>yes &rarr; single-use, short TTL, bound to (customer, channel, purpose)</p></div>
+  <div class="card note" style="left:802px;top:500px;height:52px;">
+    <p>built and owned by the pair &mdash; never split</p></div>
+
+  <div class="card" style="left:1056px;top:168px;height:74px;"><span class="pill p-green">send</span><span class="pill ph p-ph">P1</span>
+    <h3>send()</h3><p>requires + consumes the token</p></div>
+  <div class="card" style="left:1056px;top:258px;height:64px;"><span class="pill p-green">view</span>
+    <h3>Why didn't it send</h3><p>per-recipient reasons</p></div>
+  <div class="card" style="left:1056px;top:338px;height:84px;"><span class="pill p-green">callers</span>
+    <h3>Every sender</h3><p>walker &middot; transactional &middot; human replies &middot; agent &mdash; one gate for all</p></div>
+
+  <span class="wlbl" style="left:815px;top:560px;">verdicts &rarr; diary</span>
+
+  <div class="ftr">Source: cpaas-build-overview/03-permission.md (T07, T08, T14, the gate) &middot; ADR 0008 &middot; 01-identity.md (T02)</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,51 @@
+/*-- scss:defaults --*/
+// Buddy CPaaS visual language applied to the site chrome (see visual-language/tokens.css)
+$font-family-sans-serif: "Inter", "SF Pro Text", -apple-system, "Segoe UI", Roboto,
+  "Helvetica Neue", Arial, sans-serif;
+$body-color: #1f2a44;
+$body-bg: #ffffff;
+$primary: #2563eb;
+$link-color: #1d4ed8;
+$code-color: #5b21b6;
+$code-bg: #eef1f6;
+$border-radius: 10px;
+
+/*-- scss:rules --*/
+.sidebar {
+  background: #eef1f6;
+}
+.sidebar .sidebar-item-text,
+.sidebar .menu-text {
+  color: #4b5568;
+  font-size: 0.88rem;
+}
+.sidebar .sidebar-item .sidebar-item-container .active {
+  color: #1d4ed8;
+  font-weight: 600;
+}
+.sidebar-title {
+  color: #1f2a44;
+  font-weight: 700;
+}
+h1, h2, h3 {
+  color: #1f2a44;
+  letter-spacing: -0.01em;
+}
+h1 { font-weight: 700; }
+table {
+  font-size: 0.9rem;
+}
+thead th {
+  background: #eef1f6;
+  color: #4b5568;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+}
+.callout-note {
+  border-left-color: #7c3aed;
+}
+code {
+  border-radius: 6px;
+  padding: 0.1em 0.35em;
+}

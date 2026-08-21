@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Outreach module — the plan, the run, the launch button</title>
+<style>
+:root{
+  --canvas:#eef1f6; --panel:#e5e9f1; --card:#ffffff; --card-border:#e2e6ee;
+  --shadow:0 1px 3px rgba(31,42,68,.10),0 4px 14px rgba(31,42,68,.06);
+  --ink:#1f2a44; --ink-soft:#4b5568; --muted:#8a93a6; --line:#3a4661;
+  --purple:#7c3aed; --purple-soft:#ede4ff; --purple-ink:#5b21b6;
+  --green:#10b981;  --green-soft:#d8f3e6;  --green-ink:#047857;
+  --teal:#0d9488;   --teal-soft:#d3f0ec;   --teal-ink:#0f766e;
+  --amber:#f59e0b;  --amber-soft:#ffeacb;  --amber-ink:#92400e;
+  --font:"Inter","SF Pro Text",-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+body{margin:0;background:var(--canvas);font-family:var(--font);color:var(--ink);}
+.page{position:relative;width:1080px;height:780px;}
+.hdr{position:absolute;top:0;left:0;right:0;padding:22px 32px 0;}
+.hdr h1{margin:0;font-size:22px;}
+.hdr p{margin:4px 0 0;font-size:13px;color:var(--muted);}
+.pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2px 8px;border-radius:999px;}
+.p-purple{background:var(--purple-soft);color:var(--purple-ink);}
+.p-green{background:var(--green-soft);color:var(--green-ink);}
+.p-teal{background:var(--teal-soft);color:var(--teal-ink);}
+.p-amber{background:var(--amber-soft);color:var(--amber-ink);}
+.p-ph{background:#dfe3ea;color:#4b5568;}
+.lane{position:absolute;top:120px;height:600px;width:230px;background:var(--panel);border-radius:14px;}
+.lane h2{position:absolute;top:12px;left:16px;margin:0;font-size:11px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.card{position:absolute;background:var(--card);border:1px solid var(--card-border);
+  border-radius:10px;box-shadow:var(--shadow);padding:9px 12px;width:198px;box-sizing:border-box;}
+.card h3{margin:0 0 3px;font-size:12.5px;color:var(--ink);}
+.card p{margin:0;font-size:10.5px;line-height:1.4;color:var(--ink-soft);}
+.card .pill{position:absolute;top:-9px;right:10px;}
+.card .ph{position:absolute;top:-9px;left:10px;}
+.card.note{border:1.5px dashed var(--muted);box-shadow:none;background:transparent;}
+.card.note p{color:var(--muted);}
+svg.wires{position:absolute;inset:0;pointer-events:none;}
+svg.wires path{stroke:var(--line);stroke-width:1.5;fill:none;}
+svg.wires path.dash{stroke-dasharray:5 4;}
+.wlbl{position:absolute;background:var(--ink);color:#fff;font-size:9.5px;font-weight:600;
+  padding:2px 8px;border-radius:999px;transform:translate(-50%,-50%);white-space:nowrap;}
+.ftr{position:absolute;left:32px;bottom:12px;font-size:10px;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="hdr">
+    <h1>Outreach &mdash; the plan, the run, the launch button</h1>
+    <p>a broadcast only admits; the workflow is the whole treatment; wake_at is the timer AND the lease &mdash; no workflow engine.</p>
+  </div>
+
+  <div class="lane" style="left:24px;"><h2>1 &middot; Admission doors</h2></div>
+  <div class="lane" style="left:278px;"><h2>2 &middot; The run</h2></div>
+  <div class="lane" style="left:532px;"><h2>3 &middot; The plan</h2></div>
+  <div class="lane" style="left:786px;"><h2>4 &middot; Sends &amp; reads</h2></div>
+
+  <svg class="wires" width="1080" height="780">
+    <defs>
+      <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L8,4 L0,8 z" fill="#3a4661"/>
+      </marker>
+    </defs>
+    <path d="M238,215 H266 V205 H294" marker-end="url(#ah)"/>
+    <path d="M238,326 H266 V240 H294" marker-end="url(#ah)"/>
+    <path d="M238,420 H266 V330 H294" marker-end="url(#ah)"/>
+    <path d="M492,330 H520 V220 H548" marker-end="url(#ah)"/>
+    <path d="M492,370 H520 V620 H774 V205 H802" marker-end="url(#ah)"/>
+    <path class="dash" d="M492,395 H514 V645 H780 V295 H802" marker-end="url(#ah)"/>
+  </svg>
+
+  <div class="card" style="left:40px;top:168px;height:96px;"><span class="pill p-green">deliberate</span><span class="pill ph p-ph">P2</span>
+    <h3>Broadcast</h3><p>segment + workflow + when &middot; audience frozen LATE &middot; recipients queue &middot; guards skip with reasons</p></div>
+  <div class="card" style="left:40px;top:284px;height:84px;"><span class="pill p-green">reactive</span><span class="pill ph p-ph">P2</span>
+    <h3>Entry rules</h3><p>topics match the plan's entry &middot; one person at a time &middot; reenter + cooldown guards</p></div>
+  <div class="card" style="left:40px;top:384px;height:74px;"><span class="pill p-green">clicks</span><span class="pill ph p-ph">P2</span>
+    <h3>Click / branch</h3><p>button.reply &middot; link.clicked advance waiting runs</p></div>
+  <div class="card note" style="left:40px;top:478px;height:56px;">
+    <p>a broadcast LAUNCHES a workflow, never owns one</p></div>
+
+  <div class="card" style="left:294px;top:168px;height:110px;"><span class="pill p-teal">run</span><span class="pill ph p-ph">P2</span>
+    <h3>workflow_enrollment</h3><p>one person's run &middot; wake_at = timer + LEASE (dead worker self-heals) &middot; enrollment_key runs &middot; attempts exhausted &rarr; parked, never dropped</p></div>
+  <div class="card" style="left:294px;top:298px;height:110px;"><span class="pill p-green">worker</span>
+    <h3>Walker tick()</h3><p>claim = push wake_at forward &middot; resolve node vs the LIVE document &middot; re-check goal at fire time &middot; random branches recorded BEFORE the send</p></div>
+  <div class="card note" style="left:294px;top:428px;height:52px;">
+    <p>retries harmless &mdash; the manifest's dedupe_key eats duplicates</p></div>
+
+  <div class="card" style="left:548px;top:168px;height:110px;"><span class="pill p-teal">plan</span><span class="pill ph p-ph">P2</span>
+    <h3>workflow (the document)</h3><p>{entry, nodes, edges, goal, exits} &middot; draft &rarr; publish (validator blocks unsafe edits) &middot; version = audit stamp, never a pin</p></div>
+  <div class="card" style="left:548px;top:298px;height:84px;"><span class="pill p-teal">nodes</span>
+    <h3>Node types</h3><p>send &middot; wait (local-time) &middot; branch-on-click &middot; goal-check &middot; exit</p></div>
+  <div class="card" style="left:548px;top:398px;height:64px;"><span class="pill p-teal">badge</span>
+    <h3>Campaign registry</h3><p>names the season &mdash; never a container</p></div>
+
+  <div class="card" style="left:802px;top:168px;height:74px;"><span class="pill p-green">send</span><span class="pill ph p-ph">P2</span>
+    <h3>Gate &rarr; send()</h3><p>every send node passes may_contact() &mdash; 8,400 people = 8,400 checks</p></div>
+  <div class="card" style="left:802px;top:258px;height:74px;"><span class="pill p-amber">voice</span>
+    <h3>Voice node</h3><p>&rarr; lead machine, enrollment_id stamped (ADR 0010)</p></div>
+  <div class="card" style="left:802px;top:348px;height:84px;"><span class="pill p-green">reads</span>
+    <h3>Funnel reads</h3><p>runs WHERE source_broadcast &rarr; their manifest rows &middot; skips on recipients</p></div>
+  <div class="card" style="left:802px;top:448px;height:64px;"><span class="pill p-green">cancel</span>
+    <h3>Goal cancels</h3><p>orders/create resolves open runs</p></div>
+
+  <span class="wlbl" style="left:650px;top:620px;">per node: build &rarr; gate &rarr; send</span>
+
+  <div class="ftr">Source: cpaas-build-overview/06-outreach.md (T17&ndash;T22) + 05-audiences.md (T15, T21) &middot; ADR 0004 / 0010 / 0016</div>
+</div>
+</body>
+</html>

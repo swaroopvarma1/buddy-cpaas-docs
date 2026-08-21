@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Connectivity module — doors, pipes, the manifest</title>
+<style>
+:root{
+  --canvas:#eef1f6; --panel:#e5e9f1; --card:#ffffff; --card-border:#e2e6ee;
+  --shadow:0 1px 3px rgba(31,42,68,.10),0 4px 14px rgba(31,42,68,.06);
+  --ink:#1f2a44; --ink-soft:#4b5568; --muted:#8a93a6; --line:#3a4661;
+  --purple:#7c3aed; --purple-soft:#ede4ff; --purple-ink:#5b21b6;
+  --green:#10b981;  --green-soft:#d8f3e6;  --green-ink:#047857;
+  --teal:#0d9488;   --teal-soft:#d3f0ec;   --teal-ink:#0f766e;
+  --amber:#f59e0b;  --amber-soft:#ffeacb;  --amber-ink:#92400e;
+  --font:"Inter","SF Pro Text",-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+body{margin:0;background:var(--canvas);font-family:var(--font);color:var(--ink);}
+.page{position:relative;width:1080px;height:760px;}
+.hdr{position:absolute;top:0;left:0;right:0;padding:22px 32px 0;}
+.hdr h1{margin:0;font-size:22px;}
+.hdr p{margin:4px 0 0;font-size:13px;color:var(--muted);}
+.pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2px 8px;border-radius:999px;}
+.p-purple{background:var(--purple-soft);color:var(--purple-ink);}
+.p-green{background:var(--green-soft);color:var(--green-ink);}
+.p-teal{background:var(--teal-soft);color:var(--teal-ink);}
+.p-amber{background:var(--amber-soft);color:var(--amber-ink);}
+.p-ph{background:#dfe3ea;color:#4b5568;}
+.lane{position:absolute;top:120px;height:580px;width:230px;background:var(--panel);border-radius:14px;}
+.lane h2{position:absolute;top:12px;left:16px;margin:0;font-size:11px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.card{position:absolute;background:var(--card);border:1px solid var(--card-border);
+  border-radius:10px;box-shadow:var(--shadow);padding:9px 12px;width:198px;box-sizing:border-box;}
+.card h3{margin:0 0 3px;font-size:12.5px;color:var(--ink);}
+.card p{margin:0;font-size:10.5px;line-height:1.4;color:var(--ink-soft);}
+.card .pill{position:absolute;top:-9px;right:10px;}
+.card .ph{position:absolute;top:-9px;left:10px;}
+.card.note{border:1.5px dashed var(--muted);box-shadow:none;background:transparent;}
+.card.note p{color:var(--muted);}
+svg.wires{position:absolute;inset:0;pointer-events:none;}
+svg.wires path{stroke:var(--line);stroke-width:1.5;fill:none;}
+svg.wires path.dash{stroke-dasharray:5 4;}
+.ftr{position:absolute;left:32px;bottom:12px;font-size:10px;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="hdr">
+    <h1>Connectivity &mdash; doors, pipes, and the manifest</h1>
+    <p>a door per merchant-connector, a pipe per real endpoint, one row per outbound attempt, ONE provider call site.</p>
+  </div>
+
+  <div class="lane" style="left:24px;"><h2>1 &middot; Onboarding</h2></div>
+  <div class="lane" style="left:278px;"><h2>2 &middot; Doors &middot; pipes &middot; templates</h2></div>
+  <div class="lane" style="left:532px;"><h2>3 &middot; The send path</h2></div>
+  <div class="lane" style="left:786px;"><h2>4 &middot; Provider &amp; receipts</h2></div>
+
+  <svg class="wires" width="1080" height="760">
+    <defs>
+      <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L8,4 L0,8 z" fill="#3a4661"/>
+      </marker>
+    </defs>
+    <path d="M238,200 H266 V205 H294" marker-end="url(#ah)"/>
+    <path d="M238,280 H266 V225 H294" marker-end="url(#ah)"/>
+    <path d="M238,360 H266 V430 H294" marker-end="url(#ah)"/>
+    <path d="M492,320 H520 V280 H548" marker-end="url(#ah)"/>
+    <path d="M492,442 H526 V300 H548" marker-end="url(#ah)"/>
+    <path d="M647,232 V248" marker-end="url(#ah)"/>
+    <path d="M647,332 V348" marker-end="url(#ah)"/>
+    <path d="M647,422 V438" marker-end="url(#ah)"/>
+    <path d="M746,470 H774 V210 H802" marker-end="url(#ah)"/>
+    <path d="M901,252 V284" marker-end="url(#ah)"/>
+    <path d="M802,330 H780 V290 H746" marker-end="url(#ah)"/>
+  </svg>
+
+  <div class="card" style="left:40px;top:168px;height:64px;"><span class="pill ph p-ph">P1</span>
+    <h3>Embedded signup</h3><p>Meta Tech Provider flow</p></div>
+  <div class="card" style="left:40px;top:248px;height:64px;"><span class="pill ph p-ph">P1</span>
+    <h3>Ops via /crm</h3><p>mint door + pipe until wired</p></div>
+  <div class="card" style="left:40px;top:328px;height:64px;"><span class="pill ph p-ph">P1</span>
+    <h3>Template manager</h3><p>create &middot; submit &middot; watch status</p></div>
+
+  <div class="card" style="left:294px;top:168px;height:96px;"><span class="pill p-teal">door</span><span class="pill ph p-ph">P1</span>
+    <h3>connector_installation</h3><p>one merchant &times; connector &middot; credential_id &rarr; vault (never a secret) &middot; health walk + last_event_at heartbeat</p></div>
+  <div class="card" style="left:294px;top:284px;height:96px;"><span class="pill p-teal">pipe</span>
+    <h3>channel_binding</h3><p>address = the inbound which-merchant lookup &middot; capabilities clamp composition &middot; paused / retired refuse (fail closed)</p></div>
+  <div class="card" style="left:294px;top:400px;height:84px;"><span class="pill p-teal">registry</span>
+    <h3>Template registry</h3><p>WABA via Tech Provider API &middot; status via webhook &middot; non-approved &rarr; refused BEFORE the provider</p></div>
+
+  <div class="card" style="left:548px;top:168px;height:64px;"><span class="pill p-green">token</span><span class="pill ph p-ph">P1</span>
+    <h3>Gate token in</h3><p>from may_contact() &mdash; Permission</p></div>
+  <div class="card" style="left:548px;top:248px;height:84px;"><span class="pill p-teal">store</span>
+    <h3>crm.message manifest</h3><p>queued &middot; blocked &middot; sent &middot; delivered &middot; read &middot; failed &middot; dead &mdash; dedupe_key = exactly-once</p></div>
+  <div class="card" style="left:548px;top:348px;height:74px;"><span class="pill p-green">worker</span>
+    <h3>Dispatcher</h3><p>drain queued &middot; SKIP LOCKED &middot; 429 backoff &middot; no txn across HTTP</p></div>
+  <div class="card" style="left:548px;top:438px;height:96px;"><span class="pill p-green">send</span>
+    <h3>send()</h3><p>consumes token &middot; adapters imported ONLY here &middot; emits message.queued mirror (free-form body rides it, ADR 0015)</p></div>
+
+  <div class="card" style="left:802px;top:168px;height:84px;"><span class="pill p-amber">external</span><span class="pill ph p-ph">P1</span>
+    <h3>WhatsApp Cloud API</h3><p>Graph send &middot; per-wamid status webhooks &middot; quality tiers</p></div>
+  <div class="card" style="left:802px;top:284px;height:96px;"><span class="pill p-green">worker</span>
+    <h3>Receipt walker</h3><p>monotonic ladder per wamid (out-of-order safe) &middot; cost from the pricing object &middot; statuses &rarr; manifest + journey</p></div>
+  <div class="card note" style="left:802px;top:400px;height:56px;">
+    <p>receipts land in event_raw FIRST &mdash; the loop closes as facts</p></div>
+  <div class="card note" style="left:802px;top:480px;height:56px;">
+    <p>voice adapter arrives at the takeover &mdash; not this cut (ADR 0010)</p></div>
+
+  <div class="ftr">Source: cpaas-build-overview/04-connectivity.md (T11, T12, T16, send) &middot; ADR 0004 / 0011 / 0015</div>
+</div>
+</body>
+</html>

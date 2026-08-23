@@ -64,5 +64,13 @@ Owns: `crm.customer` (T05) · `resolve()` · `assert_facts()` · merge. Diagram:
 - `last_seen_at` is updated lazily/batched — never on the hot path per event.
 - CSV import is a loop over the same contract — if bulk needs a special path, the
   contract is too slow; fix the contract.
+- **T02's growth map (asked 23 Aug 2026): vocabulary, never structure.** `kind` grows
+  ~never (global identifier classes only; RCS/WhatsApp ride `phone`, scoped ids go to
+  T05). What grows routinely: channel keys inside `suppressions` (sms, rcs — new key,
+  no DDL) · reason/source vocabulary and writers (TRAI NCPR/DND registry sync when
+  voice/SMS enter the gate; legal holds; bounce-vs-complaint) · readers (P2 broadcast
+  pre-flight batch check; an ops view over the log). Never lands here: reachability
+  ("not on WhatsApp" is capability, not suppression), consent (per-merchant yes, T07/
+  T08), profile data, scoped ids. Ten columns and one boolean in five years too.
 
 Refs: 01-identity.md (corpus T02/T05) · ADR 0017 · entry-points doc (sync door).

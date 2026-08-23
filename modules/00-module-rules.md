@@ -7,7 +7,25 @@ this file wins. Diagram: `../diagrams/00-master-system.html`.
 
 1. **Three layers, always**: `queries.py` (SQL builders returning `(sql, params)`,
    `$1` placeholders only) → accessor (business logic + transactions) → `decoder.py`
-   (row → Pydantic). Raw asyncpg. No ORM. This is the repo's existing law — crm keeps it.
+   (row → Pydantic). Raw asyncpg. No ORM. This is the repo's existing law — crm keeps
+   it. **Routes never execute queries directly** — api.py calls the accessor, always;
+   the accessor is the one home for transactions, merge-pair reads and business rules,
+   so every caller (route, worker, bridge, test) shares one implementation.
+   **The sealed module skeleton** (decided 23 Aug 2026 — how every module evolves):
+
+   ```
+   app/crm/<module>/
+     __init__.py    # empty — exports NOTHING
+     contracts.py   # THE public surface — the only file other modules may import
+     api.py         # thin routes (only if the module has routes)
+     accessor.py    # business logic + transactions (split by concern when it grows)
+     queries.py     # SQL builders only, $1 params
+     decoder.py     # row → Pydantic, dumb
+     workers.py     # drain loops (only if the module owns one)
+   ```
+
+   Internals may organize freely (a `resolve.py` is fine), but `contracts.py` is the
+   canonical door — the ownership lint and import-linter point at it.
 2. **The boundary is a CI-enforced ownership map** (ADR 0001, amended 23 Aug 2026 —
    org runs one DB role, so grants are unavailable). Tables are `crm_*`/`platform_*`
    prefixed in `public` (logical `crm.x` in this corpus = physical `crm_x`). One

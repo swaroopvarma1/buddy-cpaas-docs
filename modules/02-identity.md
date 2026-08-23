@@ -12,6 +12,17 @@ Owns: `crm.customer` (T05) · `resolve()` · `assert_facts()` · merge. Diagram:
   status='active'`. Hit = attach the new handles to that row. Miss = create.
   **Insert race = re-probe** — the unique index is the referee; two racing callers
   converge on one row.
+- **Attach only FREE handles — a collision is evidence, not an error** (settled
+  23 Aug 2026, caught in PR #1010 review). When an arriving handle is owned by a
+  DIFFERENT active customer, do not raise and do not overwrite: the co-occurrence of
+  two customers' handles in one trusted payload IS the staple evidence the canon
+  names ("order data staples them") → merge. Survivor = older first_seen_at; the
+  loser's partial uniques free its handles (status flip), the survivor attaches
+  them; the loser keeps its copies as audit + undo. The attach-free check and the
+  staple trigger are the same code path. A handle occupied on the SAME row
+  (customer changed email) is kept, never overwritten — the dropped value converges
+  later via a staple if it ever co-occurs again; never-overwrite is deliberate
+  (recycling risk), revisit only with pilot churn data.
 - **Normalize at write**: phone to E.164 (enforced by CHECK), email lowercased. The
   partial unique IS the duplicate detector — a collision means "resolve to the existing
   customer", never an error page.

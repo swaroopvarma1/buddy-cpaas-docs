@@ -16,19 +16,28 @@ this file wins. Diagram: `../diagrams/00-master-system.html`.
    ```
    app/crm/<module>/
      __init__.py    # empty — exports NOTHING
-     contracts.py   # THE public surface — the only file other modules may import
-     api.py         # thin routes (only if the module has routes)
-     accessor.py    # business logic + transactions. Splitting by concern keeps
-                    #   the accessor_ prefix (accessor_resolve.py, accessor_ingest.py):
-                    #   one glob finds the layer, no god files, no naming debates
+     contracts.py   # THE public surface — re-exports from the logic files;
+                    #   the only file other modules may import
+     api.py         # thin routes -> logic files (or accessor for trivial reads)
+     <concern>.py   # BUSINESS LOGIC, named by concern (resolve.py, facts.py,
+                    #   ingest.py, suppression.py): policy + transaction scope,
+                    #   composed from accessor calls; reads like the design doc
+     accessor.py    # mechanical DB access ONLY — execute one query builder,
+                    #   decode the row; no business decisions. Same name and
+                    #   shape in every module
      queries.py     # SQL builders only, $1 params
      decoder.py     # row → Pydantic, dumb
      workers.py     # drain loops (only if the module owns one)
    ```
 
-   Every accessor-layer file carries the `accessor` prefix (settled 23 Aug 2026,
-   superseding the same-day "role not name" wording); `contracts.py` is the
-   canonical door — the ownership lint and import-linter point at it.
+   **The layer law** (settled 23 Aug 2026, final — supersedes the same-day
+   accessor_-prefix and role-not-name wordings): `api → logic → accessor →
+   queries`. Logic files own transaction scope (atomicity is business
+   semantics); accessor functions taking a `conn` run inside the caller's
+   transaction, standalone reads manage their own. Business logic is findable
+   by FILENAME — nobody digs through accessors or queries to learn what a
+   module decides. Routes never execute queries directly; `contracts.py` is
+   the canonical door the ownership lint and import-linter point at.
    **The package root** (`app/crm/`) holds only surface plumbing: `api.py` (root
    router mounting) and `auth.py` (route dependencies per ADR 0007 — existing JWT
    machinery, no new auth system). The test: a table/contract/SQL = a module;

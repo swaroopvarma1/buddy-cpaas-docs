@@ -38,6 +38,10 @@ this file wins. Diagram: `../diagrams/00-master-system.html`.
    by FILENAME — nobody digs through accessors or queries to learn what a
    module decides. Routes never execute queries directly; `contracts.py` is
    the canonical door the ownership lint and import-linter point at.
+   **No `db/` subpackages** — flat module listings are the feature (one `ls`
+   shows every layer). A module may earn a subpackage only when its listing
+   genuinely stops being scannable (~10+ files; outreach in P2, with seven
+   tables, is the plausible first case) — decided then, not preemptively.
    **The package root** (`app/crm/`) holds only surface plumbing: `api.py` (root
    router mounting) and `auth.py` (route dependencies per ADR 0007 — existing JWT
    machinery, no new auth system). The test: a table/contract/SQL = a module;

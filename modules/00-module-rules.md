@@ -48,7 +48,8 @@ this file wins. Diagram: `../diagrams/00-master-system.html`.
    hop. Handles never surface in logic otherwise
    (CI rule 10): single statements and same-builder batch loops self-scope
    INSIDE accessors — **a logic file touches a handle in exactly one place:
-   the `txn` parameter of an `_in_txn` body.**
+   the `txn` parameter of an `_in_txn` body** (threading it through the atom's
+   private sub-steps is part of the body; it never escapes the atom).
    **Logic style**: GATHER (accessor reads) → DECIDE (pure function returning
    a plan — DB-free testable, loggable, the decision_log spirit) → APPLY
    (accessor writes). No service classes, no repository interfaces: pure core,

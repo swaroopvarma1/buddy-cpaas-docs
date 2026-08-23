@@ -39,7 +39,10 @@ this file wins. Diagram: `../diagrams/00-master-system.html`.
    `connection()` — no explicit transaction (Postgres runs one statement
    atomically; BEGIN/COMMIT around it is wasted round-trips). The moment two
    statements share fate, a logic file declares the boundary with
-   `transaction()` — that name in code ALWAYS signals real atomicity.
+   `transaction()` — that name in code ALWAYS signals real atomicity. Handle
+   naming telegraphs the primitive: `transaction() as txn`, `connection() as
+   conn`, everywhere — a `txn` in a logic file is a boundary being owned, never
+   a connection being handled.
    **Logic style**: GATHER (accessor reads) → DECIDE (pure function returning
    a plan — DB-free testable, loggable, the decision_log spirit) → APPLY
    (accessor writes). No service classes, no repository interfaces: pure core,

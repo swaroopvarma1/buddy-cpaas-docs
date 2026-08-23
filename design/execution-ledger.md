@@ -40,6 +40,14 @@ date; when scope changes, the task map changes first.
 - `crm_event_raw` partitioning when volume demands (documented in migration 051)
 - Corpus migration into `clairvoyance/docs/crm/` + review skill into repo `.claude/` once phase-1 code stabilizes
 - A10's consumer stamps events the voice taps recorded unattributed in the interim
+- **A15b (optional, product call — never expires):** one-off stamp of pre-deploy
+  lead_call_tracker rows so pre-CRM calls join the journey's call arm. Law-compatible
+  (identity stamping at processing time, not event backfill): sweep old rows through
+  resolve(merchant, phone) — or derive from A10-stamped events via payload lead_id.
+  Decide after pilot feedback on whether pre-CRM call history matters in the 360;
+  until then, journey call history starts at deploy day (ADR 0017 forward-only).
+  NOTE: deploy timing matters more than this — every backlog lead that finishes
+  BEFORE deploy is history lost forever; release early, don't wait for the backlog.
 
 ## State in one sentence
 

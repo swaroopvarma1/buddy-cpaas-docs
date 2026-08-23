@@ -18,7 +18,9 @@ this file wins. Diagram: `../diagrams/00-master-system.html`.
      __init__.py    # empty — exports NOTHING
      contracts.py   # THE public surface — the only file other modules may import
      api.py         # thin routes (only if the module has routes)
-     accessor.py    # business logic + transactions (split by concern when it grows)
+     accessor.py    # business logic + transactions — a ROLE, not a mandatory name:
+                    #   generic reads/CRUD live here; a file implementing one contract
+                    #   may carry its concern's name (resolve.py, facts.py, ingest.py)
      queries.py     # SQL builders only, $1 params
      decoder.py     # row → Pydantic, dumb
      workers.py     # drain loops (only if the module owns one)

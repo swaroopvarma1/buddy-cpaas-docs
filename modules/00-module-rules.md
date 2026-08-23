@@ -35,9 +35,11 @@ this file wins. Diagram: `../diagrams/00-master-system.html`.
    (`transaction()`, the opaque `DbTxn`, domain-named errors, all implemented
    once in `shared/db.py`). Logic may OPEN a boundary and PASS the handle; it
    may never CALL anything on it. `import asyncpg` is legal only in
-   `shared/db.py` and `db/` packages — grep-enforced. Single-statement reads
-   may self-scope inside the accessor; the moment two statements share fate, a
-   logic file declares the boundary.
+   `shared/db.py` and `db/` packages — grep-enforced. Single statements use
+   `connection()` — no explicit transaction (Postgres runs one statement
+   atomically; BEGIN/COMMIT around it is wasted round-trips). The moment two
+   statements share fate, a logic file declares the boundary with
+   `transaction()` — that name in code ALWAYS signals real atomicity.
    **Logic style**: GATHER (accessor reads) → DECIDE (pure function returning
    a plan — DB-free testable, loggable, the decision_log spirit) → APPLY
    (accessor writes). No service classes, no repository interfaces: pure core,

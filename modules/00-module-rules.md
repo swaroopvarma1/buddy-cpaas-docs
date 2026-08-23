@@ -18,15 +18,16 @@ this file wins. Diagram: `../diagrams/00-master-system.html`.
      __init__.py    # empty — exports NOTHING
      contracts.py   # THE public surface — the only file other modules may import
      api.py         # thin routes (only if the module has routes)
-     accessor.py    # business logic + transactions — a ROLE, not a mandatory name:
-                    #   generic reads/CRUD live here; a file implementing one contract
-                    #   may carry its concern's name (resolve.py, facts.py, ingest.py)
+     accessor.py    # business logic + transactions. Splitting by concern keeps
+                    #   the accessor_ prefix (accessor_resolve.py, accessor_ingest.py):
+                    #   one glob finds the layer, no god files, no naming debates
      queries.py     # SQL builders only, $1 params
      decoder.py     # row → Pydantic, dumb
      workers.py     # drain loops (only if the module owns one)
    ```
 
-   Internals may organize freely (a `resolve.py` is fine), but `contracts.py` is the
+   Every accessor-layer file carries the `accessor` prefix (settled 23 Aug 2026,
+   superseding the same-day "role not name" wording); `contracts.py` is the
    canonical door — the ownership lint and import-linter point at it.
    **The package root** (`app/crm/`) holds only surface plumbing: `api.py` (root
    router mounting) and `auth.py` (route dependencies per ADR 0007 — existing JWT

@@ -26,7 +26,11 @@ this file wins. Diagram: `../diagrams/00-master-system.html`.
                     #   decode the row; no business decisions. Same name and
                     #   shape in every module
      queries.py     # SQL builders only, $1 params
-     decoder.py     # row → Pydantic, dumb
+     schemas.py     # Pydantic models the module exposes — LEAF (imports nothing
+                    #   internal; the DTO→engine scar law); api/contracts/tests
+                    #   import shapes from here
+     decoder.py     # row → schemas model, DB-side translation only — paired with
+                    #   accessor; nothing above the accessor imports it
      workers.py     # drain loops (only if the module owns one)
    ```
 

@@ -7,7 +7,7 @@ date; when scope changes, the task map changes first.
 
 ## Merged
 
-### PR [clairvoyance#1016](https://github.com/juspay/clairvoyance/pull/1016) — CPaaS foundation *(status: approved-pending-merge, 2026-08-23)*
+### PR [clairvoyance#1016](https://github.com/juspay/clairvoyance/pull/1016) — CPaaS foundation *(status: RELEASED — merged as one commit, 2026-08-23)*
 
 | Item | Delivered |
 |---|---|
@@ -21,6 +21,7 @@ date; when scope changes, the task map changes first.
 | A15 | Voice identity stamping at the lead-creation choke point (hook registry — data layer imports nothing) |
 | B2 | `platform_identity` (048) + suppression contracts, liveness-aware, trigger-derived |
 | — | `check_crm_boundaries.py` (10 CI rules) · atomic grammar · building-modules.md · CLAUDE.md |
+| — | Review-round hardening: full-scope recompute trigger · composite tenant-pinned merge FK + no-self-merge · event_raw immutability trigger · whitespace-handle fix (zero-handle law, regression-tested) · PII-free logs · inbound-mirror persistence guard · list endpoint ships `CrmCustomerSummary` (attributes jsonb never fetched for lists) · s2s verifier unit-tested · 71 pure tests total |
 
 ## Open — phase 1
 
@@ -30,7 +31,7 @@ date; when scope changes, the task map changes first.
 | B (Permission) | T07/T08 + `record_consent()` · B3 blacklist backfill · B4 `decision_log` · **B5 `may_contact()` gate** (token, tz ladder, quiet hours, caps — ADR 0018 spec done, zero code) · Shopify consent importer | |
 | C (Connectivity) | C1 installations · C2 bindings · C3 `crm_message` manifest · **C4 `send()` + WhatsApp adapter** · C5 dispatcher · C6 receipt walker · C7 WABA template registry · C8 `/crm/connectors` | zero code |
 | X (external) | **X1 anchor relay — blocks phase-1 exit, NO OWNER** · X2 embedded signup — no owner · X3 pilot merchant + WABA — Swaroop | |
-| U (Swaroop + Claude) | U1 loom wiring · U2 customers list (**backend ready** — `GET /crm/customers` merged) · U3 customer 360 (needs A12+B4) · U4 template manager (needs C7) | design complete (ADR 0019) |
+| U (Swaroop + Claude) | U1 loom wiring · U2 customers list (**backend live** — `GET /crm/customers` returns `CrmCustomerSummary` rows; detail GET carries full attributes) · U3 customer 360 (needs A12+B4) · U4 template manager (needs C7) | design complete (ADR 0019) |
 | P0 remainder | PgBouncer (**before** A2 multiplies connections) · fail-closed voice DND · P0.4 LIKE-over-JSONB fix · reseller backfill | |
 
 ## Open — follow-ups created during the foundation build

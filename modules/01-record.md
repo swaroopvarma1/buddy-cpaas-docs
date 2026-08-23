@@ -12,7 +12,10 @@ the consumer runtime · `replay()` · (later) the journey view. Diagram:
   is understood.** One POST may fan out to N rows.
 - **Dedupe once, for everyone**: `UNIQUE (merchant_id, source, external_id)`; conflict =
   silent drop, still 200. Consumers never see duplicates and must not implement dedupe.
-- **Monthly RANGE partitions** on `received_at`. `occurred_at` is the source's claim,
+- **Partitioning deferred in P1** (trail in canon T13): unpartitioned because the dedupe
+  UNIQUE must not include a partition key; revisit on volume. Ingestion fields are frozen
+  by the 051 immutability trigger — only the processing envelope may change.
+  `occurred_at` is the source's claim,
   clamped ≤ `received_at`. Timers downstream measure from `occurred_at`.
 - **The work queue is a partial index**: `WHERE processed_at IS NULL`, drained with
   `FOR UPDATE SKIP LOCKED` by CRM_CONSUMERS replicas.

@@ -37,7 +37,14 @@ Everything that arrives, verbatim and immutable. Replay is the only recovery mec
   `record_consent` (STOP/START keywords), workflow entry rules, delivery-status consumer.
 - The resolve-and-journey processor stamps `customer_id` onto the row it just decoded
   (ADR 0020) — identity is resolved once, at processing time, never at read time.
-- Monthly RANGE partitions on `received_at`.
+- Monthly RANGE partitions on `received_at`. **Trail (23 Aug 2026, PR #1016): phase-1 ships
+  UNPARTITIONED** — Postgres requires a partitioned table's unique constraints to include the
+  partition key, which would break the load-bearing dedupe `UNIQUE (merchant_id, source,
+  external_id)`; the dedupe wins. Partitioning (and partition-drop retention) lands as a
+  later migration when volume demands.
+- As built (051): a BEFORE UPDATE trigger freezes the ingestion fields — only `processed_at`,
+  `quarantine_reason` and `customer_id` may ever change. The letter is immutable by trigger,
+  not by intention.
 
 ### crm.journey_event — VIEW (V01) — 12 columns
 

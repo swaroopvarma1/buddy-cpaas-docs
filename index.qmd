@@ -25,8 +25,10 @@ site retires or becomes a rendered mirror. Decided 2026-08-21.
    [record](modules/01-record.md) · [identity](modules/02-identity.md) ·
    [permission](modules/03-permission.md) · [connectivity](modules/04-connectivity.md) ·
    [outreach](modules/05-outreach.md) · [conversations/inbox](modules/06-conversations-inbox.md)
-4. **[The task map](design/task-map.md)** — pods, phases, dependencies, milestones.
-   The Slack CPAAS list is the work surface; this map is its source of truth.
+4. **[The task map](design/task-map.md)** — pods, phases, dependencies, milestones —
+   and **[the execution ledger](design/execution-ledger.md)**: built vs pending, updated
+   as PRs merge. The Slack CPAAS list is the work surface; the map is the plan, the
+   ledger is the score.
 5. When you disagree with a rule: **[the ADRs](decisions/README.md)** are the why.
    Nothing here is taste — every rule has a decision record behind it.
 

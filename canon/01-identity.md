@@ -23,8 +23,12 @@ One row per identifier: suppression, grouping and lifecycle. The whole platform 
 
 **Wiring**
 - Written by: suppression events ("delete me and never contact me"), the blacklist migration,
-  bounce/complaint handlers. Every write recomputes `is_suppressed` and appends to
-  `suppression_log` in one transaction.
+  bounce/complaint handlers. As built (migration 048, PR #1016): `is_suppressed` is DERIVED
+  by a full-scope trigger — fires on every insert/update, so even a direct
+  `SET is_suppressed = false` is overwritten by recomputation; entries carry `from`/`until`
+  and liveness is `until IS NULL OR until > now()` (expiry-as-predicate); `suppression_log`
+  is append-only by trigger (strict-prefix guard); kind-conditional format CHECKs (E.164 /
+  lowercase) refuse unnormalized values at the table.
 - Read by: the gate, exactly once per send — probe the unique `(kind, value)` index with the
   customer's own handle values, read one boolean. On any DB error the accessor returns
   *blocked* (fail closed).
@@ -69,6 +73,10 @@ The customer as one merchant knows them — and their handles, as columns. One r
 - Merge = one UPDATE on the younger row (`status='merged_away'`, `merged_into_id`,
   `merged_at`); survivor = older `first_seen_at`, tie → lower uuid; path-compressed to one
   hop; undo = one UPDATE. Reads across a pair: `WHERE merchant_id=$1 AND (id=$2 OR
-  merged_into_id=$2)`.
+  merged_into_id=$2)`. As built (049, PR #1016): the staple cannot cross tenants or point at
+  itself — composite FK `(merchant_id, merged_into_id) → (merchant_id, id)` +
+  `CHECK (merged_into_id <> id)`; and a handle-history trigger appends any replaced handle
+  value into `attributes._handle_history` (ADR 0021 lock #4 — no caller can destroy an old
+  handle).
 - Read by: everything. `consent_state`, `customer_memory`, enrolments, recipients and the
   journey view all key on `(merchant_id, customer_id)`.

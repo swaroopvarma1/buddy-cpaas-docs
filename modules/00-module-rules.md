@@ -67,8 +67,11 @@ this file wins. Diagram: `../diagrams/00-master-system.html`.
    org runs one DB role, so grants are unavailable). Tables are `crm_*`/`platform_*`
    prefixed in `public` (logical `crm.x` in this corpus = physical `crm_x`). One
    module owns each table; SQL touching a table may exist ONLY in its owner's
-   directory — a CI lint over SQL strings fails the PR otherwise, and buddy code may
-   not mention crm/platform tables at all. import-linter enforces the module graph
+   directory — enforced LIVE by `scripts/check_crm_boundaries.py` (10 CI rules, PR
+   #1016: table ownership · SQL confinement · driver confinement · import direction ·
+   handle discipline · atomic grammar 7–9 · handles-stay-down · ownership-map
+   completeness; every rule has a red test proving it fires), and buddy code may
+   not mention crm/platform tables at all. The same script enforces the module graph
    (`app.crm` never imports `app.ai`; cross-module inside crm via `contracts.py`
    only). Cross-module access goes through **contract functions** — never a foreign
    SELECT/INSERT. If there is no contract for what you need, that's a design
@@ -93,9 +96,24 @@ this file wins. Diagram: `../diagrams/00-master-system.html`.
    with `FOR UPDATE SKIP LOCKED`, never hold a transaction across HTTP, jitter mass
    wake-ups, back off on provider 429s.
 9. **Migrations 046+**: sequential, one table owner per migration, NEVER edited after
-   merge. Canon-conformance CI diffs the DB against the sealed schema.
+   merge — enforced live by `scripts/check_migrations.py` (numbering) + the CI
+   immutability guard (merged files may only be ADDED to). A new crm_*/platform_*
+   table without a TABLE_OWNERS entry in the boundary guard fails the PR by itself.
 10. **Observability**: `set_log_context` at every entrypoint; `track_error` on degraded
     paths; if you bound coverage (top-N, sampling, no-retry) log what was dropped.
+
+## Table self-defense (sealed 23 Aug 2026 — promoted from the PR #1016 review round)
+
+With one DB role, CHECKs and triggers are the only discipline-free enforcement:
+- **Derived columns get full-scope triggers** — a recompute scoped `UPDATE OF <source>`
+  is bypassable by writing the derived column directly; fire on every insert/update.
+- **Self-referencing FKs on tenant tables are composite** — `(merchant_id, ref) →
+  (merchant_id, id)` + a no-self-reference CHECK, or a raw UPDATE crosses tenants.
+- **Declared-immutable fields get a BEFORE UPDATE guard** enumerating the mutable
+  envelope; "immutable by intention" is not immutable.
+- **Normalization DROPS empties** — a strip that stores "" lets whitespace-only input
+  mint a zero-handle customer (the PR #1016 scar; regression-tested).
+- **No PII in log messages** — handle type + length, never raw phones/emails.
 
 ## Do NOT (each of these is a scar we already have)
 

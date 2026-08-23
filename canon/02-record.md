@@ -45,7 +45,7 @@ One ordered history per customer — a union over stores that already exist; con
 
 | # | column | type | keys | notes |
 |---|---|---|---|---|
-| 1 | `id` | uuid |  | The underlying row’s id — the deep link every card needs; with source_kind, the provenance pair |
+| 1 | `id` | text |  | The underlying row’s id — the deep link every card needs; with source_kind, the provenance pair. text, not uuid (fixed 23 Aug 2026): the call arm’s underlying `lead_call_tracker.id` is varchar, so every arm casts to text in the union |
 | 2 | `merchant_id` | text |  |  |
 | 3 | `customer_id` | uuid |  | → customer. NULL for chat sessions until identity reaches chat — see wiring R1 |
 | 4 | `channel` | text |  | The card’s icon — call vs whatsapp vs instagram |

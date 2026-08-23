@@ -5,47 +5,46 @@ this file wins. Diagram: `../diagrams/00-master-system.html`.
 
 ## Build it like this
 
-1. **Three layers, always**: `queries.py` (SQL builders returning `(sql, params)`,
-   `$1` placeholders only) → accessor (business logic + transactions) → `decoder.py`
-   (row → Pydantic). Raw asyncpg. No ORM. This is the repo's existing law — crm keeps
-   it. **Routes never execute queries directly** — api.py calls the accessor, always;
-   the accessor is the one home for transactions, merge-pair reads and business rules,
-   so every caller (route, worker, bridge, test) shares one implementation.
-   **The sealed module skeleton** (decided 23 Aug 2026 — how every module evolves):
+1. **The module skeleton & layer law** (final, 23 Aug 2026 — supersedes every
+   earlier same-day wording, including "no db/ subpackages"):
 
    ```
    app/crm/<module>/
      __init__.py    # empty — exports NOTHING
      contracts.py   # THE public surface — re-exports from the logic files;
                     #   the only file other modules may import
-     api.py         # thin routes -> logic files (or accessor for trivial reads)
-     <concern>.py   # BUSINESS LOGIC, named by concern (resolve.py, facts.py,
-                    #   ingest.py, suppression.py): policy + transaction scope,
-                    #   composed from accessor calls; reads like the design doc
-     accessor.py    # mechanical DB access ONLY — execute one query builder,
-                    #   decode the row; no business decisions. Same name and
-                    #   shape in every module
-     queries.py     # SQL builders only, $1 params
-     schemas.py     # Pydantic models the module exposes — LEAF (imports nothing
-                    #   internal; the DTO→engine scar law); api/contracts/tests
-                    #   import shapes from here
-     decoder.py     # row → schemas model, DB-side translation only — paired with
-                    #   accessor; nothing above the accessor imports it
+     api.py         # thin routes → logic (or db/accessor for trivial reads)
+     schemas.py     # leaf Pydantic shapes — imports nothing internal;
+                    #   api/contracts/tests import shapes from here
+     <concern>.py   # BUSINESS LOGIC by name (resolve.py, facts.py, ingest.py,
+                    #   suppression.py): gather → decide (PURE plan) → apply,
+                    #   inside a boundary this file owns
      workers.py     # drain loops (only if the module owns one)
+     db/            # ALL mechanics behind one hop — the root stays the story
+       __init__.py  # the db door: re-exports transaction, DbTxn, domain errors
+       accessor.py  # execute one query builder per function; NO decisions;
+                    #   splits as accessor_<table>.py as the module grows
+       queries.py   # SQL builders, $1 params; splits as queries_<table>.py
+       decoder.py   # row → schemas model, DB-side translation only
    ```
 
-   **The layer law** (settled 23 Aug 2026, final — supersedes the same-day
-   accessor_-prefix and role-not-name wordings): `api → logic → accessor →
-   queries`. Logic files own transaction scope (atomicity is business
-   semantics); accessor functions taking a `conn` run inside the caller's
-   transaction, standalone reads manage their own. Business logic is findable
-   by FILENAME — nobody digs through accessors or queries to learn what a
-   module decides. Routes never execute queries directly; `contracts.py` is
-   the canonical door the ownership lint and import-linter point at.
-   **No `db/` subpackages** — flat module listings are the feature (one `ls`
-   shows every layer). A module may earn a subpackage only when its listing
-   genuinely stops being scannable (~10+ files; outreach in P2, with seven
-   tables, is the plausible first case) — decided then, not preemptively.
+   **Layer law**: `api → logic → db/accessor → db/queries` (raw asyncpg, no
+   ORM, $1 placeholders only — the repo's three-layer SQL law unchanged).
+   **Boundary law**: logic owns transaction scope — atomicity is business
+   semantics — and imports db-world things ONLY from its module's db/ door
+   (`transaction()`, the opaque `DbTxn`, domain-named errors, all implemented
+   once in `shared/db.py`). Logic may OPEN a boundary and PASS the handle; it
+   may never CALL anything on it. `import asyncpg` is legal only in
+   `shared/db.py` and `db/` packages — grep-enforced. Single-statement reads
+   may self-scope inside the accessor; the moment two statements share fate, a
+   logic file declares the boundary.
+   **Logic style**: GATHER (accessor reads) → DECIDE (pure function returning
+   a plan — DB-free testable, loggable, the decision_log spirit) → APPLY
+   (accessor writes). No service classes, no repository interfaces: pure core,
+   thin shell. Uniform in every module at any size — big modules split INSIDE
+   db/, the root shape never changes. Routes never execute queries directly;
+   business logic is findable by FILENAME.
+
    **The package root** (`app/crm/`) holds only surface plumbing: `api.py` (root
    router mounting) and `auth.py` (route dependencies per ADR 0007 — existing JWT
    machinery, no new auth system). The test: a table/contract/SQL = a module;

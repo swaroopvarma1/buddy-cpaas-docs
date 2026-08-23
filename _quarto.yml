@@ -29,7 +29,7 @@ website:
           - canon/05-audiences.md
           - canon/06-outreach.md
           - canon/07-wiring.md
-      - section: "Decisions (ADR 0001–0020)"
+      - section: "Decisions (ADR 0001–0021)"
         contents:
           - text: "Index"
             href: decisions/README.md

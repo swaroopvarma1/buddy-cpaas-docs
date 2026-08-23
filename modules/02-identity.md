@@ -20,9 +20,13 @@ Owns: `crm.customer` (T05) · `resolve()` · `assert_facts()` · merge. Diagram:
   loser's partial uniques free its handles (status flip), the survivor attaches
   them; the loser keeps its copies as audit + undo. The attach-free check and the
   staple trigger are the same code path. A handle occupied on the SAME row
-  (customer changed email) is kept, never overwritten — the dropped value converges
-  later via a staple if it ever co-occurs again; never-overwrite is deliberate
-  (recycling risk), revisit only with pilot churn data.
+  follows the evidence ladder (ADR 0021, superseding the same-day never-overwrite
+  interim): `declared`/`observed` evidence OVERWRITES (old value auto-appended to
+  the attributes history by trigger); `imported` keeps the existing value;
+  `inferred` never touches handles. No overwrite flag exists — callers pass
+  `evidence` and identity applies the policy; one ladder (assert_facts'
+  EVIDENCE_RANK), one writer query, and the history trigger make it
+  discipline-free.
 - **Normalize at write**: phone to E.164 (enforced by CHECK), email lowercased. The
   partial unique IS the duplicate detector — a collision means "resolve to the existing
   customer", never an error page.

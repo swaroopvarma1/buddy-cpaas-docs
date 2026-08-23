@@ -37,6 +37,11 @@ Everything that arrives, verbatim and immutable. Replay is the only recovery mec
   `record_consent` (STOP/START keywords), workflow entry rules, delivery-status consumer.
 - The resolve-and-journey processor stamps `customer_id` onto the row it just decoded
   (ADR 0020) — identity is resolved once, at processing time, never at read time.
+- Trail (23 Aug 2026): voice mirrors PASS THROUGH the lead's creation-time stamp —
+  `call.inbound` is mirrored from the created tap sequenced after the stamp (born
+  attributed), `call.attempted`/`call.completed` carry `lead.customer_id`; only
+  `lead.pushed` is born NULL for the consumer. Pass-through is carry, not a second
+  resolution — the stamp stays envelope state the spine can always recompute.
 - Monthly RANGE partitions on `received_at`. **Trail (23 Aug 2026, PR #1016): phase-1 ships
   UNPARTITIONED** — Postgres requires a partitioned table's unique constraints to include the
   partition key, which would break the load-bearing dedupe `UNIQUE (merchant_id, source,

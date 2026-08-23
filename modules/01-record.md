@@ -31,6 +31,17 @@ the consumer runtime · `replay()` · (later) the journey view. Diagram:
   and appear on no timeline.
 - **Mirrors are forward-only**: lead machine call events (ADR 0017), send()'s
   `message.queued`, later chat turns. No backfill exists anywhere in this plan.
+- **Stamps are pass-through; resolution is singular** (sealed 23 Aug 2026): `resolve()`
+  runs at a channel's system-of-record (the LCT stamp for voice; chat_session when chat
+  arrives) or at the processor — never inside a mirror, never in an adapter. Mirrors
+  CARRY an already-resolved customer_id when they have one: the voice created-tap
+  sequences stamp → `call.inbound` mirror in one task so inbound events are born
+  attributed; `call.attempted`/`call.completed` pass the lead's stamp through. Rows
+  born before the stamp exists (`lead.pushed`) stay NULL and the consumer attributes
+  them. This cannot diverge — the stamp is envelope state and the spine can always
+  recompute it from raw payload (consumer + replay). Chat generalizes the same law:
+  stamp the session the moment identity becomes known; earlier turns stay NULL until
+  the consumer catches them.
 
 ## Do NOT
 
@@ -38,6 +49,11 @@ the consumer runtime · `replay()` · (later) the journey view. Diagram:
   a coupling that replay can't fix. Raw first, 200 fast, understand later.
 - **Don't let adapters touch domain tables or call resolve().** Adapters translate;
   the resolve PROCESSOR calls resolve(). One funnel or none.
+- **Don't call resolve() from a mirror or any emit path.** The only emit-side
+  resolution that exists is the system-of-record stamp (LCT / chat_session); every
+  mirror passes that result through or records NULL for the consumer. A producer
+  resolving per-event at emit is the side-loading pattern that multiplies resolve
+  load and reintroduces N funnels.
 - **Don't make the spine a command bus.** Commands need synchronous validation and an
   id back; queueing them loses both (ADR: facts vs commands). If an API handler wants
   to "emit an event and hope", it's a command wearing a costume — call the contract.
@@ -59,5 +75,13 @@ the consumer runtime · `replay()` · (later) the journey view. Diagram:
   If it requires touching a consumer's core loop, the registry abstraction leaked —
   fix the registry, not the consumer.
 - Journey view arrives later as a VIEW over existing stores — never a copy table.
+- **The whole voice-mirror layer is bridge-period scaffolding.** When buddy retires
+  and telephony enters through the spine's front door, the taps, hook registry,
+  non-customer gate and pass-through all get DELETED, not migrated: calls become a
+  native domain table, the per-channel resolution exception collapses into the
+  processor law, and V01's call arm drops its legacy casts. Mirrors being
+  forward-only with stable topic-qualified external_ids is what makes bridge-period
+  events and post-retirement events one continuous stream — nothing behind the
+  bridge needs rewriting when it goes.
 
 Refs: 02-record.md (corpus) · entry-points-and-the-event-spine.md · ADR 0009, 0015, 0017.

@@ -42,6 +42,7 @@ website:
           - design/gate-mechanics.md
           - design/console-ui.md
           - design/task-map.md
+          - design/execution-ledger.md
       - section: "Module build guides"
         contents:
           - text: "Index"

@@ -26,6 +26,12 @@ this file wins. Diagram: `../diagrams/00-master-system.html`.
 
    Internals may organize freely (a `resolve.py` is fine), but `contracts.py` is the
    canonical door — the ownership lint and import-linter point at it.
+   **The package root** (`app/crm/`) holds only surface plumbing: `api.py` (root
+   router mounting) and `auth.py` (route dependencies per ADR 0007 — existing JWT
+   machinery, no new auth system). The test: a table/contract/SQL = a module;
+   /crm-surface plumbing used by all modules = root; a pure leaf helper = `shared/`.
+   Root files import no module (acyclic by construction); auth's reach into the
+   existing `app.api.security` / `app.core.security` stack is the sanctioned seam.
 2. **The boundary is a CI-enforced ownership map** (ADR 0001, amended 23 Aug 2026 —
    org runs one DB role, so grants are unavailable). Tables are `crm_*`/`platform_*`
    prefixed in `public` (logical `crm.x` in this corpus = physical `crm_x`). One

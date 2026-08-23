@@ -5,7 +5,9 @@ merchants). The design inversion everything follows from: **the agent writes the
 record as a side-effect of doing the work, and reads it before it speaks.** Humans approve
 decisions; nobody types into the record.
 
-Schema: **17 tables + 1 view**, PostgreSQL, two schemas (`crm`, `platform`). This corpus is
+Schema: **17 tables + 1 view**, PostgreSQL, two namespaces (`crm`, `platform`) — realized
+as `crm_*`/`platform_*` table prefixes in `public` (one DB role org-wide; ADR 0001
+amendment, 23 Aug 2026). Logical `crm.x` here = physical `crm_x`. This corpus is
 the implementation-facing description: final column shapes plus how the pieces wire together.
 Column numbers are stable; gaps in numbering are retired columns (never reused).
 

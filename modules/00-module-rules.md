@@ -8,10 +8,18 @@ this file wins. Diagram: `../diagrams/00-master-system.html`.
 1. **Three layers, always**: `queries.py` (SQL builders returning `(sql, params)`,
    `$1` placeholders only) → accessor (business logic + transactions) → `decoder.py`
    (row → Pydantic). Raw asyncpg. No ORM. This is the repo's existing law — crm keeps it.
-2. **The boundary is a database grant.** Each module's Postgres role can write ONLY its
-   own tables. Cross-module access goes through **contract functions** — never a foreign
-   SELECT/INSERT. If you need another module's data, call its contract; if there is no
-   contract for what you need, that's a design conversation, not a workaround.
+2. **The boundary is a CI-enforced ownership map** (ADR 0001, amended 23 Aug 2026 —
+   org runs one DB role, so grants are unavailable). Tables are `crm_*`/`platform_*`
+   prefixed in `public` (logical `crm.x` in this corpus = physical `crm_x`). One
+   module owns each table; SQL touching a table may exist ONLY in its owner's
+   directory — a CI lint over SQL strings fails the PR otherwise, and buddy code may
+   not mention crm/platform tables at all. import-linter enforces the module graph
+   (`app.crm` never imports `app.ai`; cross-module inside crm via `contracts.py`
+   only). Cross-module access goes through **contract functions** — never a foreign
+   SELECT/INSERT. If there is no contract for what you need, that's a design
+   conversation, not a workaround. Invariants that must never depend on discipline go
+   in the tables themselves: CHECKs and triggers (append-only suppression_log,
+   is_suppressed recompute) survive any caller.
 3. **Tenancy**: `merchant_id` NOT NULL on every root table, first column of every unique
    index. **No table stores a reseller** — always one derived join. Child rows enter
    through a scoped parent. The CI predicate check will fail your PR otherwise.

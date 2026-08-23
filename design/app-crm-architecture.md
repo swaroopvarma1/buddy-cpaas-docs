@@ -80,10 +80,13 @@ existing code: `app/core/*` (config, logging, security primitives), `app/service
 | `enrol(...)` + `tick()` | outreach | Outreach |
 | suppression probe/writes | platform | Permission (thin) |
 
-Boundary enforcement is a **database grant**: each module runs with a Postgres role that
-can write only its own tables (e.g. `crm_permission` owns consent_*, decision_log;
-`crm_connectivity` owns installations/bindings/templates/message). Cross-module reads go
-through contract functions, not foreign SELECTs — the grant makes cheating loud.
+Boundary enforcement is a **CI-enforced ownership map** (ADR 0001, amended 23 Aug 2026:
+one DB role org-wide, so per-module grants are unavailable). Each table has exactly one
+owning module (permission owns consent_*, decision_log; connectivity owns installations/
+bindings/templates/message); a CI lint over SQL strings fails any PR where a table is
+touched outside its owner's directory, and import-linter keeps the module graph legal.
+Cross-module reads go through contract functions, not foreign SELECTs — the lint makes
+cheating loud at PR time. Physical naming: `crm_*`/`platform_*` prefixes in `public`.
 
 ## 3. Runtime (ADR 0006)
 

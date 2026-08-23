@@ -40,14 +40,30 @@ date; when scope changes, the task map changes first.
 - `crm_event_raw` partitioning when volume demands (documented in migration 051)
 - Corpus migration into `clairvoyance/docs/crm/` + review skill into repo `.claude/` once phase-1 code stabilizes
 - A10's consumer stamps events the voice taps recorded unattributed in the interim
-- **A15b (optional, product call — never expires):** one-off stamp of pre-deploy
-  lead_call_tracker rows so pre-CRM calls join the journey's call arm. Law-compatible
-  (identity stamping at processing time, not event backfill): sweep old rows through
-  resolve(merchant, phone) — or derive from A10-stamped events via payload lead_id.
-  Decide after pilot feedback on whether pre-CRM call history matters in the 360;
-  until then, journey call history starts at deploy day (ADR 0017 forward-only).
-  NOTE: deploy timing matters more than this — every backlog lead that finishes
-  BEFORE deploy is history lost forever; release early, don't wait for the backlog.
+- **A15b — SCHEDULED (decided 23 Aug): historical LCT stamp, backfill night after
+  release.** Runbook:
+  1. Prereq: release deployed, migrations 048–051 applied. Release does NOT wait
+     for the backlog — leads finishing pre-deploy are history lost forever; leads
+     mid-flight at deploy are safe (fail-open, deduped, partial-but-truthful).
+  2. Scope: **status='FINISHED' rows only** (never mid-flight — their updated_at
+     feeds reaper timing), customer_id IS NULL, payload phone present. Dry-run a
+     100-row sample first; watch the unparseable-phone rate.
+  3. The sweep: batches ~500 with sleeps, off-peak; per row →
+     `resolve(merchant, {phone}, evidence="observed", source="lct-backfill")` →
+     optional `assert_facts(name, "observed")` from payload customer_name (decided:
+     include it — nameless lists are useless) → stamp via
+     update_lead_customer_id_query. Idempotent + kill-safe (customer_id IS NULL
+     guard); resumable keyset on created_at.
+  4. **HARD RULE: customers only via resolve() — never INSERT INTO crm_customer**
+     (raw SQL skips E.164 normalization → CHECK violations, skips the platform
+     registry, violates the boundary law the CI guard enforces).
+  5. Populates exactly: crm_customer (one per distinct merchant+phone),
+     platform_identity (one per distinct phone, registry only — zero suppression
+     state), and the LCT stamp. NO events, NO consent, NO suppressions.
+  6. Verify: stamped-by-status counts, customer/registry counts, leftover NULLs =
+     unparseable phones (truthful). Straggler pass ~1 week later, same script.
+  Known cosmetics (accepted): first_seen_at = backfill night (affects only future
+  staple survivor ties); flat last_seen ordering for the historical block in U2.
 
 ## State in one sentence
 

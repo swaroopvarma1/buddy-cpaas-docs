@@ -45,6 +45,17 @@ Owns: `crm.customer` (T05) · `resolve()` · `assert_facts()` · merge. Diagram:
   locale, timezone are master data here; impressions and promises are notes there.
 - **Don't melt merges** (copying fields between rows, deleting the loser). Staples are
   reversible; melts are forever.
+- **Don't grow `platform.identity` kinds for channel-scoped ids** (asked and settled
+  23 Aug 2026). Kinds are GLOBAL identifiers only — phone, email, device: same value =
+  same endpoint at every merchant, which is what makes a cross-merchant suppression
+  registry coherent. WhatsApp rides `phone` (wa_id is the E.164 number). An IGSID is
+  merchant-scoped by construction (different id per IG business account, no linkage
+  from Meta), so a "global" suppression on one is a category error — scoped ids are
+  handle COLUMNS on crm.customer probed by resolve(), and their don't-contact state is
+  per-merchant consent (T08). A genuinely new global identifier class = one migration
+  swapping the CHECK. Normalization on T02 is compliance-critical in the dangerous
+  direction: a probe that misses a differently-formatted suppressed value CONTACTS
+  someone who said stop.
 
 ## Scale & future-fit
 

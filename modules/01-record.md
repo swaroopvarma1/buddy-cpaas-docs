@@ -84,4 +84,38 @@ the consumer runtime · `replay()` · (later) the journey view. Diagram:
   events and post-retirement events one continuous stream — nothing behind the
   bridge needs rewriting when it goes.
 
-Refs: 02-record.md (corpus) · entry-points-and-the-event-spine.md · ADR 0009, 0015, 0017.
+## The voice bridge: known stamp variance, and how retirement fixes it
+
+Accepted state (23 Aug 2026, PR #1016): the four voice topics answer "is the event
+born with its customer_id?" three different ways, because each mirror is a separate
+emit point in a different task:
+
+| topic | born attributed? | why |
+|---|---|---|
+| `call.inbound` | yes | mirrored from the created tap, sequenced after the stamp |
+| `call.attempted` / `call.completed` | yes | pass-through of the lead's stamped column |
+| `lead.pushed` | no (NULL) | emitted the same instant the stamp task starts; A10 attributes it |
+
+This variance is **task topology leaking into data shape** — locally correct at every
+site, documented at every site, and harmless (nothing reads `lead.pushed` before the
+consumer; the journey's call arm reads LCT, which is always stamped). Do NOT "fix" it
+by adding more sequencing tricks; each trick is more bridge scaffolding.
+
+The real fix is structural and comes with the CRM-native migration:
+
+1. **Order becomes architecture, not an `await` someone remembered.** A pushed lead
+   becomes a command: `resolve()` first, the native call state-machine row created
+   referencing that customer, lifecycle events emitted FROM that row — identity
+   exists before any event does, by construction. No racing tasks, nothing to
+   sequence.
+2. **NULL gets one uniform meaning.** Every external source (telephony callbacks,
+   Shopify, WhatsApp) lands raw with `customer_id` NULL and is stamped by the
+   processor in the same UPDATE that sets `processed_at`. The NULL window becomes a
+   designed pipeline stage with one meaning ("not yet understood") and one metric
+   (queue lag) — not a per-mirror accident needing a comment per site.
+
+The tell that the end state is right: today's behavior takes four comments to
+explain; the end state takes one sentence — *events are understood at processing
+time* — and that sentence is already the law above.
+
+Refs: 02-record.md (corpus) · entry-points-and-the-event-spine.md · ADR 0009, 0015, 0017, 0020.

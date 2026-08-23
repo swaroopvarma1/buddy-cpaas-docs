@@ -17,7 +17,7 @@ date; when scope changes, the task map changes first.
 | A6 | `crm_customer` (049) + `resolve()` — INCLUDING staple-on-collision + ADR 0021 evidence ladder (pulled forward) |
 | A7 | `assert_facts()` + assertion history + winners + inferred 0.5 cap (pulled forward) |
 | A8 ½ | `crm_event_raw` (051) + `record_event()` with dedupe + ADR 0020 stamp passthrough |
-| A14 | Voice event mirroring: lead.pushed · call.attempted · call.completed · call.inbound |
+| A14 | Voice event mirroring: lead.pushed · call.attempted · call.completed · call.inbound. Customer traffic only — `is_non_customer_lead` excludes \*_TEST, playground, DAILY_STREAM (transport-only service, client-driven payloads → numbers aren't trusted identities) and HOLD_TRANSFER (dialed number = consultee, not customer) |
 | A15 | Voice identity stamping at the lead-creation choke point (hook registry — data layer imports nothing) |
 | B2 | `platform_identity` (048) + suppression contracts, liveness-aware, trigger-derived |
 | — | `check_crm_boundaries.py` (10 CI rules) · atomic grammar · building-modules.md · CLAUDE.md |

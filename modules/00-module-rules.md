@@ -37,12 +37,15 @@ this file wins. Diagram: `../diagrams/00-master-system.html`.
    may never CALL anything on it. `import asyncpg` is legal only in
    `shared/db.py` and `db/` packages — grep-enforced. Single statements use
    `connection()` — no explicit transaction (Postgres runs one statement
-   atomically; BEGIN/COMMIT around it is wasted round-trips). The moment two
-   statements share fate, a logic file declares the boundary with
-   `transaction()` — that name in code ALWAYS signals real atomicity. Handle
-   naming telegraphs the primitive: `transaction() as txn`, `connection() as
-   conn`, everywhere — a `txn` in a logic file is a boundary being owned, never
-   a connection being handled.
+   atomically; BEGIN/COMMIT around it is wasted round-trips). Multi-statement
+   fate-sharing uses **the atomic grammar** (CI rules 7–9): logic enters a
+   boundary ONLY via `await atomically(_thing_in_txn, ...)` — one greppable
+   verb; the body is named `*_in_txn(txn, ...)`, sits immediately below the
+   public function that invokes it (adjacency), and its docstring opens with
+   `ATOMIC: <what shares fate> — <the law it serves>`. `grep -rn "ATOMIC:"`
+   is the system's atom inventory with justifications. atomically() is
+   ParamSpec-typed — every forwarded argument is type-checked through the
+   hop. Handles: `txn` inside boundaries, `conn` for single statements.
    **Logic style**: GATHER (accessor reads) → DECIDE (pure function returning
    a plan — DB-free testable, loggable, the decision_log spirit) → APPLY
    (accessor writes). No service classes, no repository interfaces: pure core,

@@ -30,6 +30,9 @@ Everything that arrives, verbatim and immutable. Replay is the only recovery mec
 - Dedupe: `UNIQUE (merchant_id, source, external_id)` — conflict = silent drop, still 200.
 - Decode failure = `quarantine_reason` set, row kept — never reject. `replay(event_id)`
   re-runs the current parser over stored raw; alert on quarantine rate, not per row.
+  Trail (24 Aug 2026, A2 design): quarantine ALSO sets `processed_at`, so quarantined
+  rows leave the work queue — states: pending (NULL/NULL) · done (set/NULL) ·
+  quarantined (set/set); replay resets both.
 - Producers: Shopify webhooks (orders/checkouts/customers topics), WhatsApp webhooks
   (message.inbound, message.status per wamid, template.status), chat turns (mirrored
   forward-only), CSV importer side-effects.

@@ -67,6 +67,54 @@ the consumer runtime · `replay()` · (later) the journey view. Diagram:
 - **Don't put per-row alerting on quarantine.** Rate alerts; a quarantined row is a
   fact awaiting a better parser, not an incident.
 
+## Building the consumer (A2) — decisions sealed ahead of build (24 Aug 2026)
+
+- **The queue is the guarantee; the door may process opportunistically.** A
+  return-200-and-spawn-a-task door is allowed ONLY as a latency optimization,
+  because the consumer sweeps behind it. Per-event background tasks can never be
+  the primary mechanism: an in-process task dies silently on deploy/crash (the
+  work vanishes unless something scans for unprocessed rows — which IS the
+  consumer), bursts couple processing concurrency to arrival concurrency (50k
+  webhooks = 50k tasks = pool exhaustion at the door), and failed tasks have no
+  durable retry or quarantine ledger. LISTEN/NOTIFY, if ever needed, is a wake-up
+  signal on top of the scan — never a replacement (notifications are at-most-once).
+- **The canonical drain query** — this exact shape, no variations:
+
+  ```sql
+  SELECT id, merchant_id, source, topic, schema_version, payload
+  FROM crm_event_raw
+  WHERE processed_at IS NULL
+  ORDER BY received_at
+  LIMIT 100
+  FOR UPDATE SKIP LOCKED;
+  ```
+
+  Process the batch, stamp `customer_id + processed_at` in the SAME transaction,
+  commit. The `LIMIT` (50–200) is both the backpressure valve and the lock-window
+  knob. Keep the transaction short; never hold it across an external call
+  (extractors are pure Python — keep them that way).
+- **Claim semantics — why two workers can't collide**: `FOR UPDATE` locks the
+  batch inside the worker's transaction (the lock IS the claim — no claimed_by
+  column, no coordination); `SKIP LOCKED` makes other workers skip, not wait;
+  the stamp inside the same transaction means a committed row never matches the
+  predicate again. Crash mid-batch → transaction rolls back, locks evaporate
+  (Postgres, no reaper), rows reappear pending. That is at-least-once delivery,
+  so the processor MUST stay idempotent — and is by construction: resolve() is
+  upsert-shaped, assert_facts appends, re-stamping is a no-op.
+- **Ordering is approximate FIFO only** (`ORDER BY received_at` + SKIP LOCKED =
+  best-effort). Consistent with the standing promise: no consumer may assume
+  cross-event ordering.
+- **Quarantine leaves the queue**: quarantine SETS `processed_at` too. Three
+  clean states — pending (NULL/NULL) · done (set/NULL) · quarantined (set/set) —
+  and `replay()` resets both to re-queue. This keeps the pending partial index
+  exact; a quarantined row with processed_at NULL would be re-picked forever.
+- **Capacity, for sizing conversations**: extractor is microseconds; ~two small
+  transactions per event → 5–15 ms/event → roughly 70–200 events/sec per worker,
+  ~5–15M/day per replica, near-linear with replicas via SKIP LOCKED. Phase-1
+  volume is <100k/day — one replica at a 1s poll is ~1% duty cycle, and the A15b
+  backlog is minutes of work. The real constraint is the CONNECTION BUDGET:
+  PgBouncer lands before A2 multiplies connections (P0, ledgered).
+
 ## Scale & future-fit
 
 - Consumers scale by replicas; the partial index keeps the scan cheap regardless of

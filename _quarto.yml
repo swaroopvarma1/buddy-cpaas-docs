@@ -63,6 +63,7 @@ website:
           - diagrams/d04-connectivity.qmd
           - diagrams/d05-outreach.qmd
           - diagrams/d06-conversations-inbox.qmd
+          - diagrams/d07-event-worker-pass.qmd
       - text: "Visual language"
         href: visual-language/README.md
 

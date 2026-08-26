@@ -1,0 +1,11 @@
+---
+title: "07 · The event worker's pass (worker · processor · consumers)"
+format:
+  html:
+    page-layout: full
+    toc: false
+---
+
+[Open standalone ↗](07-event-worker-pass.html){target=_blank}
+
+<iframe src="07-event-worker-pass.html" style="width:100%;height:1010px;border:1px solid #e2e6ee;border-radius:12px;background:#eef1f6;"></iframe>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Buddy CPaaS &mdash; the event worker's pass</title>
+<style>
+:root{
+  --canvas:#eef1f6; --panel:#e5e9f1; --card:#ffffff; --card-border:#e2e6ee;
+  --shadow:0 1px 3px rgba(31,42,68,.10),0 4px 14px rgba(31,42,68,.06);
+  --ink:#1f2a44; --ink-soft:#4b5568; --muted:#8a93a6; --line:#3a4661;
+  --purple:#7c3aed; --purple-soft:#ede4ff; --purple-ink:#5b21b6;
+  --blue:#2563eb;   --blue-soft:#dce7fd;   --blue-ink:#1d4ed8;
+  --green:#10b981;  --green-soft:#d8f3e6;  --green-ink:#047857;
+  --teal:#0d9488;   --teal-soft:#d3f0ec;   --teal-ink:#0f766e;
+  --amber:#f59e0b;  --amber-soft:#ffeacb;  --amber-ink:#92400e;
+  --font:"Inter","SF Pro Text",-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+body{margin:0;background:var(--canvas);font-family:var(--font);color:var(--ink);}
+.page{position:relative;width:1330px;height:952px;}
+.hdr{position:absolute;top:0;left:0;right:0;padding:24px 32px 0;}
+.hdr h1{margin:0;font-size:22px;}
+.hdr p{margin:4px 0 0;font-size:13px;color:var(--muted);}
+.legend{position:absolute;top:28px;right:32px;display:flex;gap:8px;align-items:center;
+  font-size:10px;color:var(--ink-soft);}
+.legend .ln{width:26px;height:0;border-top:1.5px solid var(--line);}
+.legend .ln.dash{border-top-style:dashed;}
+.pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2px 8px;border-radius:999px;}
+.p-blue{background:var(--blue-soft);color:var(--blue-ink);}
+.p-green{background:var(--green-soft);color:var(--green-ink);}
+.p-teal{background:var(--teal-soft);color:var(--teal-ink);}
+.p-amber{background:var(--amber-soft);color:var(--amber-ink);}
+.lane{position:absolute;top:120px;height:760px;width:230px;background:var(--panel);border-radius:14px;}
+.lane h2{position:absolute;top:12px;left:16px;margin:0;font-size:11px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.lane .sub{position:absolute;top:29px;left:16px;font-size:10px;color:var(--muted);}
+.card{position:absolute;background:var(--card);border:1px solid var(--card-border);
+  border-radius:10px;box-shadow:var(--shadow);padding:10px 12px;width:198px;box-sizing:border-box;}
+.card h3{margin:0 0 4px;font-size:13px;color:var(--ink);}
+.card p{margin:0;font-size:11px;line-height:1.45;color:var(--ink-soft);}
+.card .pill{position:absolute;top:-9px;right:10px;}
+.card.note{border:1.5px dashed var(--muted);box-shadow:none;background:transparent;}
+.card.note p{color:var(--muted);}
+.seclbl{position:absolute;font-size:10px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);}
+svg.wires{position:absolute;inset:0;pointer-events:none;}
+svg.wires path{stroke:var(--line);stroke-width:1.5;fill:none;}
+svg.wires path.dash{stroke-dasharray:5 4;}
+.wlbl{position:absolute;background:var(--ink);color:#fff;font-size:9.5px;font-weight:600;
+  padding:2px 8px;border-radius:999px;transform:translate(-50%,-50%);white-space:nowrap;}
+.ftr{position:absolute;left:32px;bottom:14px;font-size:10px;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="hdr">
+    <h1>The event worker's pass &mdash; worker &middot; processor &middot; consumers</h1>
+    <p>a worker claims a batch &middot; the processor runs on every row &middot; consumers run when their topic matches &middot; one UPDATE closes the pass</p>
+  </div>
+  <div class="legend">
+    <span class="pill p-teal">queue / store</span>
+    <span class="pill p-blue">logic</span>
+    <span class="pill p-green">done</span>
+    <span class="ln"></span>the pass<span class="ln dash"></span>failure path
+  </div>
+
+  <div class="lane" style="left:24px;"><h2>1 &middot; The queue</h2><span class="sub">crm_event_raw (T13)</span></div>
+  <div class="lane" style="left:278px;"><h2>2 &middot; The worker</h2><span class="sub">a replica of the A2 loop &mdash; machinery</span></div>
+  <div class="lane" style="left:532px;"><h2>3 &middot; The pass</h2><span class="sub">logic the worker runs, in order</span></div>
+  <div class="lane" style="left:786px;"><h2>4 &middot; Durable writes</h2><span class="sub">via contracts only</span></div>
+  <div class="lane" style="left:1040px;"><h2>5 &middot; Vocabulary</h2><span class="sub">the three words, pinned</span></div>
+
+  <!-- QUEUE -->
+  <div class="card" style="left:40px;top:240px;"><span class="pill p-teal">T13</span>
+    <h3>Pending event</h3>
+    <p>processed_at NULL. customer_id may already be stamped (voice pass-through) &mdash; or NULL.</p></div>
+  <div class="card note" style="left:40px;top:372px;">
+    <h3>The queue IS an index</h3>
+    <p>partial index WHERE processed_at IS NULL &mdash; empty queue = scan of nothing.</p></div>
+  <div class="card" style="left:40px;top:700px;"><span class="pill p-green">done</span>
+    <h3>Row at rest</h3>
+    <p>customer_id + processed_at set. Never picked again; journey &amp; segments read it forever.</p></div>
+
+  <!-- WORKER -->
+  <div class="card" style="left:294px;top:240px;">
+    <h3>Claim a batch</h3>
+    <p>SELECT &hellip; FOR UPDATE SKIP LOCKED LIMIT 100. The lock IS the claim &mdash; replicas never collide.</p></div>
+  <div class="card" style="left:294px;top:372px;">
+    <h3>For each row</h3>
+    <p>hand the row to the pass: processor first, then every consumer whose topic matches.</p></div>
+  <div class="card" style="left:294px;top:700px;">
+    <h3>Close the pass</h3>
+    <p>ONE UPDATE: customer_id + processed_at. Commit releases the locks.</p></div>
+  <div class="card note" style="left:294px;top:810px;">
+    <h3>Crash mid-batch?</h3>
+    <p>txn rolls back, locks evaporate, rows re-appear. At-least-once &mdash; all logic idempotent.</p></div>
+
+  <!-- THE PASS -->
+  <div class="seclbl" style="left:548px;top:166px;">The processor &mdash; every row</div>
+  <div class="card" style="left:548px;top:184px;"><span class="pill p-blue">A10</span>
+    <h3>Extract</h3>
+    <p>registry (source, topic) &rarr; {handles, facts}. Pure function.</p></div>
+  <div class="card" style="left:548px;top:284px;"><span class="pill p-blue">identity</span>
+    <h3>resolve()</h3>
+    <p>who is this? Skipped when the row was born attributed.</p></div>
+  <div class="card" style="left:548px;top:384px;"><span class="pill p-blue">identity</span>
+    <h3>assert_facts()</h3>
+    <p>profile claims riding the payload &mdash; the evidence ladder decides.</p></div>
+  <div class="seclbl" style="left:548px;top:484px;">Consumers</div>
+  <div style="position:absolute;left:548px;top:497px;font-size:10px;color:var(--muted);">only on topic match</div>
+  <div class="card" style="left:548px;top:516px;"><span class="pill p-blue">consumer</span>
+    <h3>Consent</h3>
+    <p>STOP / START keywords &rarr; record_consent().</p></div>
+  <div class="card" style="left:548px;top:616px;"><span class="pill p-blue">consumer</span>
+    <h3>Entry rules</h3>
+    <p>live workflow rules &rarr; enrol(). The 10-min wait lives in the run row, never here.</p></div>
+  <div class="card" style="left:548px;top:716px;"><span class="pill p-blue">consumer</span>
+    <h3>Receipts</h3>
+    <p>provider statuses &rarr; manifest ticks.</p></div>
+
+  <!-- WRITES -->
+  <div class="card" style="left:802px;top:288px;"><span class="pill p-teal">tables</span>
+    <h3>Identity tables</h3>
+    <p>crm_customer &middot; platform_identity &mdash; stamp comes back to the row.</p></div>
+  <div class="card" style="left:802px;top:490px;"><span class="pill p-teal">tables</span>
+    <h3>Consent state</h3>
+    <p>consent events + suppression state.</p></div>
+  <div class="card" style="left:802px;top:590px;"><span class="pill p-teal">T20</span>
+    <h3>Workflow run</h3>
+    <p>status waiting &middot; wake_at set. The WALKER drains it later &mdash; a different worker.</p></div>
+  <div class="card" style="left:802px;top:700px;"><span class="pill p-teal">T16</span>
+    <h3>Message manifest</h3>
+    <p>delivery ticks walk per wamid.</p></div>
+
+  <!-- VOCABULARY -->
+  <div class="card" style="left:1056px;top:240px;">
+    <h3>Worker &mdash; a process</h3>
+    <p>a replica of the drain loop. More throughput = more replicas. Ops knob.</p></div>
+  <div class="card" style="left:1056px;top:372px;">
+    <h3>Processor &mdash; the universal one</h3>
+    <p>the single consumer that runs on EVERY row and owns the stamp. There is one, ever.</p></div>
+  <div class="card" style="left:1056px;top:504px;">
+    <h3>Consumer &mdash; a subscription</h3>
+    <p>topics &rarr; one contract. Four exist; segments join in P2. Product feature, not ops.</p></div>
+  <div class="card note" style="left:1056px;top:640px;">
+    <h3>3 workers total</h3>
+    <p>event worker (this page) &middot; walker (wake_at) &middot; dispatcher (sends). Same image, role flags.</p></div>
+
+  <svg class="wires" width="1330" height="952">
+    <defs>
+      <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L8,4 L0,8 z" fill="#3a4661"/>
+      </marker>
+    </defs>
+    <!-- pending -> claim -->
+    <path d="M238,290 H294" marker-end="url(#ah)"/>
+    <!-- claim -> for each row -->
+    <path d="M393,338 V366" marker-end="url(#ah)"/>
+    <!-- for each row -> pass entry (extract) -->
+    <path d="M492,410 H516 V221 H548" marker-end="url(#ah)"/>
+    <!-- pass internal: extract -> resolve -> facts -> consent -> entry -> receipts -->
+    <path d="M647,256 V278" marker-end="url(#ah)"/>
+    <path d="M647,356 V378" marker-end="url(#ah)"/>
+    <path d="M647,456 V510" marker-end="url(#ah)"/>
+    <path d="M647,588 V610" marker-end="url(#ah)"/>
+    <path d="M647,688 V710" marker-end="url(#ah)"/>
+    <!-- writes -->
+    <path d="M746,331 H802" marker-end="url(#ah)"/>
+    <path d="M746,546 H774 V525 H802" marker-end="url(#ah)"/>
+    <path d="M746,646 H774 V625 H802" marker-end="url(#ah)"/>
+    <path d="M746,751 H774 V730 H802" marker-end="url(#ah)"/>
+    <!-- pass done -> close the pass -->
+    <path d="M548,771 H516 V735 H498" marker-end="url(#ah)"/>
+    <!-- close -> row at rest -->
+    <path d="M294,735 H244" marker-end="url(#ah)"/>
+    <!-- crash -> pending re-appears -->
+    <path class="dash" d="M294,845 H258 V300 H244" marker-end="url(#ah)"/>
+  </svg>
+  <div class="wlbl" style="left:266px;top:276px;">skip locked</div>
+  <div class="wlbl" style="left:516px;top:292px;">every row</div>
+  <div class="wlbl" style="left:269px;top:721px;">one update</div>
+  <div class="wlbl" style="left:258px;top:560px;">re-appears</div>
+
+  <div class="ftr">modules/01-record.md &sect;Building the consumer (A2) &middot; canon T13 &middot; ADR 0020 &middot; the queue is the guarantee; the door may only optimize</div>
+</div>
+</body>
+</html>

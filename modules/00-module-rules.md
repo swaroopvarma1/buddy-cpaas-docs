@@ -135,3 +135,51 @@ With one DB role, CHECKs and triggers are the only discipline-free enforcement:
   the DB pool.
 - **No new env var without registering it in the resolver.** 197 loose constants and 90
   bespoke getters is where the current config sprawl came from.
+
+## Workers — the drain-loop law (sealed 26 Aug 2026)
+
+Diagram: `../diagrams/07-event-worker-pass.html`. Vocabulary, pinned: a **consumer**
+is a subscription (topics → one contract; four exist, segments join in P2); the
+**processor** is the one universal consumer that runs on every row and owns the
+stamp; a **worker** is a running replica of a drain loop — a process, an ops knob.
+
+**Three workers, ever, in phase 1** — one per queue:
+
+| Worker | Drains | Claim mechanism | Arrives with |
+|---|---|---|---|
+| Event worker (A2) | `crm_event_raw` WHERE processed_at IS NULL | `FOR UPDATE SKIP LOCKED` batch | PR-2 |
+| Walker | `crm_workflow_enrollment` at `wake_at` | the wake_at lease push (self-healing) | O-lane |
+| Dispatcher (C5) | `crm_message` pending sends | SKIP LOCKED batch | C-lane |
+
+Same pattern three times: a durable table IS the queue, a partial index finds pending
+rows, a claim makes them exclusive, the worker is a dumb loop around that. Facts in,
+timers middle, sends out. One image, role flags (ADR 0006): `CRM_ROLE=event-worker |
+walker | dispatcher`. Start with 1 replica each; scale = replica count, gated only by
+the connection budget (PgBouncer before A2).
+
+**The shared scaffold — one small module, not a framework.** The three loops share
+everything EXCEPT the claim query and the work: build `shared/worker.py` (~100 lines)
+owning the loop mechanics — poll cadence + jitter, per-item error isolation (one bad
+row never kills the batch), graceful shutdown (SIGTERM → finish batch, commit, exit),
+empty-queue backoff, queue-depth/lag metrics, the role entrypoint. A worker is then
+config + two callables: `run_drain_loop(claim, handle, interval=…, batch=…)`. The
+claim query and the handling stay in each module's db/queries + logic — the scaffold
+never knows what a row means. No plugin registry, no dynamic discovery; if the
+scaffold grows past ~150 lines it is becoming a framework — stop.
+
+**Never as API-process background tasks.** `spawn_background_task` remains what it is
+today: a fail-open, fire-and-forget optimization (the voice taps). A worker inside
+the API process couples drain throughput to web traffic, shares the event loop with
+latency-critical webhooks, and dies with every deploy mid-batch. Workers are separate
+processes of the same image — killable, scalable, observable on their own.
+
+**Intervals (the sleep law): sleep only when the queue is empty.**
+- Full batch claimed → loop again IMMEDIATELY (drain-until-empty); never sleep while
+  there is work.
+- Empty poll → sleep with backoff: 1s → cap 5s, ±20% jitter so replicas never
+  thunder together.
+- Event worker + dispatcher: 1s base (near-real-time attribution and sends).
+  Walker: 5s base — workflow waits are minutes, and mass wake_ats are jittered by
+  design (canon T20).
+- Repeated DB errors → same backoff curve, plus a loud log; the loop never exits on
+  a row-level error, only on shutdown.

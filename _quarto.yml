@@ -38,6 +38,7 @@ website:
         contents:
           - design/app-crm-architecture.md
           - design/entry-points-and-the-event-spine.md
+          - design/worker-runtime.md
           - design/inbox-and-conversations.md
           - design/gate-mechanics.md
           - design/console-ui.md

@@ -138,7 +138,8 @@ With one DB role, CHECKs and triggers are the only discipline-free enforcement:
 
 ## Workers — the drain-loop law (sealed 26 Aug 2026)
 
-Diagram: `../diagrams/07-event-worker-pass.html`. Vocabulary, pinned: a **consumer**
+Diagram: `../diagrams/07-event-worker-pass.html` · runtime mechanics (role flags,
+deploy, scaffold internals): `../design/worker-runtime.md`. Vocabulary, pinned: a **consumer**
 is a subscription (topics → one contract; four exist, segments join in P2); the
 **processor** is the one universal consumer that runs on every row and owns the
 stamp; a **worker** is a running replica of a drain loop — a process, an ops knob.

@@ -89,3 +89,16 @@ Owns: `crm.customer` (T05) · `resolve()` · `assert_facts()` · merge. Diagram:
   T08), profile data, scoped ids. Ten columns and one boolean in five years too.
 
 Refs: 01-identity.md (corpus T02/T05) · ADR 0017 · entry-points doc (sync door).
+
+## Facts: drift-only append (sealed 28 Aug 2026)
+
+`assert_facts()` appends to the attributes history ONLY when the claim differs
+from the latest claim for that attribute (value OR evidence class OR source).
+An identical repeat is a no-op — no append, no jsonb rewrite. Rationale: the
+event worker asserts on every event and one call cycle carries the same name
+3–4 times; unconditional append grows hot customers' attributes unboundedly and
+makes every event pay an O(history) row-locked jsonb rewrite. This is not a
+trim (canon: history is never evicted): a repeated identical claim was never a
+new claim. Genuine flapping still appends per flip — that IS drift, and it's
+what you want visible. The dedupe lives in identity (assert_facts), never in
+callers.

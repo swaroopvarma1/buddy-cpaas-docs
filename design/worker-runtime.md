@@ -39,7 +39,9 @@ The entrypoint does not change. The branch lives in the app lifespan, next to wh
 logging, pools, Redis), then either serve or drain:
 
 ```python
-# app/crm/shared/worker_main.py — the ONLY registry of roles (closed dict, no discovery)
+# app/crm/worker_main.py — the ONLY registry of roles (closed dict, no discovery).
+# At the crm PACKAGE ROOT beside api.py (the mount-point precedent) — NOT in
+# shared/: it imports module contracts, and shared/ is leaf-only by law.
 ROLES = {
     "event-worker": lambda: run_drain_loop(claim_events,   process_event,  interval=1.0, batch=100),
     "walker":       lambda: run_drain_loop(claim_due_runs, walk_run,       interval=5.0, batch=50),
@@ -77,7 +79,22 @@ The three loops are the same machine with different contents. `app/crm/shared/wo
 - **heartbeat** — touches a timestamp each iteration (probe-able).
 
 Signature: `run_drain_loop(claim, handle, *, interval, batch)`. A worker is config
-plus two callables. What must stay per-module, never in the scaffold: the **claim
+plus two callables. **Two claim styles** (sealed 28 Aug 2026, from the A2 build):
+*lease-style* (walker) — claim commits immediately, `handle` processes each item
+after; *txn-style* (event worker, dispatcher) — SKIP LOCKED locks live only inside
+the claim transaction, so the claim callable runs the WHOLE pass and commits, and
+`handle` becomes a post-commit observer. Name txn-style claims honestly
+(`run_pass`/`drain_once`, not `claim_*`). **Consumers run per-row inside the row's
+savepoint** — never as a batch step after the loop: a batch-level consumer failure
+either rolls back the whole pass (queue stalls on one poison rule) or gets
+swallowed (stamped rows lose their reactions forever). **Savepoints enter the
+atomic grammar via a `savepoint(txn)` helper** on shared/db re-exported through
+the doors — logic never calls driver API on the handle. **Pool floor: a worker
+needs pool ≥ 2** — the pass holds one connection while contract calls
+(`resolve()`, `assert_facts()`) open their own `atomically` transaction on a
+second; pool=1 self-deadlocks permanently. Those contract calls commit
+INDEPENDENTLY of the row's savepoint — replay-safety there is idempotency, not
+atomicity, and docstrings must say which. What must stay per-module, never in the scaffold: the **claim
 query** (SKIP LOCKED batch for events/sends; the wake_at lease push for the walker)
 and the **handling logic** — they live in each module's `db/queries` + logic files.
 The scaffold never learns what a row means. Guardrail: past ~150 lines it is becoming

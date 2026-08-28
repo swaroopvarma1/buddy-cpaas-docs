@@ -7,7 +7,9 @@ date; when scope changes, the task map changes first.
 
 ## Merged
 
-### PR [clairvoyance#1016](https://github.com/juspay/clairvoyance/pull/1016) — CPaaS foundation *(status: RELEASED — merged as one commit, 2026-08-23)*
+### CPaaS foundation — MERGED 2026-08-23 via [#1010](https://github.com/juspay/clairvoyance/pull/1010) (`9669eab`)
+
+*Authored and reviewed as [#1016](https://github.com/juspay/clairvoyance/pull/1016); manas-narra force-pushed #1016's final tree byte-identically onto #1010's branch and merged under that number; #1016 closed. Review history (CodeRabbit round, tenancy thread, skill review) lives on #1016.*
 
 | Item | Delivered |
 |---|---|
@@ -23,11 +25,20 @@ date; when scope changes, the task map changes first.
 | — | `check_crm_boundaries.py` (10 CI rules) · atomic grammar · building-modules.md · CLAUDE.md |
 | — | Review-round hardening: full-scope recompute trigger · composite tenant-pinned merge FK + no-self-merge · event_raw immutability trigger · whitespace-handle fix (zero-handle law, regression-tested) · PII-free logs · inbound-mirror persistence guard · list endpoint ships `CrmCustomerSummary` (attributes jsonb never fetched for lists) · s2s verifier unit-tested · 71 pure tests total |
 
+### PR [clairvoyance#1014](https://github.com/juspay/clairvoyance/pull/1014) — journey view, call arm *(MERGED 2026-08-25, `737be0e`)*
+
+| Item | Delivered |
+|---|---|
+| A12 ½ | `crm_journey_event` view (052) — call arm only, reads LCT in place, `WHERE customer_id IS NOT NULL`, direction lowercased; 12-column canon contract |
+| A12 ½ | `GET /crm/customers/{id}/journey` — keyset cursor `(started_at, id)`, record-owned (`timeline.py` logic seam); view registered in TABLE_OWNERS |
+
+Review: skill round bounced module placement (journey→record), accessor-in-contracts, OFFSET pagination — all fixed by author. Remaining arms (message · consent · commerce `event`) land with their lanes via CREATE OR REPLACE VIEW.
+
 ## Open — phase 1
 
 | Lane | Items | Notes |
 |---|---|---|
-| A (Identity & Record) | A2 consumer runtime · A4 config resolver · **A9 ingest front door** · **A10 extractor registry + stamping processor** · **A12 journey view V01 + timeline API** · A13 transactional send consumer | A9→A10→A12 is the read-path critical chain |
+| A (Identity & Record) | A2 consumer runtime · A4 config resolver · **A9 ingest front door** · **A10 extractor registry + stamping processor** · A12 remaining arms (message/consent/commerce — with their lanes) · A13 transactional send consumer | A9→A10 is the read-path critical chain; call-arm journey SHIPPED (#1014) |
 | B (Permission) | T07/T08 + `record_consent()` · B3 blacklist backfill · B4 `decision_log` · **B5 `may_contact()` gate** (token, tz ladder, quiet hours, caps — ADR 0018 spec done, zero code) · Shopify consent importer | |
 | C (Connectivity) | C1 installations · C2 bindings · C3 `crm_message` manifest · **C4 `send()` + WhatsApp adapter** · C5 dispatcher · C6 receipt walker · C7 WABA template registry · C8 `/crm/connectors` | zero code |
 | X (external) | **X1 anchor relay — blocks phase-1 exit, NO OWNER** · X2 embedded signup — no owner · X3 pilot merchant + WABA — Swaroop | |

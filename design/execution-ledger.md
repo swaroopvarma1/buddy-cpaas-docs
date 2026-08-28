@@ -34,11 +34,22 @@ date; when scope changes, the task map changes first.
 
 Review: skill round bounced module placement (journey→record), accessor-in-contracts, OFFSET pagination — all fixed by author. Remaining arms (message · consent · commerce `event`) land with their lanes via CREATE OR REPLACE VIEW.
 
+### PR [clairvoyance#1020](https://github.com/juspay/clairvoyance/pull/1020) — event worker + drain-loop scaffold *(MERGED 2026-08-28)*
+
+| Item | Delivered |
+|---|---|
+| A2 | Consumer runtime: `shared/worker.py` drain-loop scaffold (sleep-only-when-empty, jittered doubling backoff→5s cap, per-row isolation, interruptible waits, idle heartbeat) · `CRM_ROLE` role flags in the app lifespan (`worker_main.py` at crm root, closed ROLES dict, pool-floor ≥2 startup assert) · api-pod loops (dispatcher/scheduler/analysis) gated off worker pods |
+| A10 | The processor: extractor REGISTRY (`EXTRACTORS` + `Extracted`, payload→canon fact translation, default flat shape) → `resolve()` (pass-through honored, evidence=observed always) → `assert_facts()` → per-row entry-rules slot (no-op until outreach) → one closing stamp; quarantine sets processed_at (three-state model); queue-lag logging |
+| A7+ | `assert_facts` drift-only append (`_is_drift`: value/evidence/source vs latest claim) — history records evidence, not traffic |
+| — | `savepoint()` enters the atomic grammar (shared/db + all doors) · accessor `conn`/logic `txn` naming codified · mirrors carry customer_name on all voice topics · review round: 1 BLOCKER (evidence inflation) + 6 MAJORs fixed; recorded-delay test pattern (zero wall-clock flake) is the new house standard |
+
+Note: ships an intentional release rider in `numbers/rbac.py` (merchant role added to number search/buy gate — Swaroop-confirmed). Follow-up owed: add `transaction` to checker rule 5's HANDLE_CALL regex so building-modules.md's "CI catches nesting" claim is true.
+
 ## Open — phase 1
 
 | Lane | Items | Notes |
 |---|---|---|
-| A (Identity & Record) | A2 consumer runtime · A4 config resolver · **A9 ingest front door** · **A10 extractor registry + stamping processor** · A12 remaining arms (message/consent/commerce — with their lanes) · A13 transactional send consumer | A9→A10 is the read-path critical chain; call-arm journey SHIPPED (#1014) |
+| A (Identity & Record) | A4 config resolver · **A9 ingest front door** (+A8 completion: replay(), topic dispatch) · A12 remaining arms (with their lanes) · A13 transactional send consumer | A2+A10 SHIPPED (#1020) — deploy crm-event-worker pod to drain the voice backlog; **A9 is now the whole read-path critical chain** |
 | B (Permission) | T07/T08 + `record_consent()` · B3 blacklist backfill · B4 `decision_log` · **B5 `may_contact()` gate** (token, tz ladder, quiet hours, caps — ADR 0018 spec done, zero code) · Shopify consent importer | |
 | C (Connectivity) | C1 installations · C2 bindings · C3 `crm_message` manifest · **C4 `send()` + WhatsApp adapter** · C5 dispatcher · C6 receipt walker · C7 WABA template registry · C8 `/crm/connectors` | zero code |
 | X (external) | **X1 anchor relay — blocks phase-1 exit, NO OWNER** · X2 embedded signup — no owner · X3 pilot merchant + WABA — Swaroop | |
@@ -50,7 +61,7 @@ Review: skill round bounced module placement (journey→record), accessor-in-con
 - DB-integration test harness (CI Postgres) for resolve()/suppression race tests
 - `crm_event_raw` partitioning when volume demands (documented in migration 051)
 - Corpus migration into `clairvoyance/docs/crm/` + review skill into repo `.claude/` once phase-1 code stabilizes
-- A10's consumer stamps events the voice taps recorded unattributed in the interim
+- Rule-5 regex follow-up (#1020): add `transaction` to HANDLE_CALL so nesting is CI-caught
 - **A15b — SCHEDULED (decided 23 Aug): historical LCT stamp, backfill night after
   release.** Runbook:
   1. Prereq: release deployed, migrations 048–051 applied. Release does NOT wait
@@ -78,13 +89,14 @@ Review: skill round bounced module placement (journey→record), accessor-in-con
 
 ## State in one sentence
 
-The write path exists end-to-end for voice (call → customer → event recorded)
-and the first read exists (call-arm journey, #1014); no consumers drain yet and
-nothing sends yet (no gate, no manifest, no adapter) — critical path:
-A9→A10 ∥ C1–C6 + B4/B5 → A13, with X1 as the ownerless external blocker.
+The write path exists end-to-end for voice, the first read exists (call-arm
+journey #1014), and the spine now DRAINS (#1020: event worker + processor —
+deploy the crm-event-worker pod and the accumulated voice backlog attributes
+itself). Nothing sends yet (no gate, no manifest, no adapter) — critical path:
+A9 ∥ C1–C6 + B4/B5 → A13, with X1 as the ownerless external blocker.
 
 ## Suggested next slices
 
-PR-2: A8 completion + A9 + A2 (the spine goes live) · PR-3: A10 + remaining
-journey arms (unblocks U3 fully) · C-pod starts C1–C3 in parallel · B-pod
+PR-next: A9 + A8 completion (the front door opens — external sources land) ·
+remaining journey arms ride their lanes · C-pod starts C1–C3 in parallel · B-pod
 starts T07/T08 + B4.

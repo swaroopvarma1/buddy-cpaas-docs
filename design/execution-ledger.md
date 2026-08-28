@@ -78,13 +78,13 @@ Review: skill round bounced module placement (journey→record), accessor-in-con
 
 ## State in one sentence
 
-The write path exists end-to-end for voice (call → customer → event recorded);
-nothing reads yet (no consumers, no journey) and nothing sends yet (no gate,
-no manifest, no adapter) — critical path: A9→A10→A12 ∥ C1–C6 + B4/B5 → A13,
-with X1 as the ownerless external blocker.
+The write path exists end-to-end for voice (call → customer → event recorded)
+and the first read exists (call-arm journey, #1014); no consumers drain yet and
+nothing sends yet (no gate, no manifest, no adapter) — critical path:
+A9→A10 ∥ C1–C6 + B4/B5 → A13, with X1 as the ownerless external blocker.
 
 ## Suggested next slices
 
-PR-2: A8 completion + A9 + A2 (the spine goes live) · PR-3: A10 + A12
-(journeys exist → unblocks U3) · C-pod starts C1–C3 in parallel · B-pod
+PR-2: A8 completion + A9 + A2 (the spine goes live) · PR-3: A10 + remaining
+journey arms (unblocks U3 fully) · C-pod starts C1–C3 in parallel · B-pod
 starts T07/T08 + B4.

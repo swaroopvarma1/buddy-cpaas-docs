@@ -59,7 +59,7 @@ One binding per actual pipe — a number, a Page, a from-address.
   voice takeover (clairvoyance `telephony_numbers` is the proto-binding); the available-number
   pool stays a platform-side ops table.
 
-### crm.message (T16) — 22 columns
+### crm.message (T16) — 24 columns
 
 The universal outbound row. A blocked message is still a row.
 
@@ -67,26 +67,28 @@ The universal outbound row. A blocked message is still a row.
 |---|---|---|---|---|
 | 1 | `id` | uuid | PK |  |
 | 2 | `merchant_id` | text | IX |  |
-| 3 | `customer_id` | uuid | IX | No FK — partitioned, high volume. Stamped at write by resolve(), never joined at read — the timeline rule |
+| 3 | `customer_id` | uuid | FK·IX | Trail (29 Aug 2026, PR #1031): P1 ships a COMPOSITE tenant-pinned FK (merchant_id, customer_id) → crm_customer — we are unpartitioned (see created_at trail), so the FK costs little and stops a wrong merchant_id filing a message against another tenant's customer (table self-defense). The original "No FK — partitioned, high volume" ruling returns WHEN partitioning lands; stamped at write by resolve(), never joined at read — the timeline rule |
 | 4 | `sent_to_address` | text |  | The exact number/address it went to, as it stood at send time — consent’s address twin: the audit must say WHERE, and the customer row is alive while this ledger is frozen |
 | 5 | `channel` | text |  | Stamped, not derived through binding_id — the gate refuses BEFORE a pipe is picked, so binding_id is NULL on exactly the rows compliance cares about most, and permission is per-channel |
 | 6 | `binding_id` | uuid | FK | → channel_binding — which pipe it left on. NULL on blocked rows: no pipe was ever picked |
-| 7 | `source_kind` | text | CK | broadcast \| workflow \| agent \| transactional |
+| 7 | `source_kind` | text |  | broadcast \| workflow \| agent \| transactional. Trail (29 Aug 2026): CK REMOVED per the 027 scar — vocabulary lives in code; the validating dictionary MUST land with the first producer (open obligation, PR #1031) |
 | 8 | `source_id` | uuid |  | What caused this send: broadcast id · workflow_enrolment id · chat_session id (agent) · event_raw id (transactional) |
 | 9 | `purpose_key` | text |  | What we claimed it was for — checked against the grant, auditable forever |
 | 10 | `template_id` | text |  | The registered template this send used — WABA template name on WhatsApp (quality tracking), DLT template id on SMS (the TRAI audit). One column; the channel decides the registry. Settles the T08 eviction debt with zero new columns |
 | 11 | `variables` | jsonb |  | What we actually posted to the provider: the values filled into the registered template — Meta and DLT render the final string, we never send one, so storing a "rendered" copy would store our own simulation of their render. Free-text agent sends carry no variables; the words are the transcript turn, one link away via source_id |
-| 12 | `status` | text | CK·IX | queued · blocked · accepted · sent · delivered · read · failed · dead. The winner materialised: the timestamps are the evidence, status is the stamped word — the dispatch queue reads it, and the monotonic receipt walker (Meta delivers out of order) needs one comparable ordinal, never four NULL-checks |
+| 12 | `status` | text | CK·IX | queued · **sending** · blocked · accepted · sent · delivered · read · failed · dead. `sending` added 29 Aug 2026 (PR #1031): the in-flight state a claim stamps — required because the claim must COMMIT before the provider call (no transaction across HTTP), so "claimed" must be visible in the row, not in a lock. failed = the provider refused; dead = we ran out of retries — a merchant asking why nothing arrived needs to know which. The timestamps are the evidence, status is the stamped word |
 | 13 | `reason` | text |  | One column, meaning follows status — the fold made three times now. blocked → the gate’s no: no_consent, quiet_hours, frequency_cap. failed \| dead → the provider’s code: 131049. A row is refused by us or failed by the wire, never both — two columns meant one was always NULL |
 | 14 | `provider_message_id` | text | UQ | How an inbound receipt finds this row — the wamid; the whole metrics chain hangs on this UNIQUE |
 | 16 | `attempt` | smallint |  | Position on the retry ladder |
 | 17 | `cost_micros` | bigint |  | THEIR claim, never our arithmetic — filled from the pricing object on the provider’s receipt webhook (category, billable), by the walker whose hand is already on the row. On WhatsApp Meta bills per conversation: cost lands on the opening row, NULL elsewhere. Safe cut if ever wrong — the pricing object lives verbatim in event_raw, one replay recovers it |
 | 18 | `decision_id` | bigint |  | → decision_log — the gate decision that authorised it, reasoning included. This table’s last_event_id |
-| 19 | `created_at` | timestamptz | PART | RANGE partition key |
+| 19 | `created_at` | timestamptz | PART | RANGE partition key. Trail (29 Aug 2026): P1 ships UNPARTITIONED — a partitioned table's uniques must include the partition key, which would break the dedupe index; same ruling as T13. Partition when volume calls |
 | 20 | `sent_at` | timestamptz |  |  |
 | 21 | `delivered_at` | timestamptz |  |  |
 | 22 | `read_at` | timestamptz |  | Only channels with read receipts fill it — WhatsApp’s ticks free from Meta, email via the pixel event |
-| 23 | `dedupe_key` | text | UQ | NEW 17 Aug, from the research pass: nullable, UNIQUE where not null — the pre-send idempotency the manifest lacked. Workflow sends key on (enrollment, node, attempt-generation); transactional on their triggering event; broadcasts already had T18’s. n8n’s comment, verbatim: this index — not the scheduler’s claim, lease, or epoch fencing — is what suppresses a duplicate effect when at-least-once delivery redelivers. The industry trend is away from advisory locks toward exactly this partial unique index |
+| 23 | `dedupe_key` | text | UQ | NEW 17 Aug; **strengthened 29 Aug 2026 (PR #1031): NOT NULL, total UNIQUE (merchant_id, dedupe_key)** — an omittable protection is a protection silently skipped, so every producer must name the logical send (triggering event · enrolment:node · broadcast recipient). This index — not the claim or lease — is what suppresses a duplicate ROW when at-least-once redelivers; it cannot stop one row reaching the provider twice (that risk is bounded by the claim lease) |
+| 24 | `claimed_at` | timestamptz |  | NEW 29 Aug 2026 (PR #1031): set while a worker holds the row — the persistent claim marker the no-txn-across-HTTP law requires (a SKIP LOCKED lock dies with its transaction; the provider call outlives it). Doubles as the lease: the stale sweep requeues `sending` rows whose claimed_at expired, and reclaimed ids are logged BY NAME (a double-send investigation starts there) |
+| 25 | `next_attempt_at` | timestamptz |  | NEW 29 Aug 2026 (PR #1031): when the row may next be tried — now() at birth, pushed forward by retry backoff (exponential + jitter). The queue index filters AND orders on it, so a retry waits its turn instead of jumping ahead on created_at. The gate's quiet-hours deferral writes its next_allowed_at here too |
 
 
 **Wiring**
@@ -96,9 +98,17 @@ The universal outbound row. A blocked message is still a row.
   channel adapter (WhatsApp Graph API; voice = wrapper over the lead machine), records
   `provider_message_id` (wamid) and honest status. Adapters are imported only inside send()'s
   module — the single call site is grep-enforceable.
-- The dispatcher drains `WHERE status='queued'` (partial index) with `FOR UPDATE SKIP
-  LOCKED`, backs off on provider 429s, never holds a transaction across HTTP; `dedupe_key`
-  (UNIQUE where not null) makes retries and reaper releases exactly-once.
+- The dispatcher's claim is ONE self-locking statement (as built, PR #1031):
+  `UPDATE … SET status='sending', claimed_at=now(), attempt=attempt+1 WHERE id IN
+  (SELECT … WHERE status='queued' AND next_attempt_at<=now() ORDER BY next_attempt_at
+  LIMIT n FOR UPDATE SKIP LOCKED) RETURNING …` — the claim commits BEFORE the provider
+  call (never a transaction across HTTP), attempt burns AT claim so a worker-killing
+  message cannot retry forever, and outcome writes are guarded `AND status='sending'`
+  so a stale worker's result is discarded. Stale `sending` rows are requeued by the
+  claimed_at sweep (this is the dispatch pattern; T20's wake_at-push lease remains the
+  walker's — two sealed claim styles, per worker-runtime.md). Backs off on 429s with
+  exponential+jittered `next_attempt_at`; `dedupe_key` makes producer retries one-row;
+  delivery is at-least-once, bounded by the lease.
 - Status ladder driven by provider webhooks (per-wamid transitions; out-of-order arrivals
   must not regress a later state). Statuses also land as journey events.
 - Written by: the workflow walker (every send node). Read by: journey view, reports,

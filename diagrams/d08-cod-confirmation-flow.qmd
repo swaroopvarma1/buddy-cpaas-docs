@@ -1,0 +1,11 @@
+---
+title: "08 · COD confirmation, end to end (the reference flow)"
+format:
+  html:
+    page-layout: full
+    toc: false
+---
+
+[Open standalone ↗](08-cod-confirmation-flow.html){target=_blank}
+
+<iframe src="08-cod-confirmation-flow.html" style="width:100%;height:1140px;border:1px solid #e2e6ee;border-radius:12px;background:#eef1f6;"></iframe>

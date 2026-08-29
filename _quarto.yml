@@ -65,6 +65,7 @@ website:
           - diagrams/d05-outreach.qmd
           - diagrams/d06-conversations-inbox.qmd
           - diagrams/d07-event-worker-pass.qmd
+          - diagrams/d08-cod-confirmation-flow.qmd
       - text: "Visual language"
         href: visual-language/README.md
 

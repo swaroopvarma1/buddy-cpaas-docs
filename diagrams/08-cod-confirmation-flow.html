@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Buddy CPaaS &mdash; COD confirmation, end to end</title>
+<style>
+:root{
+  --canvas:#eef1f6; --panel:#e5e9f1; --card:#ffffff; --card-border:#e2e6ee;
+  --shadow:0 1px 3px rgba(31,42,68,.10),0 4px 14px rgba(31,42,68,.06);
+  --ink:#1f2a44; --ink-soft:#4b5568; --muted:#8a93a6; --line:#3a4661;
+  --purple:#7c3aed; --purple-soft:#ede4ff; --purple-ink:#5b21b6;
+  --blue:#2563eb;   --blue-soft:#dce7fd;   --blue-ink:#1d4ed8;
+  --green:#10b981;  --green-soft:#d8f3e6;  --green-ink:#047857;
+  --teal:#0d9488;   --teal-soft:#d3f0ec;   --teal-ink:#0f766e;
+  --amber:#f59e0b;  --amber-soft:#ffeacb;  --amber-ink:#92400e;
+  --red:#ef4444;    --red-soft:#ffdddd;    --red-ink:#b91c1c;
+  --font:"Inter","SF Pro Text",-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+body{margin:0;background:var(--canvas);font-family:var(--font);color:var(--ink);}
+.page{position:relative;width:1560px;height:1080px;}
+.hdr{position:absolute;top:0;left:0;right:0;padding:24px 32px 0;}
+.hdr h1{margin:0;font-size:22px;}
+.hdr p{margin:4px 0 0;font-size:13px;color:var(--muted);}
+.legend{position:absolute;top:28px;right:32px;display:flex;gap:8px;align-items:center;
+  font-size:10px;color:var(--ink-soft);}
+.legend .ln{width:26px;height:0;border-top:1.5px solid var(--line);}
+.legend .ln.dash{border-top-style:dashed;}
+.pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2px 8px;border-radius:999px;}
+.p-purple{background:var(--purple-soft);color:var(--purple-ink);}
+.p-blue{background:var(--blue-soft);color:var(--blue-ink);}
+.p-green{background:var(--green-soft);color:var(--green-ink);}
+.p-teal{background:var(--teal-soft);color:var(--teal-ink);}
+.p-amber{background:var(--amber-soft);color:var(--amber-ink);}
+.p-red{background:var(--red-soft);color:var(--red-ink);}
+.lane{position:absolute;top:120px;height:780px;width:230px;background:var(--panel);border-radius:14px;}
+.lane h2{position:absolute;top:12px;left:16px;margin:0;font-size:11px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.lane .sub{position:absolute;top:29px;left:16px;font-size:10px;color:var(--muted);}
+.card{position:absolute;background:var(--card);border:1px solid var(--card-border);
+  border-radius:10px;box-shadow:var(--shadow);padding:10px 12px;width:198px;box-sizing:border-box;}
+.card h3{margin:0 0 4px;font-size:13px;color:var(--ink);}
+.card p{margin:0;font-size:11px;line-height:1.45;color:var(--ink-soft);}
+.card .pill{position:absolute;top:-9px;right:10px;}
+.card.note{border:1.5px dashed var(--muted);box-shadow:none;background:transparent;}
+.card.note p{color:var(--muted);}
+.card.good{border-color:var(--green);}
+.card.bad{border-color:var(--red);}
+.dec{position:absolute;width:104px;height:104px;background:var(--card);
+  border:1.5px solid var(--amber);border-radius:12px;transform:rotate(45deg);
+  box-shadow:var(--shadow);}
+.dec span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  transform:rotate(-45deg);font-size:12px;font-weight:700;color:var(--amber-ink);text-align:center;}
+svg.wires{position:absolute;inset:0;pointer-events:none;}
+svg.wires path{stroke:var(--line);stroke-width:1.5;fill:none;}
+svg.wires path.dash{stroke-dasharray:5 4;}
+svg.wires path.green{stroke:var(--green);}
+svg.wires path.red{stroke:var(--red);}
+.wlbl{position:absolute;background:var(--ink);color:#fff;font-size:9.5px;font-weight:600;
+  padding:2px 8px;border-radius:999px;transform:translate(-50%,-50%);white-space:nowrap;}
+.wlbl.g{background:var(--green-ink);}
+.wlbl.r{background:var(--red-ink);}
+.strip{position:absolute;left:24px;top:918px;width:1500px;background:transparent;
+  border:1.5px dashed var(--muted);border-radius:10px;padding:10px 14px;box-sizing:border-box;}
+.strip p{margin:0;font-size:11px;line-height:1.5;color:var(--muted);}
+.ftr{position:absolute;left:32px;bottom:12px;font-size:10px;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="hdr">
+    <h1>COD confirmation, end to end &mdash; one order through the whole system</h1>
+    <p>Shopify COD order &rarr; spine &rarr; workflow &rarr; WhatsApp ask (10m) &rarr; reply or escalate to a call (1h) &rarr; confirm, or cancel after 12h &mdash; a late YES wins any time</p>
+  </div>
+  <div class="legend">
+    <span class="pill p-amber">external</span><span class="pill p-blue">spine / logic</span>
+    <span class="pill p-teal">store</span><span class="pill p-green">confirm</span>
+    <span class="pill p-red">cancel</span>
+    <span class="ln"></span>flow<span class="ln dash"></span>timer / late path
+  </div>
+
+  <div class="lane" style="left:24px;"><h2>1 &middot; Order arrives</h2><span class="sub">Shopify &rarr; the spine</span></div>
+  <div class="lane" style="left:278px;"><h2>2 &middot; Understand &amp; enrol</h2><span class="sub">the event worker's pass</span></div>
+  <div class="lane" style="left:532px;"><h2>3 &middot; Ask on WhatsApp</h2><span class="sub">walker &rarr; gate &rarr; send</span></div>
+  <div class="lane" style="left:786px;"><h2>4 &middot; The reply</h2><span class="sub">inbound re-enters the spine</span></div>
+  <div class="lane" style="left:1040px;"><h2>5 &middot; Escalate to voice</h2><span class="sub">the lead-api sync door</span></div>
+  <div class="lane" style="left:1294px;"><h2>6 &middot; The outcome</h2><span class="sub">the 12-hour window</span></div>
+
+  <!-- L1 -->
+  <div class="card" style="left:40px;top:180px;"><span class="pill p-amber">shopify</span>
+    <h3>orders/create (COD)</h3>
+    <p>Webhook &rarr; adapter verifies &rarr; stored RAW in event_raw &rarr; 200. Understood later, never at the door.</p></div>
+  <div class="card note" style="left:40px;top:320px;">
+    <h3>The T13 row</h3>
+    <p>payload carries gateway=COD, phone, name, order id. processed_at NULL &mdash; pending.</p></div>
+
+  <!-- L2 -->
+  <div class="card" style="left:294px;top:180px;"><span class="pill p-blue">A2 + A10</span>
+    <h3>The pass</h3>
+    <p>resolve(phone) &rarr; Priya's customer row; assert_facts(name). Event stamped.</p></div>
+  <div class="card" style="left:294px;top:310px;"><span class="pill p-blue">consumer</span>
+    <h3>Entry rule matches</h3>
+    <p>Merchant's rule: topic orders/create AND payload.gateway = COD &rarr; enrol().</p></div>
+  <div class="card" style="left:294px;top:440px;"><span class="pill p-teal">T20</span>
+    <h3>Workflow run born</h3>
+    <p>node ask-whatsapp &middot; wake_at = now() + 10 min. The wait lives in the ROW.</p></div>
+
+  <!-- L3 -->
+  <div class="card" style="left:548px;top:180px;"><span class="pill p-blue">walker</span>
+    <h3>Walker wakes the run</h3>
+    <p>Due at wake_at; the claim pushes the lease forward &mdash; crash-safe.</p></div>
+  <div class="card" style="left:548px;top:300px;"><span class="pill p-blue">gate B5</span>
+    <h3>may_contact()</h3>
+    <p>utility purpose &middot; consent &middot; quiet hours &middot; caps &rarr; verdict + T14 diary row.</p></div>
+  <div class="card" style="left:548px;top:430px;"><span class="pill p-teal">T16 + T23</span>
+    <h3>send() &rarr; manifest row</h3>
+    <p>Template cod_confirm (T23, UTILITY, Yes/No buttons) &rarr; dispatcher &rarr; WhatsApp.</p></div>
+  <div class="card note" style="left:548px;top:560px;">
+    <h3>Blocked instead?</h3>
+    <p>Still a T16 row, with the reason &mdash; the journey shows why nothing arrived.</p></div>
+
+  <!-- L4 -->
+  <div class="dec" style="left:833px;top:196px;"><span>Reply<br>within 1h?</span></div>
+  <div class="card good" style="left:802px;top:370px;"><span class="pill p-green">confirm</span>
+    <h3>YES tapped</h3>
+    <p>Inbound button lands as an event &rarr; matches the open run &rarr; action: Shopify tag "cod-confirmed" (write-back, T11 creds).</p></div>
+  <div class="card bad" style="left:802px;top:520px;"><span class="pill p-red">cancel</span>
+    <h3>NO tapped</h3>
+    <p>Same path, other branch: Shopify cancel + tag "cod-declined". Order closed.</p></div>
+  <div class="card note" style="left:802px;top:660px;">
+    <h3>Silence for 1 hour</h3>
+    <p>The run's wait-for-reply times out (wake_at) &rarr; next node: call her.</p></div>
+
+  <!-- L5 -->
+  <div class="card" style="left:1056px;top:180px;"><span class="pill p-purple">sync door</span>
+    <h3>Action: push a lead</h3>
+    <p>Workflow action &rarr; lead-api (EXISTS TODAY) &rarr; buddy dials with the COD-confirm voice template.</p></div>
+  <div class="card" style="left:1056px;top:320px;"><span class="pill p-blue">spine</span>
+    <h3>call.completed event</h3>
+    <p>Outcome (yes / no / no answer) re-enters the SPINE like any fact &rarr; resumes the run.</p></div>
+  <div class="dec" style="left:1091px;top:470px;"><span>Answered?</span></div>
+  <div class="card" style="left:1056px;top:640px;">
+    <h3>Yes / No on the call</h3>
+    <p>Same confirm / cancel actions as the WhatsApp branch &mdash; one workflow, two channels.</p></div>
+
+  <!-- L6 -->
+  <div class="card" style="left:1310px;top:180px;"><span class="pill p-teal">T20</span>
+    <h3>No answer &rarr; wait 12h</h3>
+    <p>wake_at = +12h. The run now waits on a TIMER and an EVENT at once.</p></div>
+  <div class="card good" style="left:1310px;top:320px;"><span class="pill p-green">confirm</span>
+    <h3>Late YES, any time</h3>
+    <p>Her tap lands as an event &rarr; matches the open run &rarr; confirm wins, the timer dies (cancel-on-goal).</p></div>
+  <div class="card bad" style="left:1310px;top:470px;"><span class="pill p-red">cancel</span>
+    <h3>12h pass in silence</h3>
+    <p>Walker wakes &rarr; cancel the order &rarr; Shopify write-back. Honest, auditable, on time.</p></div>
+  <div class="card note" style="left:1310px;top:610px;">
+    <h3>Every step is visible</h3>
+    <p>Journey: order &middot; message &middot; reply &middot; call &middot; outcome &mdash; one timeline (V01). Every refusal has a T14 diary row.</p></div>
+
+  <svg class="wires" width="1560" height="1080">
+    <defs>
+      <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L8,4 L0,8 z" fill="#3a4661"/></marker>
+      <marker id="ahg" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L8,4 L0,8 z" fill="#10b981"/></marker>
+      <marker id="ahr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L8,4 L0,8 z" fill="#ef4444"/></marker>
+    </defs>
+    <!-- order -> pass -->
+    <path d="M238,225 H294" marker-end="url(#ah)"/>
+    <!-- pass -> entry rule -> run -->
+    <path d="M393,262 V306" marker-end="url(#ah)"/>
+    <path d="M393,392 V436" marker-end="url(#ah)"/>
+    <!-- run -> walker (10 min, dashed timer) -->
+    <path class="dash" d="M492,485 H516 V225 H548" marker-end="url(#ah)"/>
+    <!-- walker -> gate -> send -->
+    <path d="M647,252 V296" marker-end="url(#ah)"/>
+    <path d="M647,382 V426" marker-end="url(#ah)"/>
+    <!-- send -> reply diamond -->
+    <path d="M746,470 H770 V248 H830" marker-end="url(#ah)"/>
+    <!-- diamond -> yes / no / timeout -->
+    <path class="green" d="M885,304 V366" marker-end="url(#ahg)"/>
+    <path class="red" d="M958,248 H1008 V545 H1002" marker-end="url(#ahr)"/>
+    <path class="dash" d="M885,304 V330 H778 V690 H798" marker-end="url(#ah)"/>
+    <!-- 1h timeout -> voice push -->
+    <path class="dash" d="M1000,700 H1024 V225 H1056" marker-end="url(#ah)"/>
+    <!-- push -> call.completed -> answered? -->
+    <path d="M1155,262 V316" marker-end="url(#ah)"/>
+    <path d="M1155,402 V466" marker-end="url(#ah)"/>
+    <!-- answered? -> yes/no card ; -> no answer wait -->
+    <path d="M1143,574 V636" marker-end="url(#ah)"/>
+    <path class="dash" d="M1195,522 H1264 V225 H1310" marker-end="url(#ah)"/>
+    <!-- wait -> late yes / silent cancel -->
+    <path class="green dash" d="M1409,252 V316" marker-end="url(#ahg)"/>
+    <path class="red dash" d="M1409,404 V466" marker-end="url(#ahr)"/>
+  </svg>
+
+  <div class="wlbl" style="left:516px;top:352px;">10 min</div>
+  <div class="wlbl" style="left:770px;top:355px;">delivered</div>
+  <div class="wlbl g" style="left:885px;top:340px;">YES</div>
+  <div class="wlbl r" style="left:1008px;top:420px;">NO</div>
+  <div class="wlbl" style="left:778px;top:520px;">1 h silent</div>
+  <div class="wlbl" style="left:1024px;top:460px;">call her</div>
+  <div class="wlbl" style="left:1264px;top:350px;">no answer</div>
+  <div class="wlbl g" style="left:1409px;top:288px;">any time</div>
+  <div class="wlbl r" style="left:1409px;top:436px;">12 h</div>
+
+  <div class="strip">
+    <p><b style="color:var(--ink-soft)">Where each piece stands (29 Aug 2026):</b>
+    BUILT &amp; MERGED &mdash; the spine + event worker's pass (A2/A10), the send manifest + dispatcher (T16, #1031), voice via the lead-api door, the journey view.
+    PENDING &mdash; Shopify adapter (A9) &middot; workflow + walker (T19/T20, O-lane) &middot; the gate (B5) &middot; real WhatsApp adapter (C4) &middot; template registry (T23, canon sealed &mdash; build next) &middot; Shopify write-back actions.
+    Nothing in this flow needs a design decision &mdash; every box has a sealed home; what remains is build order.</p>
+  </div>
+
+  <div class="ftr">canon T13 &middot; T16 &middot; T20 &middot; T23 &middot; ADR 0015/0018/0020 &middot; diagrams 07 (the worker's pass) &middot; design/worker-runtime.md</div>
+</div>
+</body>
+</html>

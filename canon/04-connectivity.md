@@ -59,6 +59,50 @@ One binding per actual pipe — a number, a Page, a from-address.
   voice takeover (clairvoyance `telephony_numbers` is the proto-binding); the available-number
   pool stays a platform-side ops table.
 
+### crm.template (T23) — 19 columns
+
+The channel template registry — sealed 29 Aug 2026, the C7 table the map had left
+unnamed. One registry for every channel that pre-registers message shapes:
+WhatsApp (WABA templates) first, SMS-DLT (the TRAI audit) second, email later.
+`T16.template_id` stores the name this table registers — "one column; the channel
+decides the registry."
+
+| # | column | type | keys | notes |
+|---|---|---|---|---|
+| 1 | `id` | uuid | PK |  |
+| 2 | `merchant_id` | text | UQ | Tenancy; first in the natural key |
+| 3 | `channel` | text | UQ | whatsapp · sms · … — NO CHECK (027 scar: provider vocabulary lives in code) |
+| 4 | `provider_account_ref` | text |  | The WABA (or DLT entity) that owns the template — templates are namespaced per provider account, not per merchant. Becomes `installation_id FK → T11` when C1 lands (trail) |
+| 5 | `name` | text | UQ | What T16.template_id stores at send time |
+| 6 | `language` | text | UQ | Meta's real key is (WABA, name, language) — the same name exists once per language; the send path picks by name+language |
+| 7 | `provider_template_id` | text | UQ | Meta's stable id. Globally unique per provider → partial unique ALONE (the wamid exception to merchant-first) |
+| 8 | `category` | text |  | MARKETING · UTILITY · AUTHENTICATION — THEIRS, current. NO CHECK: Meta has renamed categories before. Determines billing class |
+| 9 | `submitted_category` | text |  | What WE asked for. Meta recategorizes silently and the price changes with it — the diff between 8 and 9 is money made visible |
+| 10 | `category_updated_at` | timestamptz |  | When Meta last moved it |
+| 11 | `components` | jsonb |  | NOT NULL. HEADER/BODY/FOOTER/BUTTONS + variables + example values — THEIR registered structure, verbatim (store the letter). Never a rendered message string (that law lives on T16) |
+| 12 | `status` | text | IX | draft · submitted · pending · approved · rejected · paused · deleted (+ whatever Meta adds). NO CHECK — vocabulary dictionary in code. Editing an approved template puts the SAME row back to pending (Meta re-reviews in place; history = template.status events in the spine, replayable) |
+| 13 | `status_updated_at` | timestamptz |  |  |
+| 14 | `rejection_reason` | text |  | Meta's reason VERBATIM — the U4 console surfaces it word for word (console-ui law) |
+| 15 | `quality` | text |  | GREEN · YELLOW · RED · UNKNOWN — theirs, changes over time, no CHECK |
+| 16 | `quality_updated_at` | timestamptz |  |  |
+| 17 | `last_synced_at` | timestamptz |  | C7's periodic Tech-Provider full sync — the drift healer |
+| 18 | `created_at` | timestamptz |  |  |
+| 19 | `updated_at` | timestamptz |  | Touch trigger (rules: every updated_at gets one) |
+
+Natural key: `UNIQUE (merchant_id, channel, name, language)`.
+
+**Wiring**
+- Written by: the U4 console (create/edit drafts) → C7 Tech Provider API (submit to
+  Meta). The UI never talks to Meta directly.
+- Status updates arrive THROUGH THE SPINE: Meta's `template.status` webhooks land in
+  `event_raw` raw (T13 already names the topic), and a connectivity-owned
+  template-status consumer updates this registry — replayable when Meta's payload
+  surprises us. Plus the periodic full sync (17) healing drift.
+- Read by: U4 (list/detail with status + verbatim rejection + quality), `send()`
+  (template lookup by name+language at send time), and the gate indirectly
+  (category informs purpose mapping).
+- Owner: connectivity. Physical `crm_template`.
+
 ### crm.message (T16) — 24 columns
 
 The universal outbound row. A blocked message is still a row.

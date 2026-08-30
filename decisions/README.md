@@ -28,3 +28,4 @@ is; these records say *why we chose*, wherever we filled a gap or deviated.
 | [0019](0019-console-extends-loom.md) | Phase-1 console extends loom: Customers top-level + templates under Channels · per-merchant flag · loom theme contract · U1 collapses to wiring | Accepted |
 | [0020](0020-journey-commerce-arm-event-raw-stamp.md) | Journey commerce arm: nullable `customer_id` stamped on event_raw at processing time; V01 gains the `event` arm (T13/V01 canon amendment) | Accepted |
 | [0021](0021-handle-lifecycle.md) | Handle lifecycle: attach if free · overwrite on declared/observed evidence (history-preserving trigger) · imported never displaces · staple on collision | Accepted |
+| [0022](0022-no-never-words-on-external-surfaces.md) | No never-words (CRM/CDP/CPaaS) on external surfaces: `/crm` prefix dropped → `/ingest/events`, `/customers/*`; tags neutral; internal `app/crm`/`crm_*` stay | Accepted |

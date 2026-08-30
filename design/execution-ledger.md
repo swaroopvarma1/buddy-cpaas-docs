@@ -45,14 +45,22 @@ Review: skill round bounced module placement (journey→record), accessor-in-con
 
 Note: ships an intentional release rider in `numbers/rbac.py` (merchant role added to number search/buy gate — Swaroop-confirmed). Follow-up owed: add `transaction` to checker rule 5's HANDLE_CALL regex so building-modules.md's "CI catches nesting" claim is true.
 
+### PR [clairvoyance#1031](https://github.com/juspay/clairvoyance/pull/1031) — crm_message manifest + dispatcher *(MERGED 2026-08-30, rab1prasad)*
+
+| Item | Delivered |
+|---|---|
+| C3 | `crm_message` manifest per amended canon T16 (24 cols: `sending` status, `claimed_at` lease, `next_attempt_at`, total dedupe unique, single-statement claim) — migration 056 with departures recorded as the T16 amendment trail |
+| C5 | Dispatcher: lease-style claim (sweep stale → claim batch), `plan_for_outcome` pure retry policy, never-raises `_dispatch_one` (send error → retryable requeue; reclaimed row → outcome discarded), ±20% jitter with floor ≥1 · dummy `send()` seam |
+| — | Gate deferred to B5 by explicit scope ruling (send() is a dummy reaching nothing — zero exposure); **tripwire owed**: a test pinning send() as dummy that must die for a real adapter to land. Carried: `source_kind` dictionary with first producer · `send(send_token, message_id)` at B5 · adapter timeout < lease with first real adapter |
+
 ## Open — phase 1
 
 | Lane | Items | Notes |
 |---|---|---|
 | A (Identity & Record) | A4 config resolver · **A9 ingest front door** (+A8 completion: replay(), topic dispatch) · A12 remaining arms (with their lanes) · A13 transactional send consumer | A2+A10 SHIPPED (#1020) — deploy crm-event-worker pod to drain the voice backlog; **A9 is now the whole read-path critical chain** |
 | B (Permission) | T07/T08 + `record_consent()` · B3 blacklist backfill · B4 `decision_log` · **B5 `may_contact()` gate** (token, tz ladder, quiet hours, caps — ADR 0018 spec done, zero code) · Shopify consent importer | |
-| C (Connectivity) | C1 installations · C2 bindings · C3 `crm_message` manifest · **C4 `send()` + WhatsApp adapter** · C5 dispatcher · C6 receipt walker · C7 WABA template registry · C8 `/crm/connectors` | zero code |
-| X (external) | **X1 anchor relay — blocks phase-1 exit, NO OWNER** · X2 embedded signup — no owner · X3 pilot merchant + WABA — Swaroop | |
+| C (Connectivity) | C1 installations · C2 bindings · **C4 `send()` + WhatsApp adapter** (+ gate tripwire from #1031) · C6 receipt walker · C7 WABA template registry (T23 sealed) · C8 connectors door | C3+C5 SHIPPED (#1031) |
+| X (external) | **X1 nautilus relay — cmd-err, #195 IN REVIEW** (with the door, #1025): reshape per the two-plane ruling — relay at webhook receipt, letter verbatim, `source=shopify`, shadow-only (cutover branch deleted; returns as per-shop `dispatch_brain` when W-lane lands) · X2 embedded signup — no owner · X3 pilot merchant + WABA — Swaroop | ADR 0022: no never-words on external surfaces — `/crm/*` → `/ingest/events`, `/customers/*` (called out on #1025) |
 | U (Swaroop + Claude) | U1 loom wiring · U2 customers list (**backend live** — `GET /crm/customers` returns `CrmCustomerSummary` rows; detail GET carries full attributes) · U3 customer 360 (needs A12+B4) · U4 template manager (needs C7) | design complete (ADR 0019) |
 | P0 remainder | PgBouncer (**before** A2 multiplies connections) · fail-closed voice DND · P0.4 LIKE-over-JSONB fix · reseller backfill | |
 

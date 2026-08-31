@@ -66,6 +66,10 @@ Note: ships an intentional release rider in `numbers/rbac.py` (merchant role add
 
 ## Open — follow-ups created during the foundation build
 
+- **Repeat-entry debounce + refresh** (sealed position, modules/05 §Repeat entries,
+  31 Aug): `on_repeat` + `debounce_minutes` entry vocabulary + one idempotent
+  entry-processor UPDATE — named follow-up AFTER #1029 merges, not part of its fix round
+
 - DB-integration test harness (CI Postgres) for resolve()/suppression race tests
 - `crm_event_raw` partitioning when volume demands (documented in migration 051)
 - Corpus migration into `clairvoyance/docs/crm/` + review skill into repo `.claude/` once phase-1 code stabilizes

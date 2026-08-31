@@ -37,6 +37,51 @@ Owns: `crm.workflow` (T19) · `crm.workflow_enrollment` (T20) · `crm.broadcast`
 - **Campaign is a badge registry**: composite FK from broadcast turns a tag typo into
   an insert error. Nothing points FROM campaign to anything.
 
+## Repeat entries — debounce and refresh (sealed position 31 Aug 2026 · follow-up, NOT in #1029)
+
+Humans act in sessions; event streams arrive in bursts. Any flow that talks to a
+human about a burst needs exactly one of: **dedupe** (built — the open-run unique),
+**debounce + refresh** (this position), or **accumulate**. Today a repeat entry event
+for an open run is silently absorbed by the unique — correct for *one message per
+burst*, wrong for *which* message.
+
+**The example that seals it.** Priya abandons six carts between 10:00 and 10:09; the
+plan says "message 10 minutes after abandonment." As built, the run is born at 10:00
+with cart #1 (Rs 800) and fires at 10:10 — the wrong cart, while she is still
+shopping. The sealed behavior: each repeat entry **patches the unfired run** —
+context keeps the winner (the Rs 4,500 cart), the alarm slides to now+10 — so at
+10:19 she gets ONE message, about the biggest cart, sent only after she has actually
+gone quiet.
+
+**The vocabulary** (entry section of the document, beside reenter + cooldown —
+per-plan words, never walker behavior):
+
+- `on_repeat`: `ignore` (default — today's behavior) · `refresh_latest` ·
+  `refresh_max(<payload field>)` · `accumulate`
+- `debounce_minutes`: every matching repeat slides the entry wait's alarm
+
+**Mechanics when built**: one idempotent UPDATE in the entry processor (the
+`resume_run_on_event` shape): `WHERE status='waiting' AND current_node = <entry
+node>` — a run past its first square is NEVER patched; what it already said was true
+when it said it. Source-event idempotency unchanged (each event still marks itself
+used).
+
+**Where each policy earns its keep**: `refresh_max` — abandonment (biggest cart) ·
+`refresh_latest` — failed-payment bursts (quote the LATEST error), order edits before
+the COD call (confirm the final order, not the first snapshot), disruption comms
+(four revised ETAs in 30 minutes — speak the latest, never ETA #2 of 4) ·
+`accumulate` — two COD orders in an hour = one call confirming both; back-in-stock
+batches = one message listing all four items. **Where it is deliberately wrong**:
+WISMO (keyed runs, never merged) and transactional flows (no debounce — act now),
+which is exactly why this is plan vocabulary, not engine behavior.
+
+**Fire-time alternative, noted for phase 2**: freeze nothing — the send node re-reads
+the winner from the spine at fire time via a record contract (the goal-re-check
+pattern, e.g. "her highest-value abandonment since entered_at"). More general and
+always fresh, but needs a new cross-module contract and a per-fire read; the
+entry-patch version needs neither. Revisit when send nodes want live facts for other
+reasons.
+
 ## Do NOT
 
 - **Don't build a workflow engine.** No BPMN, no Temporal, no state-machine framework.

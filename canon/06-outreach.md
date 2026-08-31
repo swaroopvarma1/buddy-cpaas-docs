@@ -93,6 +93,10 @@ The plan — ONE document a walker reads live. Many customers walk the same one;
   pin). The publish validator blocks unsafe edit classes (deleting an occupied node without
   a strand-to-exit rule, changing entry semantics mid-flight).
 - Entry carries reenter + cooldown — the admission guards enforced for BOTH doors.
+  Sealed follow-up (31 Aug 2026, not yet built): entry also names its repeat policy —
+  `on_repeat: ignore · refresh_latest · refresh_max(<field>) · accumulate` +
+  `debounce_minutes` (a repeat entry patches the still-unfired run: winner-takes-context,
+  sliding alarm) — see modules/05-outreach §Repeat entries.
 - Templates live on send nodes; waits are nodes; goal checks are re-evaluated at fire time
   (never send "did you forget?" to someone who just paid).
 

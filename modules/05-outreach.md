@@ -114,5 +114,12 @@ reasons.
   keeps the hot table small.
 - Click/branch consumers (button.reply, link.clicked) advance runs by topic — adding
   a branch type must be a node-vocabulary change in the document, not a walker rewrite.
+- **The node vocabulary is registry-backed from the start (RULED 31 Aug 2026 — Swaroop,
+  #1029 review):** one dict in an `outreach/nodes.py` concern file — `NODE_TYPES:
+  {type: (validate, execute, is_wait)}` — the publish validator iterates it, the walker
+  dispatches through it, and adding a type is ONE entry (half-adding a type — validator
+  knows it, walker doesn't — becomes structurally impossible). The schema's `Literal`
+  stays in schemas.py (leaf shapes import nothing), pinned to the registry keys by a
+  test. Precedent: record's `EXTRACTORS` registry (#1020) — same shape, same reason.
 
 Refs: 05-audiences.md + 06-outreach.md (corpus) · ADR 0004 / 0010 / 0016.

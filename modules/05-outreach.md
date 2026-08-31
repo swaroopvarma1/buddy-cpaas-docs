@@ -25,7 +25,13 @@ Owns: `crm.workflow` (T19) · `crm.workflow_enrollment` (T20) · `crm.broadcast`
   customer id.** The author declares what a run is ABOUT: abandonment omits it
   (bursts coalesce), WISMO writes `"order_id"` (parallel threads). The entry
   processor reads `payload[entry.key]` and passes it to `enrol()`; goal-match-by-key
-  (a keyed goal closes only its own run) lands with the first keyed flow.
+  (a keyed goal closes only its own run) AND reply-match-by-key (a reply wakes only
+  its own run — today `resume_run_on_event` patches every waiting run of the customer
+  on that node, correct only while runs are customer-keyed) land with the first keyed
+  flow. Also with cyclic documents (the validator permits loops): the walker must
+  CONSUME `reply_<node>` when taking its edge, or a loop back to the same wait_event
+  re-branches instantly on the stale answer — one-line fix, owed before the first
+  looping plan.
 - **Per send node**: build template+variables → `may_contact()` → `send(token, …)`.
   Goal re-checked AT FIRE TIME (never "did you forget?" to someone who just paid);
   the goal event (orders/create) cancels open enrollments. **Random branch outcomes are

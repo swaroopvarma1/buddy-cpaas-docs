@@ -20,7 +20,12 @@ Owns: `crm.workflow` (T19) · `crm.workflow_enrollment` (T20) · `crm.broadcast`
 - **Runs park, never vanish**: attempts++ ON the claim (poison runs count against
   themselves); exhausted → `parked` with `last_error` readable on the merchant's
   screen. `enrollment_key` (partial unique WHERE not exited) allows keyed concurrent
-  runs (two orders = two WISMO flows).
+  runs (two orders = two WISMO flows). **RULED 31 Aug 2026 (Swaroop): the key is
+  plan-level document vocabulary — `entry.key: "<payload field>"`, omitted = the
+  customer id.** The author declares what a run is ABOUT: abandonment omits it
+  (bursts coalesce), WISMO writes `"order_id"` (parallel threads). The entry
+  processor reads `payload[entry.key]` and passes it to `enrol()`; goal-match-by-key
+  (a keyed goal closes only its own run) lands with the first keyed flow.
 - **Per send node**: build template+variables → `may_contact()` → `send(token, …)`.
   Goal re-checked AT FIRE TIME (never "did you forget?" to someone who just paid);
   the goal event (orders/create) cancels open enrollments. **Random branch outcomes are

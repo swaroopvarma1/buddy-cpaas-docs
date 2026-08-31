@@ -115,6 +115,25 @@ the consumer runtime · `replay()` · (later) the journey view. Diagram:
   backlog is minutes of work. The real constraint is the CONNECTION BUDGET:
   PgBouncer lands before A2 multiplies connections (P0, ledgered).
 
+## The consumer registry — COMMITTED for the next PR (Swaroop, 31 Aug 2026)
+
+Today the pass's entry-rules slot imports its one subscriber by name
+(`record/workers.py` -> `outreach.contracts.consume_attributed_event`) — the import
+cycle this created in #1029 was broken by the composition-root exception (record's
+contracts no longer export the pass; `worker_main` takes it directly). That fix
+avoids the cycle; the registry makes it impossible:
+
+- `record/workers.py` holds `CONSUMERS: list` and calls each per row, inside the
+  row's savepoint, before the stamp — it imports NO other module.
+- `app/crm/worker_main.py` (the composition root) registers subscribers at startup:
+  `register_consumer(consume_attributed_event)` — outreach today, segments in P2,
+  each a one-line registration.
+- A consumer raise still rolls back only its row (unchanged); registration order is
+  declared in worker_main, one place.
+
+Precedent: EXTRACTORS (#1020), NODE_TYPES (#1029). Not deferred to consumer #2 —
+the correct-from-the-start ruling applies; lands in the next record-touching PR.
+
 ## Scale & future-fit
 
 - Consumers scale by replicas; the partial index keeps the scan cheap regardless of

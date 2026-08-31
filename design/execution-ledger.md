@@ -66,6 +66,9 @@ Note: ships an intentional release rider in `numbers/rbac.py` (merchant role add
 
 ## Open — follow-ups created during the foundation build
 
+- **Spine consumer registry** (COMMITTED next PR — Swaroop 31 Aug): record's pass
+  stops importing subscribers by name; `worker_main` registers them (modules/01
+  §consumer registry). Kills the #1029 import-cycle class structurally
 - **Repeat-entry debounce + refresh** (sealed position, modules/05 §Repeat entries,
   31 Aug): `on_repeat` + `debounce_minutes` entry vocabulary + one idempotent
   entry-processor UPDATE — named follow-up AFTER #1029 merges, not part of its fix round

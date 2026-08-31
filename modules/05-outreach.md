@@ -87,6 +87,58 @@ always fresh, but needs a new cross-module contract and a per-fire read; the
 entry-patch version needs neither. Revisit when send nodes want live facts for other
 reasons.
 
+## Positions sealed by the first implementation (#1029 — folded from its review-phase decisions catalog, 31 Aug 2026)
+
+Where canon named the mechanism, #1029 chose the numbers and shapes. Sealed as built:
+
+- **Walker step mechanics**: a node's time is written when the token ARRIVES on it
+  (arrival scheduling); one claim executes consecutive immediate nodes, bounded at 10
+  (runaway-document guard); `attempts` resets on a successful step — only CONSECUTIVE
+  failures park; the claim is one `UPDATE … SKIP LOCKED … RETURNING` (lock + lease +
+  attempts in one statement — no transaction spans node work); transient backoff =
+  lease × 2^(attempts−1), capped 1h, ±20% jitter.
+- **Document shapes** (T19 names the sections; these are the words): `nodes[0]` is the
+  start square; an edge is `[from, to]` (+ `on` only out of a `wait_event`); node
+  vocabulary `wait · send · call · wait_event`, registry-backed (ruling above);
+  `entry.where` = payload-equality map ANDed with the topic. `wait_event` = topics +
+  key + minutes (event OR timer, whichever first); the consumer writes
+  `context.reply_<node> = payload[key]` + `wake_at = now()` on the run still standing
+  on that node (late/repeat replies change nothing); the walker takes the edge whose
+  `on` matches, `timeout` when the alarm fired first, exits `completed` when no edge
+  matches.
+- **Goal match is customer-level** (keyed goal-match lands with the first keyed flow)
+  and counts only events with `occurred_at` after the run's `entered_at`. **Cooldown
+  anchors on the latest run's `entered_at`.**
+- **Call idempotency** = deterministic lead id `uuid5(run_id, node_id)`; the PK absorbs
+  a lease retry. Leads skip the Redis dispatch nudge (`schedule_lead` lives in
+  `app.ai`; the reconciler heals within 60s — outreach importing app.ai is a coupling
+  not worth one minute on a 30-minute flow). `enrollment_id` stamped by a separate
+  UPDATE through the legacy layer's own accessor (the table's owner writes it,
+  ADR 0010).
+- **`purpose_key` lives on the plan document root** (one flow, one purpose; required by
+  the publish validator once a send node exists; copied onto every manifest row).
+  Per-node override can come later without breaking root-level plans. Template
+  language (T23 keys name+language; T16 stores name) decided with T23.
+- **Run ops numbers**: retention 90d · sweep DELETE 500/pass, hourly, run by the
+  walker's claim callable (one loop per pod; the owner keeps its table small) · lease
+  300s · max attempts 3 · poll/batch from the shared worker knobs. **Resume** =
+  parked-only, merchant-scoped, `attempts=0`, `wake_at=now()`, `last_error` survives
+  until the next successful step clears it.
+- **Merchant payload contract**: push producers send `customer_mobile_number` +
+  `customer_name` (one generic extractor; missing phone → quarantine `no_handle`);
+  every other scalar payload key ≤256 chars rides run context → lead payload →
+  `{placeholder}` resolution. `external_id` = the checkout id for all of a checkout's
+  events, topic prefix keeping keys unique. Workflow call templates hand-configured
+  with `initial_offset=0` (phase 1).
+- **Composition-root exception**: record's `contracts.py` does NOT export the event
+  worker's pass (`run_pass`/`observe_processed_event`) — record's workers call
+  outreach's consumer while outreach imports record's contracts, so exporting the pass
+  there closes an import cycle; `app/crm/worker_main.py`, the one composition root,
+  takes the pass from `record/workers.py` directly.
+
+Still open after #1029: per-node `purpose_key` override (with T23) · keyed goal-match
+(first keyed flow) · W5 branch-limit lift owner.
+
 ## Do NOT
 
 - **Don't build a workflow engine.** No BPMN, no Temporal, no state-machine framework.

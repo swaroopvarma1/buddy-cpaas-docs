@@ -67,7 +67,7 @@ the whole registration; the row is cold by design.
 | 3 | `source` | text |  | The vendor's declared source (e.g. nammayatri) |
 | 4 | `topic` | text |  | e.g. ride.cancelled |
 | 5 | `label` | text |  | "Ride cancelled" — presentation, renameable |
-| 6 | `fields` | jsonb |  | THE registration, whole: [{path, type, label, keyable, variable, values[], identity, deprecated}] — one document, never per-field rows. Type vocabulary lives in the REGISTRATION VALIDATOR (code), never a CHECK (the 027 scar); unknown types are rejected at registration, not discovered at flow-publish |
+| 6 | `fields` | jsonb |  | THE registration, whole: [{path, type, label, keyable, variable, values[], identity, deprecated}] — `identity` is a ROLE (`phone` \| `name`), max one field per role: the vendor keeps THEIR names (rider_phone) and the mapping tells decode where handles live; no phone role = event stores/counts but can never start or advance a flow — one document, never per-field rows. Type vocabulary lives in the REGISTRATION VALIDATOR (code), never a CHECK (the 027 scar); unknown types are rejected at registration, not discovered at flow-publish |
 | 7 | `status` | text | CK | detected · registered. detected = the discovery upsert saw an unregistered topic (fields empty — the nudge row); registered = a human/vendor signed the schema. Registration upgrades the same row |
 | 8 | `version` | integer |  | Bumped on every re-registration — the audit stamp (T19's precedent); removals are deprecations inside `fields`, never deletions |
 | 9 | `registered_by` | text |  | Who signed: the s2s credential (API) or the console user |
@@ -86,7 +86,7 @@ the whole registration; the row is cold by design.
 - Readers: the catalog API merges this layer with the code CATALOG into one shape —
   the editor is layer-blind. The PUBLISH validator receives the merged catalog as an
   argument (gather → pure validate(definition, catalog) → apply — validate stays
-  pure). **The runtime hot paths (entry evaluator, walker) NEVER read this table**:
+  pure). **The FLOW runtime (entry evaluator, walker) never reads this table; the DECODE step reads only the cached identity mapping** (same in-process TTL cache as topic discovery — table cold, cache warm):
   the validator guaranteed op↔type fit at publish; conditions evaluate directly
   against the payload.
 - Migration 060. Owner: record (TABLE_OWNERS). Registration validator + code

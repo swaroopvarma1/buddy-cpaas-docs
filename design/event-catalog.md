@@ -107,6 +107,21 @@ and conformance counters surface drift ("fare — registered Number, arrived Tex
 in 12% of events"). The publish validator accepts conditions, entry.keys and
 template variables ONLY from declared fields (code layer or registered layer).
 
+**Identity mapping — their names, our handles (amended 1 Sep 2026).** Vendors
+keep their own field names; the registration points at them: `identity` is a ROLE
+(`phone` | `name`), at most one field per role — NammaYatri marks `rider_phone` as
+identity:phone and never renames anything in their event bus. The DECODE step is
+schema-aware: the generic extractor asks the registered mapping where the phone
+lives (through the same in-process TTL cache as topic discovery — the cold-table
+law stands refined: the FLOW runtime never reads T24; decode reads the cached
+mapping), pulls it, normalizes to E.164, and resolve() proceeds normally.
+Precedence: registered mapping first, standard keys
+(customer_mobile_number/phone/customer.phone) as fallback — conventional vendors
+never think about it. Registering an event with NO phone role is allowed but told
+plainly: "these events will store and count, but can't start or advance any flow"
+— unattributed events can neither enrol nor goal-cancel. The wizard pre-suggests
+roles from sample values (+91… → phone).
+
 **Schema changes = re-registration under the same laws**: additive lands
 instantly; removing a field a live flow uses = deprecated-never-deleted + the
 same validator badge Shopify deprecations get. One lifecycle, two declarers.

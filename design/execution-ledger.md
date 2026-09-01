@@ -84,11 +84,15 @@ Note: ships an intentional release rider in `numbers/rbac.py` (merchant role add
 
 Five tests closing #1025's coverage gaps: the default_address-only park regression at the entry layer, handles-beat-payload precedence, 413 behavior + boundary, and the size gate as a declared-dependency structural pin.
 
+### PR [clairvoyance#1046](https://github.com/juspay/clairvoyance/pull/1046) — spine consumer registry *(MERGED 2026-09-02)*
+
+Record hears, never calls: `record/consumers.py` slot (idempotent register, ordered execution) + worker_main registration + **boundary rule 12** (record imports no subscriber, red-tested both ways). Behavior-identical; multi-pod-safe by construction (per-process registry, deterministic at import). A new spine consumer (segments, A13) is now one `register_consumer` line, zero edits in the pass.
+
 ## Open — phase 1
 
 | Lane | Items | Notes |
 |---|---|---|
-| A (Identity & Record) | A4 config resolver · A8 completion (replay(), topic dispatch) · A12 remaining arms (with their lanes) · A13 transactional send consumer (now = one `register_consumer` line + the consumer, once #1046 lands) | A2+A10 SHIPPED (#1020) · **A9 SHIPPED (#1025)** — the door is open; facts flow the moment nautilus#195 relays · **consumer registry IN REVIEW (#1046)** — the missed-then-caught trigger from #1025 |
+| A (Identity & Record) | A4 config resolver · A8 completion (replay(), topic dispatch) · A12 remaining arms (with their lanes) · A13 transactional send consumer (now = one `register_consumer` line + the consumer, once #1046 lands) | A2+A10 SHIPPED (#1020) · **A9 SHIPPED (#1025)** — the door is open; facts flow the moment nautilus#195 relays · **consumer registry SHIPPED (#1046)** |
 | B (Permission) | T07/T08 + `record_consent()` · B3 blacklist backfill · B4 `decision_log` · **B5 `may_contact()` gate** (token, tz ladder, quiet hours, caps — ADR 0018 spec done, zero code) · Shopify consent importer | **B5 definition-of-done grew (ruled 1 Sep 2026, #1037 review)**: the C4 gate slice (suppression probe) runs WITHOUT decision_log writes — ratified as part of the sealed B5 deferral because T14's writer is permission's contract. B5 must therefore ship: decision_log rows for allow AND refuse (retroactively covering the slice's verdicts), `decision_id` through `SendToken` → T16 col 18, Redis GETDEL token consumption. The seam + column + token field already wait; a B5 PR landing without them is the trigger sweep's MAJOR |
 | C (Connectivity) | C1/C2 onboarding + console (#1038 — now owes the T23 template lookup, merging second) · C6 receipt walker · C7 WABA template registry (T23 sealed) · C8 connectors door | C3+C5 SHIPPED (#1031) · **C4 SHIPPED (#1037)** — WhatsApp sends for real behind the adapter + channel registries, gated by the suppression slice |
 | X (external) | **X1 nautilus relay — cmd-err, #195 IN REVIEW** (with the door, #1025): reshape per the two-plane ruling — relay at webhook receipt, letter verbatim, `source=shopify`, shadow-only (cutover branch deleted; returns as per-shop `dispatch_brain` when W-lane lands) · X2 embedded signup — no owner · X3 pilot merchant + WABA — Swaroop | ADR 0022: no never-words on external surfaces — `/crm/*` → `/ingest/events`, `/customers/*` (called out on #1025) |
@@ -126,7 +130,7 @@ Five tests closing #1025's coverage gaps: the default_address-only park regressi
   `POST /ingest/schemas` + unregistered-topic nudge + wizard pre-fill query ·
   "Your events" console wizard (U-lane design, after runs monitor). Blocks the
   schema-driven workflow editor and push-vendor (NammaYatri-type) onboarding.
-- **Spine consumer registry — IN REVIEW ([#1046](https://github.com/juspay/clairvoyance/pull/1046))**:
+- **Spine consumer registry — SHIPPED (#1046, 2 Sep)**:
   record/consumers.py slot + worker_main registration + boundary rule 12
   (record imports no subscriber, red-tested). Trigger honesty: this fired on
   #1025 (a record-touching PR) and the review sweep MISSED it — caught in the
@@ -176,7 +180,7 @@ B4/B5 (the full permission verdict + the diary), C6 receipts + C7 templates
 
 ## Suggested next slices
 
-PR-next: merge #1046 (consumer registry) · #1038 onboarding (owes the T23
+PR-next: #1038 onboarding (owes the T23
 template lookup, merging second) · X1 reshape on nautilus#195 (the door is
 waiting) · B-pod starts T07/T08 + B4 (B5's diary is the sworn
 definition-of-done) · recorded Shopify fixtures at shadow-live · PgBouncer

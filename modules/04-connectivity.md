@@ -21,22 +21,26 @@ Diagram: `../diagrams/04-connectivity.html`. Squad: Pod C.
   registry (name, language, category, status) kept honest by the
   `message_template_status_update` webhook through event_raw. A send referencing a
   non-approved template is refused BEFORE the provider call — manifest row, honest
-  reason. **Status path (ruled 2 Sep 2026, #1038)**: webhooks are PRIMARY — the
-  `template.status` spine consumer (one `register_consumer` line + the consumer;
-  goes live when record's Meta ingress bay lands at C6). The T23 col 17 full sync is
-  RECONCILIATION on demand — `POST /connectors/installations/{id}/templates/sync`,
-  per installation, bounded, called once at onboarding (seed the registry with the
-  WABA's existing templates) and from the console's explicit "Refresh from Meta" or
-  by ops when an installation's `last_event_at` stalls while templates sit pending
-  — **a timed full sync is never added**: at 1,000 merchants × 100 templates an
-  hourly pass is ~1,000 Graph calls + ~100k row writes per hour for ~zero
-  information, per-pod timers multiply it, and a sync inside the dispatcher's claim
-  stalls sends. After the webhook consumer lands every registry drift (status,
-  category — the money one, quality) arrives as an event. A reconciliation pass
-  marks what it did NOT see (after a COMPLETE list) or it never notices deletion. Provider quirks (Meta's
-  uppercase statuses, edit-in-place vs re-register, delete-by-name nuking every
-  language) are normalised INSIDE the provider's template face, never in the
-  generic registry file.
+  reason. **Status path (ruled 2 Sep 2026, #1038 — amended the same day)**: webhooks
+  are the ONLY path — the `template.status` spine consumer (one `register_consumer`
+  line + the consumer; goes live when record's Meta ingress bay lands at C6).
+  **No sync code exists**: not a timer, not a route, not a seed at onboarding. The
+  arithmetic that killed the timer: at 1,000 merchants × 100 templates an hourly pass
+  is ~1,000 Graph calls + ~100k row writes per hour for ~zero information, per-pod
+  timers multiply it, and a sync inside the dispatcher's claim stalls sends. The
+  "bridge until webhooks" argument for a reconcile route died with "we are merging,
+  not releasing" — between the template PR and the webhook PR a submitted template
+  simply cannot reach `approved`, which is correct while nothing is live. Every
+  registry drift arrives as an event: approval/rejection/pause, deletion
+  (`PENDING_DELETION` / `DELETED`), category (the money one), quality. The
+  crashed-submit resume path lives in the CONSUMER: a status event whose id matches
+  no row but whose (WABA, name, language) matches a `submitting` row with a NULL
+  provider id stamps it. Named follow-up, not code: "import a WABA's existing
+  templates" as an explicit one-shot action if a pilot merchant ever arrives with
+  approved templates — still never a clock. Provider quirks (Meta's uppercase
+  statuses, edit-in-place vs re-register, delete-by-name nuking every language) are
+  normalised INSIDE the provider's template face, never in the generic registry
+  file.
 - **The manifest**: one row per outbound attempt, **blocked attempts included**
   (reason, no provider call). Stores template_id + variables. `dedupe_key` (NOT NULL,
   total unique per merchant — strengthened 29 Aug, T16 amendment) makes retries and

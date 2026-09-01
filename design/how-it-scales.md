@@ -10,7 +10,7 @@ growing the product never changes its shape — only its vocabulary.***
 Systems die in two ways as they grow: **scatter** (the fifth connector is wired in
 eleven places, and place nine gets forgotten) or **cleverness** (an engine so
 general nobody can predict it). We refuse both with one pattern, used again and
-again — seven instances and counting:
+again — eight instances and counting:
 
 > A closed vocabulary lives in ONE dict. Everything that needs per-entry behavior
 > iterates or dispatches through that dict. A pin test makes a half-added entry
@@ -22,6 +22,7 @@ again — seven instances and counting:
 | `NODE_TYPES` (#1029) | workflow node words | outreach | Literal pin + `is_wait == (execute is None)` |
 | `ADAPTERS` (#1037) | channels → providers | connectivity `providers/` | CI rule 11 confinement (only send.py imports it) + red tests |
 | `CHANNELS` (#1037) | channel metadata (gate handle kind; W8 pacing joins) | connectivity `channels.py` | `ADAPTERS ⊆ CHANNELS` pin; missing entry fails closed at the gate |
+| `CONNECTORS` (committed, #1038) | connector_key → onboarder + template provider + request model (canon T11 col 3's dict) | connectivity `connectors.py` | spec.channel ∈ `CHANNELS` pin; face-precise rule 11 — provider faces reachable only through the registry; unknown key = 404 |
 | `INGRESS` (owed, C6) | provider webhook doors | record | one verifier per bay |
 | `CATALOG` (owed) | events + their fields | record | extractor↔catalog square, fields-in-fixtures |
 | `CONSUMERS` (committed) | spine subscribers | worker_main registers | record imports nobody |

@@ -21,7 +21,17 @@ Diagram: `../diagrams/04-connectivity.html`. Squad: Pod C.
   registry (name, language, category, status) kept honest by the
   `message_template_status_update` webhook through event_raw. A send referencing a
   non-approved template is refused BEFORE the provider call — manifest row, honest
-  reason.
+  reason. **Status path (ruled 2 Sep 2026, #1038)**: webhooks are PRIMARY — the
+  `template.status` spine consumer (one `register_consumer` line + the consumer;
+  goes live when record's Meta ingress bay lands at C6). The T23 col 17 full sync is
+  RECONCILIATION on demand — `POST /connectors/installations/{id}/templates/sync`,
+  per installation, bounded, called when the console opens the templates screen —
+  never a timed loop on the dispatcher (per-pod timers multiply Meta calls, and a
+  sync inside the claim stalls sends). A reconciliation pass marks what it did NOT
+  see (after a COMPLETE list) or it never notices deletion. Provider quirks (Meta's
+  uppercase statuses, edit-in-place vs re-register, delete-by-name nuking every
+  language) are normalised INSIDE the provider's template face, never in the
+  generic registry file.
 - **The manifest**: one row per outbound attempt, **blocked attempts included**
   (reason, no provider call). Stores template_id + variables. `dedupe_key` (NOT NULL,
   total unique per merchant — strengthened 29 Aug, T16 amendment) makes retries and
@@ -41,18 +51,40 @@ Diagram: `../diagrams/04-connectivity.html`. Squad: Pod C.
   confines providers/ behind send.py — anything dispatch needs per channel must live
   outside the confined package. Pinned `ADAPTERS ⊆ CHANNELS`; a channel missing from
   either fails closed.
-- **Provider package split — COMMITTED at the second adapter (Swaroop ruling,
-  1 Sep 2026)**: one provider = one flat file is correct exactly as long as there is
-  one provider. The PR that adds the SECOND adapter must ship the package shape for
-  BOTH — `providers/<name>/` per provider, the concerns that today share whatsapp.py
-  split by kind: `adapter.py` (the ChannelAdapter subclass — deliver/build/read),
-  `classify.py` (the provider's error-code tables and outcome classification),
-  `payload.py` (pure request-building utilities: recipient normalisation, parameter
-  assembly). `providers/__init__.py` stays the single assembly point (registry
-  unchanged, rule 11 unchanged — the confinement path doesn't move). Same law as
-  record's `extractors/`: the split lands when the second entry arrives, and the
-  mover defines the seam. A second adapter PR that stacks another 350-line flat file
-  beside whatsapp.py is a MAJOR at review.
+- **Provider package split — COMMITTED; trigger FIRED by #1038 (Swaroop rulings
+  1 Sep + 2 Sep 2026)**: one provider = one flat file is correct exactly as long as
+  there is one provider with ONE face. The trigger was written as "the second
+  adapter"; #1038 proved the seam arrives just as surely as a second FACE of the same
+  provider (onboarding + templates + a Graph client beside the send adapter — four
+  WhatsApp-only flat files at module root). Ruled: the trigger is the second adapter
+  OR the first non-send face. Target shape, for every provider from here:
+  `providers/<name>/` = `adapter.py` (the ChannelAdapter — deliver/build/read) ·
+  `classify.py` (error-code tables, outcome classification) · `payload.py` (pure
+  request-building) · `onboard.py` (the `ConnectorOnboarder` port: gather →
+  `OnboardResult {external_account_id, address, bundle, token_expires_at, health}`) ·
+  `templates.py` (the `TemplateProvider` port: submit/edit/retire/list → normalized
+  `ProviderTemplateState`; `edits_in_place` flag). Vendor-shared transport is its own
+  package — `providers/meta/graph.py`: endpoint builder, ONE `_call`, error fold,
+  retryable throttles; Instagram/Messenger reuse it. Ports live in `providers/base.py`;
+  `providers/__init__.py` stays the single assembly point for `ADAPTERS`. **Rule 11
+  becomes face-precise**: the assembly and `providers/<x>/adapter.py` are imported
+  only by send.py (unchanged intent); `providers/<x>/onboard.py` / `templates.py`
+  only by root `connectors.py`. Generic logic (`onboarding.py`, `templates.py`) never
+  names a provider — it dispatches through `CONNECTORS`. A provider PR that parks
+  vendor code at module root to dodge rule 11 is a MAJOR at review.
+- **`CONNECTORS` registry (canon T11 col 3's "validated against a dict in code";
+  ruled 2 Sep 2026, #1038)**: root `connectors.py` (beside `channels.py`, for the
+  same rule-11 reason) holds `connector_key → ConnectorSpec(channel | None,
+  onboarder, templates | None, request_model)`. Routes are connector-agnostic:
+  `POST /connectors/{connector_key}/onboard` (body validated by the spec's request
+  model; unknown key = 404 — the dict IS the vocabulary), `/connectors/installations`,
+  templates under `/templates` (the row's `channel` decides the provider). Pins: every
+  spec with a channel has it in `CHANNELS`; `create_draft` refuses a channel that is
+  not a key. The generic onboarding flow is fixed: merchant lookup → `spec.onboarder.
+  gather()` → credential upsert (name `{connector_key}:{merchant_id}:{account}`) →
+  atom (installation + primary binding), status derived from the health level
+  (`subscribed → healthy`, below → `degraded`; the light never contradicts the
+  sentence).
 - **Dispatcher (ADR 0004)**: drain `status='queued'` with SKIP LOCKED, back off on
   429s, no transaction across HTTP. Simple queue; scale by replicas. As built: the
   suppression gate slice runs first (fail closed, own deadline), then send() — each

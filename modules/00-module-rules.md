@@ -22,10 +22,17 @@ this file wins. Diagram: `../diagrams/00-master-system.html`.
      workers.py     # drain loops (only if the module owns one)
      db/            # ALL mechanics behind one hop — the root stays the story
        __init__.py  # the db door: re-exports transaction, DbTxn, domain errors
-       accessor.py  # execute one query builder per function; NO decisions;
-                    #   splits as accessor_<table>.py as the module grows
-       queries.py   # SQL builders, $1 params; splits as queries_<table>.py
+       accessor.py  # execute one query builder per function; NO decisions
+       queries.py   # SQL builders, $1 params
        decoder.py   # row → schemas model, DB-side translation only
+                    #   AT SCALE (ruled 2 Sep 2026, #1038 first): the three
+                    #   become SUBFOLDERS, one file per table, named for it —
+                    #   db/queries/<table>.py · db/accessors/<table>.py ·
+                    #   db/decoders/<table>.py; the door __init__.py is
+                    #   unchanged; CI rule 2 admits db/queries/*.py. A flat
+                    #   db/ stays legal until the module's next db/ touch past
+                    #   ~2 tables or ~500 lines; the first module to need the
+                    #   shape defines it (connectivity, #1038).
    ```
 
    **Layer law**: `api → logic → db/accessor → db/queries` (raw asyncpg, no

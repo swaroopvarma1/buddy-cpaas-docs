@@ -94,7 +94,7 @@ Record hears, never calls: `record/consumers.py` slot (idempotent register, orde
 |---|---|---|
 | A (Identity & Record) | A4 config resolver · A8 completion (replay(), topic dispatch) · A12 remaining arms (with their lanes) · A13 transactional send consumer (now = one `register_consumer` line + the consumer, once #1046 lands) | A2+A10 SHIPPED (#1020) · **A9 SHIPPED (#1025)** — the door is open; facts flow the moment nautilus#195 relays · **consumer registry SHIPPED (#1046)** |
 | B (Permission) | T07/T08 + `record_consent()` · B3 blacklist backfill · B4 `decision_log` · **B5 `may_contact()` gate** (token, tz ladder, quiet hours, caps — ADR 0018 spec done, zero code) · Shopify consent importer | **B5 definition-of-done grew (ruled 1 Sep 2026, #1037 review)**: the C4 gate slice (suppression probe) runs WITHOUT decision_log writes — ratified as part of the sealed B5 deferral because T14's writer is permission's contract. B5 must therefore ship: decision_log rows for allow AND refuse (retroactively covering the slice's verdicts), `decision_id` through `SendToken` → T16 col 18, Redis GETDEL token consumption. The seam + column + token field already wait; a B5 PR landing without them is the trigger sweep's MAJOR |
-| C (Connectivity) | C1/C2 onboarding + console (#1038 — now owes the T23 template lookup, merging second) · C6 receipt walker · C7 WABA template registry (T23 sealed) · C8 connectors door | C3+C5 SHIPPED (#1031) · **C4 SHIPPED (#1037)** — WhatsApp sends for real behind the adapter + channel registries, gated by the suppression slice |
+| C (Connectivity) | C1/C2 onboarding + C7 template registry (**#1038, Rahul — IN REVIEW, round 3 posted 2 Sep** [review 5082190361]: owes the T23 send-time lookup, the `CONNECTORS` registry, the provider package split + `providers/meta/graph.py`, db/ subfolders, webhooks-primary with on-demand sync; plus 7 correctness MAJORs — token_expires_at never written, delete-by-name nukes every language, healer blind to deletion, rejected templates a dead end, claim never released on failure, healthy written over a failed subscription; two calls open with Swaroop — table name `crm_template` vs `crm_channel_template`, auth phase vs ADR 0007) · C6 receipt walker · C7 WABA template registry (T23 sealed) · C8 connectors door | C3+C5 SHIPPED (#1031) · **C4 SHIPPED (#1037)** — WhatsApp sends for real behind the adapter + channel registries, gated by the suppression slice |
 | X (external) | **X1 nautilus relay — cmd-err, #195 IN REVIEW** (with the door, #1025): reshape per the two-plane ruling — relay at webhook receipt, letter verbatim, `source=shopify`, shadow-only (cutover branch deleted; returns as per-shop `dispatch_brain` when W-lane lands) · X2 embedded signup — no owner · X3 pilot merchant + WABA — Swaroop | ADR 0022: no never-words on external surfaces — `/crm/*` → `/ingest/events`, `/customers/*` (called out on #1025) |
 | W (Outreach) | W6 broadcast tables/scheduler (T17/T18) · W8 broadcast send path (**trigger: fairness lanes + per-table db split land here**) · repeat-entry vocabulary (`on_repeat` + debounce) · keyed-flow bucket (reply-match · consume-reply-on-branch · key-count cap) · W3-cadence ruling before voice takeover | W1–W5 SHIPPED (#1029) — walker + entry rules live behind `dispatch_brain` |
 | U (Swaroop + Claude) | U1 loom wiring · U2 customers list (**backend live** — `GET /crm/customers` returns `CrmCustomerSummary` rows; detail GET carries full attributes) · U3 customer 360 (needs A12+B4) · U4 template manager (needs C7) | design complete (ADR 0019) |
@@ -109,11 +109,22 @@ Record hears, never calls: `record/consumers.py` slot (idempotent register, orde
   global queue by design; before the first 10k-recipient broadcast, the claim must
   prefer transactional/utility purpose roots over marketing so a blast can never
   starve COD confirmations — ordering by purpose root + per-merchant round-robin
-- **Provider package split** (trigger: the SECOND channel adapter PR; Swaroop ruling
-  1 Sep 2026): one flat whatsapp.py is correct for one provider only. The second
-  adapter ships `providers/<name>/` packages for BOTH (adapter.py · classify.py ·
-  payload.py — spec in modules/04-connectivity.md); registry + rule 11 unchanged.
-  Stacking a second flat file = MAJOR
+- **Provider package split — trigger FIRED by #1038** (ruled 1 Sep, amended 2 Sep
+  2026: the trigger is the second adapter OR the first non-send face of a provider;
+  #1038 brought onboarding + templates + a Graph client as flat root files). #1038
+  ships `providers/whatsapp/` (adapter · classify · payload · onboard · templates),
+  `providers/meta/graph.py`, the two ports in `providers/base.py`, root
+  `connectors.py` (`CONNECTORS`), and face-precise rule 11 — spec in
+  modules/04-connectivity.md. Stacking vendor code at module root = MAJOR
+- **db/ subfolders** (ruled 2 Sep 2026; #1038 first): at scale a module's db/ becomes
+  `queries/<table>.py` · `accessors/<table>.py` · `decoders/<table>.py` (modules/00
+  §1 amended); CI rule 2 admits the folder. Other modules convert at their next db/
+  touch past ~2 tables or ~500 lines — outreach (394 lines, two tables) is next
+- **`template.status` spine consumer** (owner: Rahul, the PR after #1038): one
+  `register_consumer` line + the consumer in connectivity, written against topic
+  `template.status` now; goes live when record's Meta ingress bay lands (`INGRESS`
+  registry, C6). Until then the registry is kept honest by the on-demand
+  reconciliation route only
 - **One decode engine, two spec sources** (trigger: the catalog/T24 engine landing;
   Swaroop ruling 1 Sep 2026, sealed in design/event-catalog.md §Companion rulings):
   connector mappings become code-DECLARED specs run by the same generic engine as
@@ -126,7 +137,7 @@ Record hears, never calls: `record/consumers.py` slot (idempotent register, orde
   schemas registered at enrollment): CATALOG registry + pin tests beside EXTRACTORS ·
   catalog API (merges code + registered layers) · typed where-grammar (validator +
   entry evaluator; canon touch on entry.where; ONE migration maps→lists) ·
-  seen-vs-matched counters · **T24 `crm_event_schema` (migration 061)** +
+  seen-vs-matched counters · **T24 `crm_event_schema` (migration 062 — 061 taken by #1038's crm_template)** +
   `POST /ingest/schemas` + unregistered-topic nudge + wizard pre-fill query ·
   "Your events" console wizard (U-lane design, after runs monitor). Blocks the
   schema-driven workflow editor and push-vendor (NammaYatri-type) onboarding.
@@ -180,8 +191,8 @@ B4/B5 (the full permission verdict + the diary), C6 receipts + C7 templates
 
 ## Suggested next slices
 
-PR-next: #1038 onboarding (owes the T23
-template lookup, merging second) · X1 reshape on nautilus#195 (the door is
+PR-next: #1038 onboarding + templates (round-3 fixes: send-time lookup,
+CONNECTORS, package split, db/ folders, on-demand sync) · X1 reshape on nautilus#195 (the door is
 waiting) · B-pod starts T07/T08 + B4 (B5's diary is the sworn
 definition-of-done) · recorded Shopify fixtures at shadow-live · PgBouncer
 before the pod count grows again (dispatcher just added one).

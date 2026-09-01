@@ -4,6 +4,10 @@ Owns: `crm.event_raw` (T13) · the ingest front door · the topic + extractor re
 the consumer runtime · `replay()` · (later) the journey view. Diagram:
 `../diagrams/01-event-spine.html`. Squad: Pod A.
 
+**Ingress design is sealed in [design/ingest-doors.md](../design/ingest-doors.md)** —
+the two door kinds (envelope vs provider), the INGRESS registry, the decode
+pipeline, and the build-order table. Read it before touching api.py or ingest.py.
+
 ## Build it like this
 
 - **The front door does four things and stops**: verify the source (signature / s2s) →

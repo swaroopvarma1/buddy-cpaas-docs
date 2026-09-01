@@ -203,7 +203,7 @@ value) is a dashboard fact within hours, never a merchant complaint within weeks
 3. Typed where-grammar: validator + entry-processor evaluator (+ canon touch:
    `entry.where` shape).
 4. Seen-vs-matched counters on the entry processor.
-5. Vendor schema registration: table (record-owned, canon entry owed) +
+5. Vendor schema registration: table (record-owned, canon T24 sealed — migration 061) +
    `POST /ingest/schemas` + catalog-API layer merge + unregistered-topic nudge +
    wizard pre-fill query. 6. Where-shape migration (maps → typed lists, one PR
    with the where-grammar).

@@ -90,6 +90,14 @@ Note: ships an intentional release rider in `numbers/rbac.py` (merchant role add
   adapter ships `providers/<name>/` packages for BOTH (adapter.py · classify.py ·
   payload.py — spec in modules/04-connectivity.md); registry + rule 11 unchanged.
   Stacking a second flat file = MAJOR
+- **One decode engine, two spec sources** (trigger: the catalog/T24 engine landing;
+  Swaroop ruling 1 Sep 2026, sealed in design/event-catalog.md §Companion rulings):
+  connector mappings become code-DECLARED specs run by the same generic engine as
+  registered vendor rows (derive() escape hatch); Shopify's imperative extractor is
+  rewritten as the first code-layer spec. Until then: consumers take the extractor's
+  handles, never re-parse payloads (the #1025 pass-the-handles seam); extractors
+  split one-file-per-source from #1025 onward (extractors/ package, registry in
+  __init__ — design/ingest-doors.md folder table)
 - **Event Catalog stack** (sealed design/event-catalog.md; RULED 1 Sep — vendor
   schemas registered at enrollment): CATALOG registry + pin tests beside EXTRACTORS ·
   catalog API (merges code + registered layers) · typed where-grammar (validator +

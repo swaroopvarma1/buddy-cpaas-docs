@@ -125,9 +125,14 @@ app/crm/record/
   events.py      cross-module reads (customer_has_event)         [built #1029]
   workers.py     the pass: run_pass + EXTRACTORS                 [built #1020]
                  (consumer registry: committed next record PR)
-  extractors/    shopify.py · meta.py — the split lands when a   [at trigger]
-                 second real source's extractor arrives; the
-                 registry stays the single assembly point
+  extractors/    __init__.py (EXTRACTORS registry + default —     [#1025 ask]
+                 the single assembly point) · flat.py ·
+                 shopify.py · meta.py later — RULED 1 Sep 2026
+                 (Swaroop): one source, one file, from the
+                 Shopify extractor onward (its arrival = the
+                 second real shape; mirrors providers/ in
+                 connectivity). workers.py keeps the pass only
+                 and knows no source by name
   db/            door · accessor · queries · decoder             [built]
 ```
 

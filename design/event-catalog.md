@@ -155,6 +155,23 @@ typed condition list (definition + draft), validator accepts lists only.
 Per-flow inline field types rejected outright (scattered, ungoverned, two flows
 can disagree on one field's type).
 
+**One decode engine, two spec sources (RULED 1 Sep 2026, Swaroop).** Our own
+connectors' mappings do NOT move into `crm_event_schema` — a global mapping
+edited as data would break every merchant at once with no CI, no fixtures, no
+review; and precedence chains + joins + conditionals pushed into jsonb become a
+DSL (the "cleverness" death). But they stop being hand-written functions: each
+connector's mapping is a code-DECLARED spec — paths, precedence lists, identity
+roles, in the SAME vocabulary as a T24 registration — executed by the one
+generic engine that executes registered vendor rows, with `derive()` as the
+code escape hatch for the ~10% that is genuinely logic. Two hand-written
+readers of one payload WILL drift (proof: #1025's extractor found the phone in
+four places while outreach's entry context searched three — the flagship
+abandonment run enrolled, then parked at its first call node). One engine
+cannot drift from itself. **Trigger**: when the catalog/T24 engine lands, the
+Shopify extractor is rewritten as the engine's first code-layer spec; until
+then imperative extractors are interim, and consumers take the extractor's
+handles (never re-parse payloads) — the #1025 pass-the-handles seam.
+
 ## The unified path — proof there is one system, not two
 
 Trace both kinds of event; they use identical machinery and differ at exactly ONE

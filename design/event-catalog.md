@@ -67,15 +67,70 @@ promises what another can't keep.
 Nested objects: flat dot-paths. Arrays: addressable ONLY through declared derived
 fields (`items_count`) — the matcher never learns array semantics.
 
-## Merchant-custom fields — declared governs, observed assists
+## Vendor events — registered at enrollment (RULED 1 Sep 2026, Swaroop)
 
-Push merchants send arbitrary scalar keys. Two layers:
-- **Declared catalog** (global, in code) — authoritative.
-- **Observed overlay** (per merchant+topic): a cheap sampling job over the spine
-  records keys seen, inferred type, sample values. The builder offers observed keys
-  as suggestions wearing an "unverified" badge; authors may also declare a custom
-  field by hand (name + type). The overlay is assist-only — it can never make the
-  validator accept what the engine won't honor.
+Push vendors (NammaYatri-type, Flipkart-type) send THEIR events with THEIR
+schemas. We do not infer their schemas from traffic — **they register them when
+they enroll**, the same onboarding step that provisions their s2s credential:
+*here is who I am, here is what I will send, here is what is inside it.* The
+registration is stored tenant-scoped in the DB and behaves EXACTLY like a
+code-catalog entry — the catalog API merges the two layers and the editor never
+knows which one answered.
+
+**The registration is in OUR language, small and closed** — a field list (path ·
+type from the closed set: Text / Number / Choice(+values) / Yes-no / Date-time /
+Phone · label · keyable flag · usable-in-messages flag), because types must map
+one-to-one onto the where-grammar's operators. Unknown types are rejected AT
+REGISTRATION, never discovered at flow-publish. Identity keys follow the standard
+push contract (customer_mobile_number / customer_name → the generic extractor;
+push vendors need no custom extractor — registration covers the catalog side,
+the standard keys cover resolve()).
+
+**Worked example — NammaYatri registers `ride.cancelled`:**
+```
+ride_id              Text     "Ride ID"       keyable (runs are about the ride)
+customer_mobile_number Phone  (identity — feeds resolve, never filterable)
+fare                 Number   "Fare"          usable in messages
+cancelled_by         Choice   "Cancelled by"  values: driver · customer · system
+cancellation_reason  Text     "Reason"        usable in messages
+```
+…plus `ride.booked` as the goal topic. Their ops then builds: *when Ride
+cancelled where Cancelled by is driver → wait 2m → WhatsApp "rebook?" →
+wait-for-reply 15m → call* — keyed by Ride ID (two cancelled rides = two runs),
+`ride.booked` goal-cancels the right one. Zero code shipped by us.
+
+**The enforcement law: ingestion is free, automation requires a registered
+schema.** The doors store every letter, always — including unregistered topics
+and schema-violating payloads. But nothing hides: the events screen shows
+"Unregistered: ride.completed · 312 this week — register to use in workflows",
+and conformance counters surface drift ("fare — registered Number, arrived Text
+in 12% of events"). The publish validator accepts conditions, entry.keys and
+template variables ONLY from declared fields (code layer or registered layer).
+
+**Schema changes = re-registration under the same laws**: additive lands
+instantly; removing a field a live flow uses = deprecated-never-deleted + the
+same validator badge Shopify deprecations get. One lifecycle, two declarers.
+
+**Inference survives as the safety net only, never a stage**: (a) the
+unregistered-topic nudge; (b) the registration wizard PRE-FILLS from the
+vendor's real traffic when it exists (compute-on-read `jsonb_each` over recent
+events — no Redis, no stats cache table until a named latency trigger; a
+registered-schema row stores decisions, which no query can recompute).
+
+**The console surface ("Your events", under Channels & Integrations)**: an
+events table (label · topic · seen-this-week · conformance % · Registered /
+amber Detected-not-registered — the amber rows are the to-do list, the parked
+pattern) + a 3-step no-JSON wizard: name it → fields table pre-filled from
+samples (plain-language types, example values, one radio for "identifies the
+thing a run is about") → review-as-sentences → Register. The API path
+(`POST /ingest/schemas`, s2s) writes the identical row for engineering-led
+vendors; our ops can drive the wizard on a screen-share for enterprise
+onboarding.
+
+**Companion rulings**: legacy `entry.where` equality maps → ONE migration to the
+typed condition list (definition + draft), validator accepts lists only.
+Per-flow inline field types rejected outright (scattered, ungoverned, two flows
+can disagree on one field's type).
 
 ## Drift observability — seen vs matched
 
@@ -102,7 +157,10 @@ value) is a dashboard fact within hours, never a merchant complaint within weeks
 3. Typed where-grammar: validator + entry-processor evaluator (+ canon touch:
    `entry.where` shape).
 4. Seen-vs-matched counters on the entry processor.
-5. Observed overlay sampling job (after pilots generate traffic).
+5. Vendor schema registration: table (record-owned, canon entry owed) +
+   `POST /ingest/schemas` + catalog-API layer merge + unregistered-topic nudge +
+   wizard pre-fill query. 6. Where-shape migration (maps → typed lists, one PR
+   with the where-grammar).
 
 Refs: design/ingest-doors.md (the decoder's obligations gain the catalog) ·
 modules/01-record.md (registry home) · modules/05-outreach.md (entry vocabulary) ·

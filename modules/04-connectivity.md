@@ -41,6 +41,18 @@ Diagram: `../diagrams/04-connectivity.html`. Squad: Pod C.
   confines providers/ behind send.py — anything dispatch needs per channel must live
   outside the confined package. Pinned `ADAPTERS ⊆ CHANNELS`; a channel missing from
   either fails closed.
+- **Provider package split — COMMITTED at the second adapter (Swaroop ruling,
+  1 Sep 2026)**: one provider = one flat file is correct exactly as long as there is
+  one provider. The PR that adds the SECOND adapter must ship the package shape for
+  BOTH — `providers/<name>/` per provider, the concerns that today share whatsapp.py
+  split by kind: `adapter.py` (the ChannelAdapter subclass — deliver/build/read),
+  `classify.py` (the provider's error-code tables and outcome classification),
+  `payload.py` (pure request-building utilities: recipient normalisation, parameter
+  assembly). `providers/__init__.py` stays the single assembly point (registry
+  unchanged, rule 11 unchanged — the confinement path doesn't move). Same law as
+  record's `extractors/`: the split lands when the second entry arrives, and the
+  mover defines the seam. A second adapter PR that stacks another 350-line flat file
+  beside whatsapp.py is a MAJOR at review.
 - **Dispatcher (ADR 0004)**: drain `status='queued'` with SKIP LOCKED, back off on
   429s, no transaction across HTTP. Simple queue; scale by replicas. As built: the
   suppression gate slice runs first (fail closed, own deadline), then send() — each

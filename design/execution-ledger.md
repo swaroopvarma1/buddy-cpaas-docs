@@ -85,11 +85,16 @@ Note: ships an intentional release rider in `numbers/rbac.py` (merchant role add
   global queue by design; before the first 10k-recipient broadcast, the claim must
   prefer transactional/utility purpose roots over marketing so a blast can never
   starve COD confirmations — ordering by purpose root + per-merchant round-robin
+- **Provider package split** (trigger: the SECOND channel adapter PR; Swaroop ruling
+  1 Sep 2026): one flat whatsapp.py is correct for one provider only. The second
+  adapter ships `providers/<name>/` packages for BOTH (adapter.py · classify.py ·
+  payload.py — spec in modules/04-connectivity.md); registry + rule 11 unchanged.
+  Stacking a second flat file = MAJOR
 - **Event Catalog stack** (sealed design/event-catalog.md; RULED 1 Sep — vendor
   schemas registered at enrollment): CATALOG registry + pin tests beside EXTRACTORS ·
   catalog API (merges code + registered layers) · typed where-grammar (validator +
   entry evaluator; canon touch on entry.where; ONE migration maps→lists) ·
-  seen-vs-matched counters · **T24 `crm_event_schema` (migration 060)** +
+  seen-vs-matched counters · **T24 `crm_event_schema` (migration 061)** +
   `POST /ingest/schemas` + unregistered-topic nudge + wizard pre-fill query ·
   "Your events" console wizard (U-lane design, after runs monitor). Blocks the
   schema-driven workflow editor and push-vendor (NammaYatri-type) onboarding.

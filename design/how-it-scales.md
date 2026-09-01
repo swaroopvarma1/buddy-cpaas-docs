@@ -73,11 +73,14 @@ not hypothetical: at only FOUR types, the pre-registry code had already half-wir
 one — a `wait_event` first node that never waited. The registry made that bug
 unwritable.)
 
-**More channels on send nodes** — one adapter file + one `ADAPTERS` line + one
+**More channels on send nodes** — one adapter + one `ADAPTERS` line + one
 `CHANNELS` entry (as built #1037; the pin test fails CI on a half-add, and a
 channel missing its metadata fails closed at the gate rather than sending
 unchecked). The manifest (T16) and dispatcher are channel-agnostic; ONE send
-path absorbs email and SMS the way it carries WhatsApp.
+path absorbs email and SMS the way it carries WhatsApp. Shape rule (ruled
+1 Sep 2026): one provider may live in one flat file only while it is alone —
+the second adapter PR ships `providers/<name>/` packages for both (adapter ·
+classify · payload; spec in modules/04-connectivity.md).
 
 **More push vendors** (NammaYatri-type, Flipkart-type) — zero code, not even the
 four-artifact PR: the vendor registers their event schemas at enrollment (canon

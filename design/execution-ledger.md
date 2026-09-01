@@ -64,13 +64,33 @@ Note: ships an intentional release rider in `numbers/rbac.py` (merchant role add
 | W5 | `NODE_TYPES` registry in nodes.py (Swaroop ruling: enforce from day one) — `is_wait()` single source + Literal pin test; `run_facts()` shared filter |
 | — | Review: 1 BLOCKER (exit-context wipe) + first-node `wait_event` MAJOR (caught by pressure-testing the registry defer — the proof behind "guarantees land NOW") fixed; 233/233 green. Carried: consumer registry next record PR · repeat-entry vocabulary · keyed-flow trigger bucket (reply-match, consume-reply-on-branch, key-count cap) |
 
+### PR [clairvoyance#1037](https://github.com/juspay/clairvoyance/pull/1037) — WhatsApp send via Meta Cloud API *(MERGED 2026-09-01, rab1prasad)*
+
+| Item | Delivered |
+|---|---|
+| C1/C2 (tables) | Migration 060: T11 `crm_connector_installation` + T12 `crm_channel_binding` per canon — no vocabulary CHECKs, composite tenant-pinned FK, global `(channel, address)` non-retired unique (the second sealed merchant-first exception), T16 trigger amended for set-once binding_id. Onboarding console/API = #1038 |
+| C4 | Real `send()` behind the ADAPTERS registry + MetaWhatsAppAdapter (template-only, explicit error-code classes incl. 400-carried throttles, provider-echo masking) · `CHANNELS` metadata registry (channels.py — rule-11 dictates its home) · route resolution fail-closed at every hop (paused pipe, unhealthy installation, vault via its owner's accessor with raise_errors) · gate suppression slice under its own deadline (B5 decision-log deferral RULED — see B-lane note) |
+| — | #1031 tripwire honored structurally: dummy died in the PR that gated every adapter — CI rule 11 confinement + `ADAPTERS ⊆ CHANNELS` pin + lease inequality test (`batch × 2 × timeout ≤ lease`, gate + send each get one). Review: 3 MAJORs (vault-outage terminality, blocked-vs-failed vocabulary, gate probe outside deadline) + 4 MINORs — all fixed with pinning tests |
+
+### PR [clairvoyance#1025](https://github.com/juspay/clairvoyance/pull/1025) — the push door + Shopify extractor *(MERGED 2026-09-01, cmd-err)*
+
+| Item | Delivered |
+|---|---|
+| A9 | `POST /ingest/events` — the envelope door: EventIn (aware-datetime, extra=forbid, strip-before-min-length), auth as DECLARED dependency (`verify_s2s_caller`: relay wildcard JWT branch-on-claims + per-merchant token byte-compare — revocation stays live), 503-on-store-failure with dedupe-safe retry, 413 size gate as a second declared dependency, receipt `{id, duplicate}` |
+| A10 | `extractors/` package (RULED: one source, one file — registry in `__init__` mirrors providers/): flat.py + shopify.py (default_address workhorse, guest-checkout fallbacks, shopify_customer_id early-frame resolution, no defaulted names) · `ingest_event` (raises) / `record_event` (fire-and-forget) fail-posture split |
+| — | ADR 0022 executed: `/crm/*` mount → root (`/ingest` + `/customers` + `/workflows`), tags cleaned, producer doc moved out of docs/crm/ with zero internal names. MAJOR fixed in round: extractor handles now flow to run context (`consume_attributed_event(event, customer_id, handles)`) — the parked-Shopify-run divergence closed at the seam. Owed at shadow-live: recorded fixtures replacing synthetic Shopify payloads |
+
+### PR [clairvoyance#1045](https://github.com/juspay/clairvoyance/pull/1045) — ingest guarantees pinned *(MERGED 2026-09-01, test-only)*
+
+Five tests closing #1025's coverage gaps: the default_address-only park regression at the entry layer, handles-beat-payload precedence, 413 behavior + boundary, and the size gate as a declared-dependency structural pin.
+
 ## Open — phase 1
 
 | Lane | Items | Notes |
 |---|---|---|
-| A (Identity & Record) | A4 config resolver · **A9 ingest front door** (+A8 completion: replay(), topic dispatch) · A12 remaining arms (with their lanes) · A13 transactional send consumer | A2+A10 SHIPPED (#1020) — deploy crm-event-worker pod to drain the voice backlog; **A9 is now the whole read-path critical chain** |
+| A (Identity & Record) | A4 config resolver · A8 completion (replay(), topic dispatch) · A12 remaining arms (with their lanes) · A13 transactional send consumer (now = one `register_consumer` line + the consumer, once #1046 lands) | A2+A10 SHIPPED (#1020) · **A9 SHIPPED (#1025)** — the door is open; facts flow the moment nautilus#195 relays · **consumer registry IN REVIEW (#1046)** — the missed-then-caught trigger from #1025 |
 | B (Permission) | T07/T08 + `record_consent()` · B3 blacklist backfill · B4 `decision_log` · **B5 `may_contact()` gate** (token, tz ladder, quiet hours, caps — ADR 0018 spec done, zero code) · Shopify consent importer | **B5 definition-of-done grew (ruled 1 Sep 2026, #1037 review)**: the C4 gate slice (suppression probe) runs WITHOUT decision_log writes — ratified as part of the sealed B5 deferral because T14's writer is permission's contract. B5 must therefore ship: decision_log rows for allow AND refuse (retroactively covering the slice's verdicts), `decision_id` through `SendToken` → T16 col 18, Redis GETDEL token consumption. The seam + column + token field already wait; a B5 PR landing without them is the trigger sweep's MAJOR |
-| C (Connectivity) | C1/C2 onboarding + console (#1038) · C6 receipt walker · C7 WABA template registry (T23 sealed) · C8 connectors door | C3+C5 SHIPPED (#1031) · **C4 IN REVIEW (#1037, rab1prasad)**: T11/T12 tables (migration 060 — takes the number canon had penciled for T24) + real `send()` + Meta adapter + gate suppression slice; #1031's tripwire honored structurally (dummy died in the PR that gated every adapter — CI rule 11 confinement + `ADAPTERS ⊆ GATE_HANDLE_KINDS` pin + lease-arithmetic pin). Template lookup interim rides binding capabilities; T23 lookup owed by whichever of #1037/#1038 merges second |
+| C (Connectivity) | C1/C2 onboarding + console (#1038 — now owes the T23 template lookup, merging second) · C6 receipt walker · C7 WABA template registry (T23 sealed) · C8 connectors door | C3+C5 SHIPPED (#1031) · **C4 SHIPPED (#1037)** — WhatsApp sends for real behind the adapter + channel registries, gated by the suppression slice |
 | X (external) | **X1 nautilus relay — cmd-err, #195 IN REVIEW** (with the door, #1025): reshape per the two-plane ruling — relay at webhook receipt, letter verbatim, `source=shopify`, shadow-only (cutover branch deleted; returns as per-shop `dispatch_brain` when W-lane lands) · X2 embedded signup — no owner · X3 pilot merchant + WABA — Swaroop | ADR 0022: no never-words on external surfaces — `/crm/*` → `/ingest/events`, `/customers/*` (called out on #1025) |
 | W (Outreach) | W6 broadcast tables/scheduler (T17/T18) · W8 broadcast send path (**trigger: fairness lanes + per-table db split land here**) · repeat-entry vocabulary (`on_repeat` + debounce) · keyed-flow bucket (reply-match · consume-reply-on-branch · key-count cap) · W3-cadence ruling before voice takeover | W1–W5 SHIPPED (#1029) — walker + entry rules live behind `dispatch_brain` |
 | U (Swaroop + Claude) | U1 loom wiring · U2 customers list (**backend live** — `GET /crm/customers` returns `CrmCustomerSummary` rows; detail GET carries full attributes) · U3 customer 360 (needs A12+B4) · U4 template manager (needs C7) | design complete (ADR 0019) |
@@ -106,9 +126,11 @@ Note: ships an intentional release rider in `numbers/rbac.py` (merchant role add
   `POST /ingest/schemas` + unregistered-topic nudge + wizard pre-fill query ·
   "Your events" console wizard (U-lane design, after runs monitor). Blocks the
   schema-driven workflow editor and push-vendor (NammaYatri-type) onboarding.
-- **Spine consumer registry** (COMMITTED next PR — Swaroop 31 Aug): record's pass
-  stops importing subscribers by name; `worker_main` registers them (modules/01
-  §consumer registry). Kills the #1029 import-cycle class structurally
+- **Spine consumer registry — IN REVIEW ([#1046](https://github.com/juspay/clairvoyance/pull/1046))**:
+  record/consumers.py slot + worker_main registration + boundary rule 12
+  (record imports no subscriber, red-tested). Trigger honesty: this fired on
+  #1025 (a record-touching PR) and the review sweep MISSED it — caught in the
+  post-merge growth audit; the skill now sweeps per-PR, not per-session
 - **Repeat-entry debounce + refresh** (sealed position, modules/05 §Repeat entries,
   31 Aug): `on_repeat` + `debounce_minutes` entry vocabulary + one idempotent
   entry-processor UPDATE — named follow-up AFTER #1029 merges, not part of its fix round
@@ -144,17 +166,18 @@ Note: ships an intentional release rider in `numbers/rbac.py` (merchant role add
 
 ## State in one sentence
 
-The spine drains (#1020), workflows walk (#1029: enrol → wait → decide behind
-`dispatch_brain`), and the manifest queues with a real dispatcher (#1031). With
-#1037 (in review) the first real channel sends — WhatsApp behind the adapter
-registry, gated by the suppression slice. The remaining critical chain to a
-merchant-visible loop: A9 ingest door (#1025) + X1 relay feed the facts in;
-B4/B5 turn the gate slice into the full permission verdict; C6 receipts + C7
-templates close the delivery story.
+Every stage of the loop now exists in code: the door is open (#1025), the spine
+drains (#1020), workflows walk (#1029, behind `dispatch_brain`), and WhatsApp
+sends for real (#1031 + #1037, gated by the suppression slice). What separates
+this from a merchant-visible loop is wiring, not machinery: X1's relay reshape
+(facts start flowing), #1038 onboarding (a merchant gets a door + a pipe),
+B4/B5 (the full permission verdict + the diary), C6 receipts + C7 templates
+(the delivery story closes).
 
 ## Suggested next slices
 
-PR-next: land #1037 fixes + #1038 onboarding (order decides who owes the T23
-template lookup) · A9/#1025 rename + X1 reshape (facts start flowing) · B-pod
-starts T07/T08 + B4 (B5's diary is now the sworn definition-of-done) · first
-record-touching PR carries the consumer registry.
+PR-next: merge #1046 (consumer registry) · #1038 onboarding (owes the T23
+template lookup, merging second) · X1 reshape on nautilus#195 (the door is
+waiting) · B-pod starts T07/T08 + B4 (B5's diary is the sworn
+definition-of-done) · recorded Shopify fixtures at shadow-live · PgBouncer
+before the pod count grows again (dispatcher just added one).

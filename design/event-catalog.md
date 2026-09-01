@@ -120,7 +120,15 @@ Precedence: registered mapping first, standard keys
 never think about it. Registering an event with NO phone role is allowed but told
 plainly: "these events will store and count, but can't start or advance any flow"
 — unattributed events can neither enrol nor goal-cancel. The wizard pre-suggests
-roles from sample values (+91… → phone).
+roles from sample values (+91… → phone). **The no-identity state is FLAGGED at
+every later surface, not just at registration**: the "Your events" row wears a
+standing "No customer identity" badge (grey — a declared choice, not a fault), and
+in the flow editor such events appear DISABLED with the reason inline in the
+trigger picker, the goal picker and wait_event topics (all three require
+attribution) — visible-but-disabled teaches; missing confuses. The amber cousin is
+drift, not choice: a schema WITH a phone role whose traffic arrives without the
+value ("rider_phone missing in 8% of events → quarantined") surfaces via the
+conformance counters.
 
 **Schema changes = re-registration under the same laws**: additive lands
 instantly; removing a field a live flow uses = deprecated-never-deleted + the

@@ -172,7 +172,7 @@ lookup:
 | Publish validator | declared fields only | same rule — their signature instead of our PR |
 
 One spine, one editor, one validator — two declarers. The storage/lifecycle spec is
-canon **T24 `crm_event_schema`** (canon/02-record.md, migration 060): detected →
+canon **T24 `crm_event_schema`** (canon/02-record.md, migration 061): detected →
 registered, cold by design (discovery writes once per topic ever; counts computed on
 read), and the runtime hot paths NEVER read it — registration governs authoring,
 publish-time validation guarantees op↔type fit, runtime evaluates conditions

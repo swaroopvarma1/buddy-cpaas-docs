@@ -53,14 +53,26 @@ Note: ships an intentional release rider in `numbers/rbac.py` (merchant role add
 | C5 | Dispatcher: lease-style claim (sweep stale → claim batch), `plan_for_outcome` pure retry policy, never-raises `_dispatch_one` (send error → retryable requeue; reclaimed row → outcome discarded), ±20% jitter with floor ≥1 · dummy `send()` seam |
 | — | Gate deferred to B5 by explicit scope ruling (send() is a dummy reaching nothing — zero exposure); **tripwire owed**: a test pinning send() as dummy that must die for a real adapter to land. Carried: `source_kind` dictionary with first producer · `send(send_token, message_id)` at B5 · adapter timeout < lease with first real adapter |
 
+### PR [clairvoyance#1029](https://github.com/juspay/clairvoyance/pull/1029) — workflows + walker + entry rules *(MERGED 2026-08-31, manas-narra)*
+
+| Item | Delivered |
+|---|---|
+| W1 | T19 `crm_workflow` (057): draft/publish lifecycle, version audit stamp, live-plan reads per merchant |
+| W2 | T20 `crm_workflow_enrollment` (058): wake_at = timer AND lease (no reaper — wake_at-push claim style), attempts++ at claim, errors PARK never exit, `enrollment_key` partial unique merchant-first, `'completed'` exit ratified (finished-without-converting; never rendered as success — late conversions are a reporting join) |
+| W3 | Walker: SKIP LOCKED claim, goal re-check at fire time (`customer_has_event`), deterministic uuid5 lead ids, `queue_message` dedupe `run:node` · ADR 0010 call nodes stamp `enrollment_id` through the legacy accessor (059), once-only |
+| W4 | Entry processor: per-row inside the row's savepoint, goal-cancel time-aware, `entry.key` wired (plan-level, defaults customer id), keyed-plan-refuses-missing-key |
+| W5 | `NODE_TYPES` registry in nodes.py (Swaroop ruling: enforce from day one) — `is_wait()` single source + Literal pin test; `run_facts()` shared filter |
+| — | Review: 1 BLOCKER (exit-context wipe) + first-node `wait_event` MAJOR (caught by pressure-testing the registry defer — the proof behind "guarantees land NOW") fixed; 233/233 green. Carried: consumer registry next record PR · repeat-entry vocabulary · keyed-flow trigger bucket (reply-match, consume-reply-on-branch, key-count cap) |
+
 ## Open — phase 1
 
 | Lane | Items | Notes |
 |---|---|---|
 | A (Identity & Record) | A4 config resolver · **A9 ingest front door** (+A8 completion: replay(), topic dispatch) · A12 remaining arms (with their lanes) · A13 transactional send consumer | A2+A10 SHIPPED (#1020) — deploy crm-event-worker pod to drain the voice backlog; **A9 is now the whole read-path critical chain** |
-| B (Permission) | T07/T08 + `record_consent()` · B3 blacklist backfill · B4 `decision_log` · **B5 `may_contact()` gate** (token, tz ladder, quiet hours, caps — ADR 0018 spec done, zero code) · Shopify consent importer | |
-| C (Connectivity) | C1 installations · C2 bindings · **C4 `send()` + WhatsApp adapter** (+ gate tripwire from #1031) · C6 receipt walker · C7 WABA template registry (T23 sealed) · C8 connectors door | C3+C5 SHIPPED (#1031) |
+| B (Permission) | T07/T08 + `record_consent()` · B3 blacklist backfill · B4 `decision_log` · **B5 `may_contact()` gate** (token, tz ladder, quiet hours, caps — ADR 0018 spec done, zero code) · Shopify consent importer | **B5 definition-of-done grew (ruled 1 Sep 2026, #1037 review)**: the C4 gate slice (suppression probe) runs WITHOUT decision_log writes — ratified as part of the sealed B5 deferral because T14's writer is permission's contract. B5 must therefore ship: decision_log rows for allow AND refuse (retroactively covering the slice's verdicts), `decision_id` through `SendToken` → T16 col 18, Redis GETDEL token consumption. The seam + column + token field already wait; a B5 PR landing without them is the trigger sweep's MAJOR |
+| C (Connectivity) | C1/C2 onboarding + console (#1038) · C6 receipt walker · C7 WABA template registry (T23 sealed) · C8 connectors door | C3+C5 SHIPPED (#1031) · **C4 IN REVIEW (#1037, rab1prasad)**: T11/T12 tables (migration 060 — takes the number canon had penciled for T24) + real `send()` + Meta adapter + gate suppression slice; #1031's tripwire honored structurally (dummy died in the PR that gated every adapter — CI rule 11 confinement + `ADAPTERS ⊆ GATE_HANDLE_KINDS` pin + lease-arithmetic pin). Template lookup interim rides binding capabilities; T23 lookup owed by whichever of #1037/#1038 merges second |
 | X (external) | **X1 nautilus relay — cmd-err, #195 IN REVIEW** (with the door, #1025): reshape per the two-plane ruling — relay at webhook receipt, letter verbatim, `source=shopify`, shadow-only (cutover branch deleted; returns as per-shop `dispatch_brain` when W-lane lands) · X2 embedded signup — no owner · X3 pilot merchant + WABA — Swaroop | ADR 0022: no never-words on external surfaces — `/crm/*` → `/ingest/events`, `/customers/*` (called out on #1025) |
+| W (Outreach) | W6 broadcast tables/scheduler (T17/T18) · W8 broadcast send path (**trigger: fairness lanes + per-table db split land here**) · repeat-entry vocabulary (`on_repeat` + debounce) · keyed-flow bucket (reply-match · consume-reply-on-branch · key-count cap) · W3-cadence ruling before voice takeover | W1–W5 SHIPPED (#1029) — walker + entry rules live behind `dispatch_brain` |
 | U (Swaroop + Claude) | U1 loom wiring · U2 customers list (**backend live** — `GET /crm/customers` returns `CrmCustomerSummary` rows; detail GET carries full attributes) · U3 customer 360 (needs A12+B4) · U4 template manager (needs C7) | design complete (ADR 0019) |
 | P0 remainder | PgBouncer (**before** A2 multiplies connections) · fail-closed voice DND · P0.4 LIKE-over-JSONB fix · reseller backfill | |
 
@@ -119,14 +131,17 @@ Note: ships an intentional release rider in `numbers/rbac.py` (merchant role add
 
 ## State in one sentence
 
-The write path exists end-to-end for voice, the first read exists (call-arm
-journey #1014), and the spine now DRAINS (#1020: event worker + processor —
-deploy the crm-event-worker pod and the accumulated voice backlog attributes
-itself). Nothing sends yet (no gate, no manifest, no adapter) — critical path:
-A9 ∥ C1–C6 + B4/B5 → A13, with X1 as the ownerless external blocker.
+The spine drains (#1020), workflows walk (#1029: enrol → wait → decide behind
+`dispatch_brain`), and the manifest queues with a real dispatcher (#1031). With
+#1037 (in review) the first real channel sends — WhatsApp behind the adapter
+registry, gated by the suppression slice. The remaining critical chain to a
+merchant-visible loop: A9 ingest door (#1025) + X1 relay feed the facts in;
+B4/B5 turn the gate slice into the full permission verdict; C6 receipts + C7
+templates close the delivery story.
 
 ## Suggested next slices
 
-PR-next: A9 + A8 completion (the front door opens — external sources land) ·
-remaining journey arms ride their lanes · C-pod starts C1–C3 in parallel · B-pod
-starts T07/T08 + B4.
+PR-next: land #1037 fixes + #1038 onboarding (order decides who owes the T23
+template lookup) · A9/#1025 rename + X1 reshape (facts start flowing) · B-pod
+starts T07/T08 + B4 (B5's diary is now the sworn definition-of-done) · first
+record-touching PR carries the consumer registry.

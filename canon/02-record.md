@@ -89,7 +89,10 @@ the whole registration; the row is cold by design.
   pure). **The FLOW runtime (entry evaluator, walker) never reads this table; the DECODE step reads only the cached identity mapping** (same in-process TTL cache as topic discovery — table cold, cache warm):
   the validator guaranteed op↔type fit at publish; conditions evaluate directly
   against the payload.
-- Migration 060. Owner: record (TABLE_OWNERS). Registration validator + code
+- Migration **061** (trail: sealed as 060 on 1 Sep 2026, renumbered same day —
+  #1037 took 060 for the connector tables first; numbers go to whoever merges,
+  the 026/034 scar says verify before merge). Owner: record (TABLE_OWNERS).
+  Registration validator + code
   CATALOG + layer merge live in `record/catalog.py` (concern-named logic file);
   contracts export the reads the console needs.
 

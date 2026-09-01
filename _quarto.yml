@@ -39,6 +39,7 @@ website:
           - design/app-crm-architecture.md
           - design/entry-points-and-the-event-spine.md
           - design/ingest-doors.md
+          - design/event-catalog.md
           - design/worker-runtime.md
           - design/inbox-and-conversations.md
           - design/gate-mechanics.md

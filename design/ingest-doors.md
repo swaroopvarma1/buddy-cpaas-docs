@@ -131,6 +131,11 @@ app/crm/record/
   db/            door · accessor · queries · decoder             [built]
 ```
 
+**The decoder's obligations grew (1 Sep 2026):** a new source/topic ships FOUR
+things in one PR — ingress entry · extractor · fixtures · **catalog entry** (see
+[design/event-catalog.md](event-catalog.md): the schema registry that drives the
+workflow editor's pickers, the where-grammar, and phase 2's segment builder).
+
 ## Build order — exists vs owed
 
 | Piece | State | Trigger |

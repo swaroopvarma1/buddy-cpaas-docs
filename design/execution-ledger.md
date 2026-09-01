@@ -66,6 +66,10 @@ Note: ships an intentional release rider in `numbers/rbac.py` (merchant role add
 
 ## Open — follow-ups created during the foundation build
 
+- **Event Catalog** (sealed design/event-catalog.md, 1 Sep): CATALOG registry + pin
+  tests beside EXTRACTORS · catalog API · typed where-grammar (validator + entry
+  evaluator; canon touch on entry.where) · seen-vs-matched counters · observed
+  overlay (post-pilots). Blocks the schema-driven workflow editor.
 - **Spine consumer registry** (COMMITTED next PR — Swaroop 31 Aug): record's pass
   stops importing subscribers by name; `worker_main` registers them (modules/01
   §consumer registry). Kills the #1029 import-cycle class structurally

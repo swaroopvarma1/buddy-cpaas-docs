@@ -71,7 +71,7 @@ Diagram: `../diagrams/04-connectivity.html`. Squad: Pod C.
   `classify.py` (error-code tables, outcome classification) · `payload.py` (pure
   request-building) · `onboard.py` (the `ConnectorOnboarder` port: gather →
   `OnboardResult {external_account_id, address, bundle, token_expires_at, health}`) ·
-  `templates.py` (the `TemplateProvider` port: submit/edit/retire/list → normalized
+  `templates.py` (the `TemplateProvider` port: submit/edit/retire → normalized
   `ProviderTemplateState`; `edits_in_place` flag). Vendor-shared transport is its own
   package — `providers/meta/graph.py`: endpoint builder, ONE `_call`, error fold,
   retryable throttles; Instagram/Messenger reuse it. Ports live in `providers/base.py`;

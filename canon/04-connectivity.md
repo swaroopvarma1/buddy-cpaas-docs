@@ -85,7 +85,7 @@ decides the registry."
 | 14 | `rejection_reason` | text |  | Meta's reason VERBATIM — the U4 console surfaces it word for word (console-ui law) |
 | 15 | `quality` | text |  | GREEN · YELLOW · RED · UNKNOWN — theirs, changes over time, no CHECK |
 | 16 | `quality_updated_at` | timestamptz |  |  |
-| 17 | `last_synced_at` | timestamptz |  | C7's periodic Tech-Provider full sync — the drift healer |
+| 17 | `last_synced_at` | timestamptz |  | Trail (2 Sep 2026, #1038): the periodic full sync was REMOVED before it ever ran — webhooks are the only status path, so this column has NO writer today. Kept, NULL, for the named follow-up "import a WABA's existing templates" (explicit one-shot action, never a clock) |
 | 18 | `created_at` | timestamptz |  |  |
 | 19 | `updated_at` | timestamptz |  | Touch trigger (rules: every updated_at gets one) |
 

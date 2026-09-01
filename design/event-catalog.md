@@ -67,15 +67,50 @@ promises what another can't keep.
 Nested objects: flat dot-paths. Arrays: addressable ONLY through declared derived
 fields (`items_count`) — the matcher never learns array semantics.
 
-## Merchant-custom fields — declared governs, observed assists
+## Merchant events — the third layer, with a lifecycle (amended 1 Sep 2026)
 
-Push merchants send arbitrary scalar keys. Two layers:
-- **Declared catalog** (global, in code) — authoritative.
-- **Observed overlay** (per merchant+topic): a cheap sampling job over the spine
-  records keys seen, inferred type, sample values. The builder offers observed keys
-  as suggestions wearing an "unverified" badge; authors may also declare a custom
-  field by hand (name + type). The overlay is assist-only — it can never make the
-  validator accept what the engine won't honor.
+Push merchants (Flipkart-type, NammaYatri-type) send THEIR events with THEIR
+schemas. We do not guess at them — we contract them. The catalog has three layers:
+
+1. **Declared in code** (global, ours): shopify · meta · voice — the four-part
+   decoder PR. Authoritative.
+2. **The merchant catalog** (tenant-scoped, a real table, record-owned — canon
+   entry owed): every (merchant_id, source, topic) a push merchant sends becomes an
+   entry with a LIFECYCLE — `observed → draft → published`:
+   - *observed*: the event worker's discovery upsert creates the entry the first
+     time an unknown (merchant, topic) arrives — topic, first/last seen, count.
+     One row per new topic, never per event.
+   - *draft*: opening "Define this event" in the console runs the inference query
+     (jsonb_each over that merchant's recent events, compute-on-read, ETag-cached)
+     and PRE-FILLS the draft: fields, inferred types, sample values. Inference
+     writes the first draft; it is never the authority.
+   - *published*: a human (merchant admin or our ops at onboarding) reviews,
+     corrects, publishes. The event becomes first-class: trigger picker, typed
+     conditions, keyable, context_fields — identical UX to Shopify. Hand-declaring
+     a custom field = editing the draft; declared once, reused by every flow.
+   The fields document follows T19's draft/publish discipline; edits never
+   silently change what live flows validated against.
+3. **Observed decoration** (assist only): sample values and seen-counts enrich
+   published fields' dropdowns; never consulted by the validator.
+
+**The enforcement law: ingestion is free, automation requires a published schema.**
+The doors store any letter, always (the spine law does not move). But the publish
+validator accepts conditions, entry.keys and template variables ONLY on published
+catalog fields — code layer or merchant layer, no third source of truth. Draft
+fields render greyed in the editor ("define this event to use it"). The product
+moment this buys: "New event detected: ride.cancelled · 2.4k this week — define it
+to use in workflows" → pre-filled draft → two-minute review → publish → their ops
+builds the reschedule flow with the same typed UX as a Shopify merchant.
+
+Implementation rulings (1 Sep, for the catalog build): observed-overlay option =
+compute-on-read at define-time + decoration (NO Redis — tenancy lives in table
+shape and a flush must never empty dropdowns; NO stats cache table until the named
+latency trigger — the merchant catalog table stores DECISIONS/lifecycle, which no
+query can recompute, so it is not derived state). Legacy `entry.where` equality
+maps: ONE migration rewrites definition + draft to the typed condition list;
+validator accepts lists only — dual-shape parsing is refused at its cheapest
+moment. Per-flow inline field types are rejected outright (scattered,
+ungoverned, two flows can disagree on one field's type).
 
 ## Drift observability — seen vs matched
 
@@ -102,7 +137,10 @@ value) is a dashboard fact within hours, never a merchant complaint within weeks
 3. Typed where-grammar: validator + entry-processor evaluator (+ canon touch:
    `entry.where` shape).
 4. Seen-vs-matched counters on the entry processor.
-5. Observed overlay sampling job (after pilots generate traffic).
+5. Merchant catalog table (observed→draft→published; discovery upsert in the
+   event worker; define-time inference endpoint) — canon table entry owed.
+6. Where-shape migration: equality maps → typed condition lists (with the
+   where-grammar change, one PR).
 
 Refs: design/ingest-doors.md (the decoder's obligations gain the catalog) ·
 modules/01-record.md (registry home) · modules/05-outreach.md (entry vocabulary) ·

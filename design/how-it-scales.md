@@ -70,6 +70,13 @@ unwritable.)
 The manifest (T16) and dispatcher are channel-agnostic; ONE send path absorbs
 email and SMS the way it carries WhatsApp.
 
+**More push vendors** (NammaYatri-type, Flipkart-type) — zero code, not even the
+four-artifact PR: the vendor registers their event schemas at enrollment (canon
+T24), the catalog API merges their layer with ours, and their ops builds flows
+with the same typed UX a Shopify merchant gets. Onboarding an enterprise vendor
+is a ten-minute wizard session, and the runtime hot paths never even read the
+registration table.
+
 **More merchants** — everything tenant-scoped by law (merchant_id first in every
 unique index; per-merchant plan reads). The deliberately GLOBAL work queues
 (walker, dispatcher) scale by adding replicas, because correctness rides leases

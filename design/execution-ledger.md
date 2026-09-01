@@ -73,10 +73,14 @@ Note: ships an intentional release rider in `numbers/rbac.py` (merchant role add
   global queue by design; before the first 10k-recipient broadcast, the claim must
   prefer transactional/utility purpose roots over marketing so a blast can never
   starve COD confirmations — ordering by purpose root + per-merchant round-robin
-- **Event Catalog** (sealed design/event-catalog.md, 1 Sep): CATALOG registry + pin
-  tests beside EXTRACTORS · catalog API · typed where-grammar (validator + entry
-  evaluator; canon touch on entry.where) · seen-vs-matched counters · observed
-  overlay (post-pilots). Blocks the schema-driven workflow editor.
+- **Event Catalog stack** (sealed design/event-catalog.md; RULED 1 Sep — vendor
+  schemas registered at enrollment): CATALOG registry + pin tests beside EXTRACTORS ·
+  catalog API (merges code + registered layers) · typed where-grammar (validator +
+  entry evaluator; canon touch on entry.where; ONE migration maps→lists) ·
+  seen-vs-matched counters · **T24 `crm_event_schema` (migration 060)** +
+  `POST /ingest/schemas` + unregistered-topic nudge + wizard pre-fill query ·
+  "Your events" console wizard (U-lane design, after runs monitor). Blocks the
+  schema-driven workflow editor and push-vendor (NammaYatri-type) onboarding.
 - **Spine consumer registry** (COMMITTED next PR — Swaroop 31 Aug): record's pass
   stops importing subscribers by name; `worker_main` registers them (modules/01
   §consumer registry). Kills the #1029 import-cycle class structurally

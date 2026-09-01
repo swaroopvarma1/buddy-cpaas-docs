@@ -132,6 +132,29 @@ typed condition list (definition + draft), validator accepts lists only.
 Per-flow inline field types rejected outright (scattered, ungoverned, two flows
 can disagree on one field's type).
 
+## The unified path — proof there is one system, not two
+
+Trace both kinds of event; they use identical machinery and differ at exactly ONE
+lookup:
+
+| Moment | Shopify order | NammaYatri `ride.cancelled` |
+|---|---|---|
+| Door | envelope door (via nautilus) | envelope door (their s2s push) — same door |
+| Storage | `crm_event_raw`, raw letter | same table, same law |
+| Decode | `EXTRACTORS["shopify"]` (code) | generic extractor + standard identity keys (`customer_mobile_number`/`customer_name`) — push vendors need NO custom extractor |
+| Identity | `resolve()` | identical |
+| Catalog lookup | **code layer** answers | **registered layer** (T24 row) answers — the only different line |
+| Editor UX | typed conditions, dropdowns, variables | identical — the editor is layer-blind |
+| Entry rules · walker · goal-cancel · sends · calls | identical | identical |
+| Publish validator | declared fields only | same rule — their signature instead of our PR |
+
+One spine, one editor, one validator — two declarers. The storage/lifecycle spec is
+canon **T24 `crm_event_schema`** (canon/02-record.md, migration 060): detected →
+registered, cold by design (discovery writes once per topic ever; counts computed on
+read), and the runtime hot paths NEVER read it — registration governs authoring,
+publish-time validation guarantees op↔type fit, runtime evaluates conditions
+directly against the payload.
+
 ## Drift observability — seen vs matched
 
 The entry processor counts, per flow: entry events EVALUATED vs runs STARTED (and

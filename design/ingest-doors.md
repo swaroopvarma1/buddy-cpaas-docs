@@ -131,6 +131,11 @@ app/crm/record/
   db/            door · accessor · queries · decoder             [built]
 ```
 
+**The envelope door family gained a sibling (1 Sep 2026):** `POST /ingest/schemas`
+— same s2s verification — where a push vendor registers its event schemas at
+enrollment (canon T24; design/event-catalog.md §Vendor events). Credentials say who
+may speak; the registration says what their words mean.
+
 **The decoder's obligations grew (1 Sep 2026):** a new source/topic ships FOUR
 things in one PR — ingress entry · extractor · fixtures · **catalog entry** (see
 [design/event-catalog.md](event-catalog.md): the schema registry that drives the

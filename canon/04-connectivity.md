@@ -59,7 +59,7 @@ One binding per actual pipe — a number, a Page, a from-address.
   voice takeover (clairvoyance `telephony_numbers` is the proto-binding); the available-number
   pool stays a platform-side ops table.
 
-### crm.template (T23) — 19 columns
+### crm.channel_template (T23) — 19 columns
 
 The channel template registry — sealed 29 Aug 2026, the C7 table the map had left
 unnamed. One registry for every channel that pre-registers message shapes:
@@ -101,7 +101,7 @@ Natural key: `UNIQUE (merchant_id, channel, name, language)`.
 - Read by: U4 (list/detail with status + verbatim rejection + quality), `send()`
   (template lookup by name+language at send time), and the gate indirectly
   (category informs purpose mapping).
-- Owner: connectivity. Physical `crm_template`.
+- Owner: connectivity. Physical `crm_channel_template` (trail: sealed 29 Aug as `crm_template`; renamed 2 Sep 2026 on Swaroop's ruling at #1038 review — singular like every crm_* table, and "template" alone collided with buddy's agent templates).
 
 ### crm.message (T16) — 24 columns
 

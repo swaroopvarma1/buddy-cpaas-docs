@@ -19,3 +19,12 @@ endpoints** — no throwaway surface.
   prerequisite of the console fast-follow instead.
 - API design is still done to console quality (naming, pagination, errors) — the console
   will consume it unchanged.
+
+## Amendment — 2026-09-02 (Swaroop, at the #1038 review)
+The connector-onboarding and template routes (`/connectors/*`, `/templates/*`) ship
+**merchant-facing** behind the existing RBAC bearer JWT plus an in-request tenancy check
+(`merchant_id` validated against the caller's merchants, `*` wildcard honoured, 403 on a
+foreign merchant) — an accepted early X2, not a retreat from the phase-1 posture: admins
+pass the same dependency, so our team still drives the pilot, and merchants get self-serve
+the day the console ships on the same endpoints. Every other `/crm` surface stays
+admin/S2S until its own ruling.

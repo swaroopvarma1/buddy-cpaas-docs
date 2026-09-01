@@ -54,6 +54,45 @@ Everything that arrives, verbatim and immutable. Replay is the only recovery mec
   `quarantine_reason` and `customer_id` may ever change. The letter is immutable by trigger,
   not by intention.
 
+### crm.event_schema (T24) — 12 columns *(sealed 1 Sep 2026 — vendor schemas registered at enrollment)*
+
+One row per (merchant, source, topic) a push vendor sends — the REGISTERED contract
+for their events (design/event-catalog.md §Vendor events). The fields document is
+the whole registration; the row is cold by design.
+
+| # | column | type | keys | notes |
+|---|---|---|---|---|
+| 1 | `id` | uuid | PK |  |
+| 2 | `merchant_id` | text | IX | Tenancy — first column of the unique below |
+| 3 | `source` | text |  | The vendor's declared source (e.g. nammayatri) |
+| 4 | `topic` | text |  | e.g. ride.cancelled |
+| 5 | `label` | text |  | "Ride cancelled" — presentation, renameable |
+| 6 | `fields` | jsonb |  | THE registration, whole: [{path, type, label, keyable, variable, values[], identity, deprecated}] — one document, never per-field rows. Type vocabulary lives in the REGISTRATION VALIDATOR (code), never a CHECK (the 027 scar); unknown types are rejected at registration, not discovered at flow-publish |
+| 7 | `status` | text | CK | detected · registered. detected = the discovery upsert saw an unregistered topic (fields empty — the nudge row); registered = a human/vendor signed the schema. Registration upgrades the same row |
+| 8 | `version` | integer |  | Bumped on every re-registration — the audit stamp (T19's precedent); removals are deprecations inside `fields`, never deletions |
+| 9 | `registered_by` | text |  | Who signed: the s2s credential (API) or the console user |
+| 10 | `first_seen_at` | timestamptz |  | Written ONCE by discovery. No per-event counters here — "312 this week" is computed on read from event_raw; this table stays cold |
+| 11 | `created_at` | timestamptz |  |  |
+| 12 | `updated_at` | timestamptz |  | Touched by the registration accessor's SQL |
+
+
+**Wiring**
+- UNIQUE (merchant_id, source, topic) — merchant-first per the tenancy law.
+- Three writers, all cold: the event worker's DISCOVERY upsert (INSERT ON CONFLICT
+  DO NOTHING, status=detected — one write per new topic EVER, with a small
+  in-process known-set cache so the hot path never probes); the registration API
+  (`POST /ingest/schemas`, s2s — same door family as the envelope door); the
+  console wizard (admin route, same accessor).
+- Readers: the catalog API merges this layer with the code CATALOG into one shape —
+  the editor is layer-blind. The PUBLISH validator receives the merged catalog as an
+  argument (gather → pure validate(definition, catalog) → apply — validate stays
+  pure). **The runtime hot paths (entry evaluator, walker) NEVER read this table**:
+  the validator guaranteed op↔type fit at publish; conditions evaluate directly
+  against the payload.
+- Migration 060. Owner: record (TABLE_OWNERS). Registration validator + code
+  CATALOG + layer merge live in `record/catalog.py` (concern-named logic file);
+  contracts export the reads the console needs.
+
 ### crm.journey_event — VIEW (V01) — 12 columns
 
 One ordered history per customer — a union over stores that already exist; consent grants and withdrawals join the union as first-class moments. A view, deliberately: the table is the customer-event stream NAMED TRIGGER (P2’s first event-recency segment), built then as a rebuildable projection.

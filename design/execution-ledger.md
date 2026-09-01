@@ -66,6 +66,13 @@ Note: ships an intentional release rider in `numbers/rbac.py` (merchant role add
 
 ## Open — follow-ups created during the foundation build
 
+- **Live-plan cache** (trigger: event volume makes per-event live_workflows reads
+  visible in queue-lag): short-TTL in-process cache of validated definitions keyed
+  (workflow_id, version) in the entry processor — plans are authored, not generated
+- **Dispatcher fairness lanes** (trigger: W8/broadcast PR): the manifest claim is one
+  global queue by design; before the first 10k-recipient broadcast, the claim must
+  prefer transactional/utility purpose roots over marketing so a blast can never
+  starve COD confirmations — ordering by purpose root + per-merchant round-robin
 - **Event Catalog** (sealed design/event-catalog.md, 1 Sep): CATALOG registry + pin
   tests beside EXTRACTORS · catalog API · typed where-grammar (validator + entry
   evaluator; canon touch on entry.where) · seen-vs-matched counters · observed

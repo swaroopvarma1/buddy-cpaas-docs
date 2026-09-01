@@ -9,7 +9,8 @@ growing the product never changes its shape — only its vocabulary.***
 
 Systems die in two ways as they grow: **scatter** (the fifth connector is wired in
 eleven places, and place nine gets forgotten) or **cleverness** (an engine so
-general nobody can predict it). We refuse both with one pattern, used five times:
+general nobody can predict it). We refuse both with one pattern, used again and
+again — seven instances and counting:
 
 > A closed vocabulary lives in ONE dict. Everything that needs per-entry behavior
 > iterates or dispatches through that dict. A pin test makes a half-added entry
@@ -19,9 +20,15 @@ general nobody can predict it). We refuse both with one pattern, used five times
 |---|---|---|---|
 | `EXTRACTORS` (#1020) | event sources → decode | record | fixture conformance |
 | `NODE_TYPES` (#1029) | workflow node words | outreach | Literal pin + `is_wait == (execute is None)` |
+| `ADAPTERS` (#1037) | channels → providers | connectivity `providers/` | CI rule 11 confinement (only send.py imports it) + red tests |
+| `CHANNELS` (#1037) | channel metadata (gate handle kind; W8 pacing joins) | connectivity `channels.py` | `ADAPTERS ⊆ CHANNELS` pin; missing entry fails closed at the gate |
 | `INGRESS` (owed, C6) | provider webhook doors | record | one verifier per bay |
 | `CATALOG` (owed) | events + their fields | record | extractor↔catalog square, fields-in-fixtures |
 | `CONSUMERS` (committed) | spine subscribers | worker_main registers | record imports nobody |
+
+(`ADAPTERS` and `CHANNELS` are two registries for ONE vocabulary on purpose: the
+confinement law keeps adapters behind the send door, so the metadata other code
+needs per channel lives outside the confined package — the pin test welds them.)
 
 If you are about to add per-entry behavior with an `if/elif` in a second file —
 stop. That is scatter beginning. Find the registry or make one (ask first: the
@@ -66,9 +73,11 @@ not hypothetical: at only FOUR types, the pre-registry code had already half-wir
 one — a `wait_event` first node that never waited. The registry made that bug
 unwritable.)
 
-**More channels on send nodes** — a channel value + an adapter behind `send()`.
-The manifest (T16) and dispatcher are channel-agnostic; ONE send path absorbs
-email and SMS the way it carries WhatsApp.
+**More channels on send nodes** — one adapter file + one `ADAPTERS` line + one
+`CHANNELS` entry (as built #1037; the pin test fails CI on a half-add, and a
+channel missing its metadata fails closed at the gate rather than sending
+unchecked). The manifest (T16) and dispatcher are channel-agnostic; ONE send
+path absorbs email and SMS the way it carries WhatsApp.
 
 **More push vendors** (NammaYatri-type, Flipkart-type) — zero code, not even the
 four-artifact PR: the vendor registers their event schemas at enrollment (canon

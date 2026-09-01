@@ -23,16 +23,29 @@ Diagram: `../diagrams/04-connectivity.html`. Squad: Pod C.
   non-approved template is refused BEFORE the provider call — manifest row, honest
   reason.
 - **The manifest**: one row per outbound attempt, **blocked attempts included**
-  (reason, no provider call). Stores template_id + variables. `dedupe_key` (partial
-  unique) makes retries and reaper releases exactly-once. Status ladder is one stamped
-  word driven by receipts; the monotonic walker never regresses a later state on
-  out-of-order arrival. RANGE partitions on created_at.
-- **`send(send_token, message_id)`**: verifies and consumes the gate token, invokes the
-  channel adapter, records provider_message_id (wamid) and honest status, and **emits
-  the `message.queued` mirror event carrying the free-form body** (ADR 0015).
-  Adapters are imported ONLY inside send()'s module — grep-enforceable.
+  (reason, no provider call). Stores template_id + variables. `dedupe_key` (NOT NULL,
+  total unique per merchant — strengthened 29 Aug, T16 amendment) makes retries and
+  reaper releases one-row. Status ladder is one stamped word driven by receipts; the
+  monotonic walker never regresses a later state on out-of-order arrival. Ships
+  UNPARTITIONED (T16 col 19 trail — partitioning returns when volume calls).
+- **`send(send_token, message)`**: verifies the gate token names THIS message, invokes
+  the channel adapter, records provider_message_id (wamid) and honest status. Free-form
+  bodies are never mirrored anywhere — per ADR 0015 the thread linkage is a POINTER ROW
+  in `conversation_message` (written by the conversations lane when it builds; the
+  words live in the transcript, the send in the manifest). Adapters are imported ONLY
+  inside send()'s module — CI rule 11 with red tests (as built, #1037).
+- **Channel registries (as built, #1037)**: `providers/` holds `ADAPTERS` (the channel
+  vocabulary — one adapter file + one registry line per channel) behind the send door;
+  root `channels.py` holds `CHANNELS` metadata (today the gate's handle kind; W8's
+  pacing and quality-tier defaults join as fields). Two registries because rule 11
+  confines providers/ behind send.py — anything dispatch needs per channel must live
+  outside the confined package. Pinned `ADAPTERS ⊆ CHANNELS`; a channel missing from
+  either fails closed.
 - **Dispatcher (ADR 0004)**: drain `status='queued'` with SKIP LOCKED, back off on
-  429s, no transaction across HTTP. Simple queue; scale by replicas.
+  429s, no transaction across HTTP. Simple queue; scale by replicas. As built: the
+  suppression gate slice runs first (fail closed, own deadline), then send() — each
+  may burn one `CRM_MESSAGE_SEND_TIMEOUT_SECONDS`, and the test suite pins
+  `batch × 2 × timeout ≤ lease` so no dial drifts past the others.
 - **Receipt walker**: per-wamid transitions; `cost_micros` filled from the provider's
   pricing object (THEIR claim, never our arithmetic); statuses also land as journey
   events.
@@ -62,6 +75,10 @@ Diagram: `../diagrams/04-connectivity.html`. Squad: Pod C.
   per-second budget per pipe in capabilities; the dispatcher respects it.
 - Scale-out path if measured: shard the drain by merchant or promote hot merchants to
   a Redis ready list — the manifest contract must not change.
+- Route reads (binding → installation → vault) run PER SEND, uncached, on purpose:
+  a paused pipe or rotated credential must bite the very next message. If route reads
+  ever show in queue-lag, any cache is FAIL-CLOSED-CONSTRAINED — short TTL, never
+  caching a refusal away; the gate itself is never cached, at any TTL (law).
 - Voice adapter lands at the takeover as just another adapter behind send() — if that
   requires more than an adapter + a binding, this module drifted.
 

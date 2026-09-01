@@ -120,11 +120,23 @@ Record hears, never calls: `record/consumers.py` slot (idempotent register, orde
   `queries/<table>.py` · `accessors/<table>.py` · `decoders/<table>.py` (modules/00
   §1 amended); CI rule 2 admits the folder. Other modules convert at their next db/
   touch past ~2 tables or ~500 lines — outreach (394 lines, two tables) is next
-- **`template.status` spine consumer** (owner: Rahul, the PR after #1038): one
-  `register_consumer` line + the consumer in connectivity, written against topic
-  `template.status` now; goes live when record's Meta ingress bay lands (`INGRESS`
-  registry, C6). Until then the registry is kept honest by the on-demand
-  reconciliation route only
+- **#1038 lands as THREE PRs (ruled 2 Sep 2026, plan posted on the PR)**: **A**
+  connectors — pure-move commit (providers/whatsapp/ + db/ subfolders) then the ports,
+  `providers/meta/graph.py`, `connectors.py`, generic onboarding, `/connectors/*`
+  routes, face-precise rule 11 + rule 2, the onboarding defects (needs the auth-phase
+  answer); **B** templates — migration 061, `TemplateProvider` face, lifecycle fixes,
+  **the T23 send-time lookup in send.py** (the "merges second" obligation), and
+  `reconcile_installation_templates` exposed ONLY as a per-installation route +
+  once at onboarding to seed (needs the table-name answer); **C** webhooks — record's
+  Meta ingress bay (`INGRESS` first entry: hub.challenge, X-Hub-Signature-256,
+  merchant stamped from the receiving WABA, topics `template.status` /
+  `template.category` / `template.quality`) + connectivity's consumer (one
+  `register_consumer` line; monotonic on out-of-order). B branches from A as a draft
+  targeting A; one commit per PR at merge. **The timed sync is never added**: at
+  1,000 merchants × 100 templates an hourly pass is ~1,000 Graph calls + ~100k row
+  writes per hour for ~zero information; after C every registry drift has a
+  webhook, and the reconcile route stays as a repair tool driven by the console's
+  "Refresh from Meta" or by a stalled `last_event_at`
 - **One decode engine, two spec sources** (trigger: the catalog/T24 engine landing;
   Swaroop ruling 1 Sep 2026, sealed in design/event-catalog.md §Companion rulings):
   connector mappings become code-DECLARED specs run by the same generic engine as

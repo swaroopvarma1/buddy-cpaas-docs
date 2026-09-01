@@ -25,10 +25,15 @@ Diagram: `../diagrams/04-connectivity.html`. Squad: Pod C.
   `template.status` spine consumer (one `register_consumer` line + the consumer;
   goes live when record's Meta ingress bay lands at C6). The T23 col 17 full sync is
   RECONCILIATION on demand — `POST /connectors/installations/{id}/templates/sync`,
-  per installation, bounded, called when the console opens the templates screen —
-  never a timed loop on the dispatcher (per-pod timers multiply Meta calls, and a
-  sync inside the claim stalls sends). A reconciliation pass marks what it did NOT
-  see (after a COMPLETE list) or it never notices deletion. Provider quirks (Meta's
+  per installation, bounded, called once at onboarding (seed the registry with the
+  WABA's existing templates) and from the console's explicit "Refresh from Meta" or
+  by ops when an installation's `last_event_at` stalls while templates sit pending
+  — **a timed full sync is never added**: at 1,000 merchants × 100 templates an
+  hourly pass is ~1,000 Graph calls + ~100k row writes per hour for ~zero
+  information, per-pod timers multiply it, and a sync inside the dispatcher's claim
+  stalls sends. After the webhook consumer lands every registry drift (status,
+  category — the money one, quality) arrives as an event. A reconciliation pass
+  marks what it did NOT see (after a COMPLETE list) or it never notices deletion. Provider quirks (Meta's
   uppercase statuses, edit-in-place vs re-register, delete-by-name nuking every
   language) are normalised INSIDE the provider's template face, never in the
   generic registry file.

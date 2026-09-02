@@ -98,7 +98,8 @@ Diagram: `../diagrams/04-connectivity.html`. Squad: Pod C.
   onboarder, templates | None, request_model)`. Routes are connector-agnostic:
   `POST /connectors/{connector_key}/onboard` (body validated by the spec's request
   model; unknown key = 404 — the dict IS the vocabulary), `/connectors/installations`,
-  templates under `/templates` (the row's `channel` decides the provider). Pins: every
+  templates under `/connectors/templates` (as built #1050 — the row's `channel` decides
+  the provider; no connector in the path). Pins: every
   spec with a channel has it in `CHANNELS`; `create_draft` refuses a channel that is
   not a key. The generic onboarding flow is fixed: merchant lookup → `spec.onboarder.
   gather()` → credential upsert (name `{connector_key}:{merchant_id}:{account}`) →

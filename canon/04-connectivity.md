@@ -89,7 +89,12 @@ decides the registry."
 | 18 | `created_at` | timestamptz |  |  |
 | 19 | `updated_at` | timestamptz |  | Touch trigger (rules: every updated_at gets one) |
 
-Natural key: `UNIQUE (merchant_id, channel, name, language)`.
+Natural key: `UNIQUE (merchant_id, channel, name, language)`. **Trail (2 Sep 2026, as built
+#1050)**: the physical index is `(merchant_id, channel, provider_account_ref, name, language)` —
+one column beyond the sealed four. A merchant may hold TWO accounts on one channel (two
+WABAs), and the same name+language registered in both are two different templates with two
+different provider ids; without the account in the key the second one collides with the
+first and cannot be created. merchant_id still leads. Pinned by test.
 
 **Wiring**
 - Written by: the U4 console (create/edit drafts) → C7 Tech Provider API (submit to

@@ -21,7 +21,7 @@ again — eight instances and counting:
 | `EXTRACTORS` (#1020) | event sources → decode | record | fixture conformance |
 | `NODE_TYPES` (#1029) | workflow node words | outreach | Literal pin + `is_wait == (execute is None)` |
 | `ADAPTERS` (#1037) | channels → providers | connectivity `providers/` | CI rule 11 confinement (only send.py imports it) + red tests |
-| `CHANNELS` (#1037) | channel metadata (gate handle kind; W8 pacing joins) | connectivity `channels.py` | `ADAPTERS ⊆ CHANNELS` pin; missing entry fails closed at the gate |
+| `CHANNELS` (#1037) | channel metadata — gate/address handle kind, `registers_templates` (W8 pacing joins) | connectivity `channels.py` | `ADAPTERS ⊆ CHANNELS` pin; missing entry fails closed at the gate, at queue, and at the registry lookup — every per-channel question generic code asks is answered here and nowhere else |
 | `CONNECTORS` (committed, #1038) | connector_key → onboarder + template provider + request model (canon T11 col 3's dict) | connectivity `connectors.py` | spec.channel ∈ `CHANNELS` pin; face-precise rule 11 — provider faces reachable only through the registry; unknown key = 404 |
 | `INGRESS` (owed, C6) | provider webhook doors | record | one verifier per bay |
 | `CATALOG` (owed) | events + their fields | record | extractor↔catalog square, fields-in-fixtures |

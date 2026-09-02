@@ -55,11 +55,22 @@ Diagram: `../diagrams/04-connectivity.html`. Squad: Pod C.
   inside send()'s module — CI rule 11 with red tests (as built, #1037).
 - **Channel registries (as built, #1037)**: `providers/` holds `ADAPTERS` (the channel
   vocabulary — one adapter file + one registry line per channel) behind the send door;
-  root `channels.py` holds `CHANNELS` metadata (today the gate's handle kind; W8's
-  pacing and quality-tier defaults join as fields). Two registries because rule 11
-  confines providers/ behind send.py — anything dispatch needs per channel must live
-  outside the confined package. Pinned `ADAPTERS ⊆ CHANNELS`; a channel missing from
-  either fails closed.
+  root `channels.py` holds `CHANNELS` metadata — the gate's handle kind (which is also
+  the address kind queue.py normalizes by) and `registers_templates` (whether the send
+  door consults the T23 registry at all — WhatsApp and SMS-DLT yes, email no; an
+  unregistered channel answers yes, fail closed); W8's pacing and quality-tier
+  defaults join as fields. **Every per-channel question generic code asks is
+  answered by CHANNELS and nowhere else** (ruled 2 Sep 2026 after #1050: queue.py
+  had grown its own "phone channels" tuple and send.py assumed every channel
+  registers templates — two parallel answers, fixed in the channel-neutral route
+  PR). Two registries because rule 11 confines providers/ behind send.py — anything
+  dispatch needs per channel must live outside the confined package. Pinned
+  `ADAPTERS ⊆ CHANNELS`; a channel missing from either fails closed. **The resolved
+  `SendRoute` carries the approved registry ROW (`ApprovedTemplate`: id, name,
+  language, provider_template_id, category), never one provider's field** — the
+  WhatsApp adapter reads its language, an SMS-DLT adapter its provider id, email
+  nothing; a route field named for one provider's need is the first thing the second
+  adapter works around.
 - **Provider package split — COMMITTED; trigger FIRED by #1038 (Swaroop rulings
   1 Sep + 2 Sep 2026)**: one provider = one flat file is correct exactly as long as
   there is one provider with ONE face. The trigger was written as "the second

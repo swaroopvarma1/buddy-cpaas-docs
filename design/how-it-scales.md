@@ -23,7 +23,7 @@ again — eight instances and counting:
 | `ADAPTERS` (#1037) | channels → providers | connectivity `providers/` | CI rule 11 confinement (only send.py imports it) + red tests |
 | `CHANNELS` (#1037) | channel metadata — gate/address handle kind, `registers_templates` (W8 pacing joins) | connectivity `channels.py` | `ADAPTERS ⊆ CHANNELS` pin; missing entry fails closed at the gate, at queue, and at the registry lookup — every per-channel question generic code asks is answered here and nowhere else |
 | `CONNECTORS` (committed, #1038) | connector_key → onboarder + template provider + request model (canon T11 col 3's dict) | connectivity `connectors.py` | spec.channel ∈ `CHANNELS` pin; face-precise rule 11 — provider faces reachable only through the registry; unknown key = 404 |
-| `INGRESS` (owed, C6) | provider webhook doors | record | one verifier per bay |
+| `INGRESS` (#1040 in review) | provider webhook bays — `GET\|POST /ingest/webhooks/{provider}` | record owns the SLOT (`record/ingress.py`); entries are built beside each vendor's faces (`connectivity/providers/<vendor>/inbound.py` + root `ingress.py`) and registered from `app/crm/api.py` — ruled 2 Sep 2026 | one verifier per bay; record imports no vendor (rule 12); unknown provider = 404; store failure = 503, never a silent 200 |
 | `CATALOG` (owed) | events + their fields | record | extractor↔catalog square, fields-in-fixtures |
 | `CONSUMERS` (committed) | spine subscribers | worker_main registers | record imports nobody |
 
@@ -39,10 +39,13 @@ stop. That is scatter beginning. Find the registry or make one (ask first: the
 
 The ritual every connector follows — four artifacts, ONE PR, roughly a day:
 
-1. **Ingress entry** (`record/ingress.py`): how Meta proves it's Meta —
-   `verify` (X-Hub-Signature-256 over raw bytes), `envelope` (topic/external_id
-   from the body), `challenge` (the GET handshake). The door is three verbs:
-   verify → store raw → 200.
+1. **Ingress entry** (built beside the provider's other faces —
+   `connectivity/providers/meta/inbound.py` + root `connectivity/ingress.py`;
+   registered into record's `INGRESS` slot from `app/crm/api.py`, ruled 2 Sep
+   2026): how Meta proves it's Meta — `verify` (X-Hub-Signature-256 over raw
+   bytes), `envelope` (merchant from the receiving endpoint, topic/external_id
+   from the body, one letter per fact), `challenge` (the GET handshake). The door
+   is three verbs: verify → store raw → 200.
 2. **Extractor** (`EXTRACTORS["meta"]`): a pure function, payload in →
    `Extracted(handles, facts)` out. No I/O, no DB.
 3. **Fixtures**: a folder of REAL recorded Meta payloads. These are simultaneously

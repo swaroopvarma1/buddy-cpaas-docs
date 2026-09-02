@@ -53,27 +53,53 @@ x-s2s-token: <our token>                   X-Shopify-Hmac-Sha256: kJx9f...
 ## The provider-door mechanics: the INGRESS registry
 
 Per-provider differences are table-shaped, so they live in ONE registry — the
-house pattern, third instance (`EXTRACTORS` #1020, `NODE_TYPES` #1029):
+house pattern, third instance (`EXTRACTORS` #1020, `NODE_TYPES` #1029).
+**Amended 2 Sep 2026 (Swaroop ruling at clairvoyance#1040 review): the registry
+is a SLOT record owns but never fills** — the `record/consumers.py` shape (#1046),
+forced by boundary rule 12 (record imports no subscriber module) and by the
+merchant lookup itself (canon T11/T12: the merchant comes from the receiving
+credential or address — connectivity's tables). Each provider's entry is BUILT
+beside that provider's other faces and REGISTERED at the API composition root:
 
 ```python
-# app/crm/record/ingress.py (concern-named logic file, to build)
-INGRESS: Dict[str, IngressSpec] = {
-    "shopify": IngressSpec(verify=_verify_shopify_hmac, envelope=_shopify_envelope),
-    "meta":    IngressSpec(verify=_verify_meta_sig, envelope=_meta_envelope,
-                           challenge=_meta_challenge),
-}
+# app/crm/record/ingress.py — the slot (record knows no provider by name)
+IngressSpec(verify, envelope, challenge)      # the three verbs
+INGRESS: Dict[str, IngressSpec] = {}
+def register_ingress(key: str, spec: IngressSpec) -> None: ...   # idempotent
+
+# app/crm/connectivity/ingress.py — the ONE rule-11 root for the inbound face
+META_INGRESS = IngressSpec(verify=meta.verify_signature,
+                           envelope=_meta_envelope,      # owners via connectivity's own accessors
+                           challenge=meta.handshake_challenge)
+# (providers/meta/inbound.py is the face: signature, handshake, entry[]/changes[]/value walk)
+
+# app/crm/api.py — the composition root, the same line worker_main writes for consumers
+record_ingress.register_ingress("meta", connectivity_contracts.META_INGRESS)
 ```
 
-- `verify(request) -> merchant_id | raise` — the provider's signature over the RAW
-  bytes; secrets via the config resolver, never per-route hardcoding.
-- `envelope(headers, body) -> (source, topic, external_id, occurred_at)` —
-  ENVELOPE FIELDS ONLY. The door never parses payload contents; a semantic
-  problem is quarantine's job, not the door's.
-- `challenge` — optional, only for providers with a subscription handshake.
-- The door's whole job, any provider: **verify signature → store the letter raw →
-  200 fast.** Unknown `{provider}` = 404. Adding a provider = one registry entry +
-  one secret. A provider door that parses payloads or answers non-200 on semantic
-  failure is drift (the provider's retry storm is the punishment).
+- `verify(raw_body, headers) -> bool` — the provider's signature over the RAW
+  bytes, constant-time compare, fail closed on a missing secret; secrets via the
+  config resolver, never per-route hardcoding.
+- `envelope(headers, body) -> [letters]`, each `(merchant_id, source, topic,
+  external_id, payload, occurred_at, schema_version)` — ENVELOPE FIELDS ONLY, one
+  letter per fact (Meta batches N facts for N merchants in one POST). The merchant
+  is resolved per letter from the receiving endpoint (Meta: `phone_number_id` →
+  binding for messages/statuses; WABA id → installation for template/account
+  events — both owners, never only one). `source` comes from the body (Meta's
+  `object`), never a constant in generic code. The door never parses payload
+  contents; a semantic problem is quarantine's job, not the door's.
+- `challenge(params) -> str | None` — optional, only for providers with a
+  subscription handshake; answered on the bay's `GET`, 404 otherwise.
+- The door's whole job, any provider: **bounded raw read → verify (403) → parse
+  (400) → envelope → `ingest_event` per letter → 200; a STORE failure is 503** (the
+  push door's posture — the provider retries and dedupe absorbs it; only SEMANTIC
+  failure is never non-200). Unknown `{provider}` = 404. Adding a provider = one
+  entry beside its faces + one registration line + one secret; record does not
+  change. A provider door that parses payloads, files through the fire-and-forget
+  mirror helper, or answers non-200 on semantic failure is drift (the provider's
+  retry storm is the punishment). Registry key = the VENDOR (`meta`, not
+  `whatsapp`): one Meta app serves WhatsApp, Instagram and Messenger through one
+  callback and one signature scheme.
 
 ## When and who decodes: the event worker — the SAME one, already running
 
@@ -119,9 +145,13 @@ for unknown sources). Everything downstream is provider-blind.
 ```
 app/crm/record/
   api.py         journey_router · ingest_router (envelope door, #1025)
-                 · webhook_router /ingest/webhooks/{provider}   [TO BUILD]
+                 · webhook_router GET|POST /ingest/webhooks/{provider}
+                   (#1040, reshaped per the 2 Sep ruling)
   ingest.py      record_event() / ingest_event() store logic     [built]
-  ingress.py     INGRESS registry (verify/envelope/challenge)    [TO BUILD]
+  ingress.py     IngressSpec + INGRESS slot + register_ingress —
+                 filled from app/crm/api.py, never here (rule 12);
+                 the Meta entry lives in connectivity
+                 (providers/meta/inbound.py face · ingress.py root) [#1040]
   events.py      cross-module reads (customer_has_event)         [built #1029]
   workers.py     the pass: run_pass + EXTRACTORS                 [built #1020]
                  (consumer registry: committed next record PR)
@@ -152,7 +182,7 @@ workflow editor's pickers, the where-grammar, and phase 2's segment builder).
 |---|---|---|
 | Envelope door `/ingest/events` | #1025 in review | — |
 | Shopify extractor + fixtures | **owed** | the moment nautilus#195 shadow goes live (else its letters quarantine — harmlessly, but pointlessly) |
-| `webhook_router` + `ingress.py` INGRESS registry | **owed** | first direct provider — Meta delivery receipts (C6) |
+| `webhook_router` + `ingress.py` INGRESS slot | **#1040 (Rabi) in review** — trigger fired; first cut built the door in connectivity at `/connectors/webhooks/whatsapp`, ruled back into record 2 Sep 2026 (review on the PR) | first direct provider — Meta delivery receipts (C6) |
 | Consumer registry in the pass | committed | next record-touching PR |
 | `/crm` prefix removal | ruled (ADR 0022) | with #1025 |
 

@@ -10,6 +10,13 @@ pipeline, and the build-order table. Read it before touching api.py or ingest.py
 
 ## Build it like this
 
+- **Provider bays are a slot, not a dict record fills** (ruled 2 Sep 2026, #1040):
+  `record/ingress.py` holds `IngressSpec` + `INGRESS` + `register_ingress`; the
+  entries are built where the provider's other faces live (connectivity) and
+  registered from `app/crm/api.py` — rule 12 (record imports no subscriber) and
+  the merchant lookup (connectivity's tables) both forbid the inline dict the
+  first draft of design/ingest-doors.md showed. Record's `webhook_router` dispatches
+  `GET|POST /ingest/webhooks/{provider}` through the slot and knows no vendor.
 - **The front door does four things and stops**: verify the source (signature / s2s) →
   stamp the envelope (merchant from the receiving credential, source, topic,
   schema_version, external_id) → store the RAW payload → return 200. **Before anything

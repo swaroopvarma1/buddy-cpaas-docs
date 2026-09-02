@@ -83,13 +83,22 @@ Diagram: `../diagrams/04-connectivity.html`. Squad: Pod C.
   request-building) · `onboard.py` (the `ConnectorOnboarder` port: gather →
   `OnboardResult {external_account_id, address, bundle, token_expires_at, health}`) ·
   `templates.py` (the `TemplateProvider` port: submit/edit/retire → normalized
-  `ProviderTemplateState`; `edits_in_place` flag). Vendor-shared transport is its own
+  `ProviderTemplateState`; `edits_in_place` flag) · **`inbound.py` (ruled 2 Sep 2026,
+  #1040) — the provider's webhook face: signature verify, handshake challenge, the
+  vendor envelope walk → letters; it lives at the VENDOR level
+  (`providers/meta/inbound.py`) because one Meta app serves every Meta channel
+  through one callback**. Vendor-shared transport is its own
   package — `providers/meta/graph.py`: endpoint builder, ONE `_call`, error fold,
   retryable throttles; Instagram/Messenger reuse it. Ports live in `providers/base.py`;
   `providers/__init__.py` stays the single assembly point for `ADAPTERS`. **Rule 11
   becomes face-precise**: the assembly and `providers/<x>/adapter.py` are imported
   only by send.py (unchanged intent); `providers/<x>/onboard.py` / `templates.py`
-  only by root `connectors.py`. Generic logic (`onboarding.py`, `templates.py`) never
+  only by root `connectors.py`; `providers/<vendor>/inbound.py` only by root
+  `ingress.py`, which builds the vendor's `IngressSpec` (owners resolved through
+  this module's own accessors — binding by address, installation by account id)
+  and exports it through `contracts.py` for `app/crm/api.py` to register into
+  record's `INGRESS` slot (design/ingest-doors.md, amended 2 Sep 2026). No other
+  root exists: a `webhooks.py` or `subscribe.py` importing a provider face = MAJOR. Generic logic (`onboarding.py`, `templates.py`) never
   names a provider — it dispatches through `CONNECTORS`. A provider PR that parks
   vendor code at module root to dodge rule 11 is a MAJOR at review.
 - **`CONNECTORS` registry (canon T11 col 3's "validated against a dict in code";
@@ -105,7 +114,16 @@ Diagram: `../diagrams/04-connectivity.html`. Squad: Pod C.
   gather()` → credential upsert (name `{connector_key}:{merchant_id}:{account}`) →
   atom (installation + primary binding), status derived from the health level
   (`subscribed → healthy`, below → `degraded`; the light never contradicts the
-  sentence).
+  sentence). **Subscription recovery (ruled 2 Sep 2026, #1040)**: the
+  `ConnectorOnboarder` port carries `resubscribe(bundle, external_account_id)`
+  beside `revoke` (same signature, opposite verb); generic `resubscribe()` in
+  `onboarding.py` mirrors `disconnect` — installation → `accounts.bundle_for` →
+  `connector_for(key).onboarder.resubscribe` → atom — and the atom RE-STAMPS
+  status/health (`subscribed → healthy`, why cleared, checked_at) because
+  `USABLE_INSTALLATION_STATES` is `{healthy}`: a recovery that leaves the row
+  degraded is a button that does nothing. Route: `POST
+  /connectors/installations/{id}/subscribe`. A per-connector `if/elif` for this =
+  MAJOR (CONNECTORS exists).
 - **Dispatcher (ADR 0004)**: drain `status='queued'` with SKIP LOCKED, back off on
   429s, no transaction across HTTP. Simple queue; scale by replicas. As built: the
   suppression gate slice runs first (fail closed, own deadline), then send() — each

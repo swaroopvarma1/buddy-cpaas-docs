@@ -179,7 +179,7 @@ machine, step by step. (Added 21 Aug 2026 alongside ADR 0020.)
 
 | Table | Nullable? | NULL means |
 |---|---|---|
-| `event_raw` (T13) | **Yes, by design** | (a) just arrived, not yet processed — every row starts NULL; (b) processed but not about a person (template.status, receipts) — NULL forever, correctly; (c) quarantined / no handle found — kept, replay re-stamps |
+| `event_raw` (T13) | **Yes, by design** | (a) just arrived, not yet processed — every row starts NULL; (b) processed but not about a person (template.status, receipts — the extractor says `about="merchant"`, built #1079) — NULL forever, correctly; (c) quarantined / no handle found — kept, replay re-stamps |
 | `crm.message` (T16) | **Never** | a send is born addressed; no customer_id → you may not call `send()` |
 | `lead_call_tracker` | Yes | pre-CRM rows + not-yet-resolved calls (ADR 0017 stamp is forward-only) |
 | `journey_event` (V01) | Moot for the 360 | the timeline query is `WHERE customer_id = X`; NULL rows cannot appear — excluded, not faked |

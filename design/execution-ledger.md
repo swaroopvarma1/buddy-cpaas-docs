@@ -94,7 +94,7 @@ Record hears, never calls: `record/consumers.py` slot (idempotent register, orde
 |---|---|
 | #1054 (Claude, on Swaroop's direction) | `Channel.registers_templates` gates the T23 lookup per channel; `SendRoute.template` carries the approved ROW; queue.py's phone-channel tuple → `CHANNELS.gate_handle_kind` |
 | #1055 (Rahul) — brief items 1–2 | `schemas/` package by table family (`connector` · `message` · `template`; `__init__` exports nothing; 0 package-level imports left) · `status.py` for template/installation/binding words + `test_vocabulary.py` (AST walk of `query = …`) |
-| #1055 — NOT delivered (owed, structure PR 2) | item 3 `merchant_scope` dependency + router-level exception translator + `TenantScoped` + route-walk test (tenancy is still 10 hand-written `assert_merchant_access` calls) · item 4 shared test doubles (`_graph` ×2, `_mocked`, `_FakeInstallationAccessor` ×2 remain) · item 5 docs. Gaps found at audit 3 Sep: crm_message words live in `dispatch.py` with `'sending'/'queued'/'dead'` literals still in `db/queries/message.py` and the vocabulary test only sees `status.py` words (blind spot); one behaviour change rode a "pure structure" PR (`OnboardResult.address` Optional + a new onboarding refusal — defensible, now recorded) |
+| #1055 — NOT delivered at the time (DELIVERED by #1080, merged 4 Sep 2026) | item 3 `merchant_scope` dependency + router-level exception translator + `TenantScoped` + route-walk test (tenancy is still 10 hand-written `assert_merchant_access` calls) · item 4 shared test doubles (`_graph` ×2, `_mocked`, `_FakeInstallationAccessor` ×2 remain) · item 5 docs. Gaps found at audit 3 Sep: crm_message words live in `dispatch.py` with `'sending'/'queued'/'dead'` literals still in `db/queries/message.py` and the vocabulary test only sees `status.py` words (blind spot); one behaviour change rode a "pure structure" PR (`OnboardResult.address` Optional + a new onboarding refusal — defensible, now recorded) |
 
 ### The workflow rollout — phases 00–18 (call half) *(MERGED 2–3 Sep 2026, #1056–#1077, Swaroop + Claude — 17 PRs in 13 hours)*
 
@@ -199,19 +199,34 @@ The ordered queue lives in the repo: `docs/crm/workflow-rollout/` (README · PIP
   `cart-recovery-fallback.json`): carries no word and so PINS; the notes' intent (§16.1) is
   `migrate` — runs are a day long and a template fix should reach every waiting run.
   One-line docs PR before the pilot publishes it
-- **OPEN 3 Sep 2026 (Claude, on Swaroop's direction; merge BEFORE any other PR)**:
+- **MERGED 3–4 Sep 2026 (Claude, on Swaroop's direction; merged before any other PR — #1079 = release `751f29ac`, #1080 = `031341e4`)**:
   **#1079** `fix(crm)` = the audit's gap closures in one PR — `Extracted.about`
   (merchant-level letters processed with a NULL customer, consumers still hear them —
   the template-status consumer's precondition), `ProviderLetter` names source /
   channel / connector_key apart + `OWNER_ENDPOINT`, migration **067** (T25 DELETE
   guard — renumbered from 066 when buddy's #1073 merged first), cart plans `on_publish: migrate`, phase-19 interim cap struck; and
-  **#1080 = structure PR 2** (two commits: connectivity's `merchant_scope` + `TranslatingRoute`
+  **#1080 = structure PR 2** (ONE commit — CI's one-commit rule — in two parts: connectivity's `merchant_scope` + `TranslatingRoute`
   + `TenantScoped` + route-walk test, MESSAGE_* words in `status.py` with the SQL bound
   as `$n` and the vocabulary test's fixed four-family list, `TemplateVerdict`,
   `template_reads.py` + `retire_guard.py` out of `templates.py` (648 → 538), shared
   test doubles; then outreach `db/` → `queries/ accessors/ decoders/ × {workflow,
-  enrollment, version}` + `queries/tables.py`, a pure AST-driven move). Order: #1079 →
-  structure 2 → #1047 / #1052 / #1021 rebase. Both also renumber: #1047 to 067/068.
+  enrollment, version}` + `queries/tables.py`, a pure AST-driven move). Merged in that order;
+  #1080 was rebased over #1079 first (one conflict in `outreach/entry.py`, both sides kept).
+  Behaviour verified before the merge, not asserted: an old-vs-new router matrix (11 routes
+  × 9 outcomes × 5 merchant placements — every valid request identical in code and contract
+  args; drift only on malformed/foreign requests: missing merchant 422 → 400, foreign
+  merchant in a POST's query → 403, query-merchant on a POST now accepted) and a
+  parameter-substitution proof that the `$n`-bound message SQL renders identically to the
+  old literals. Now #1047 / #1052 / #1021 rebase (#1047 renumbers to 068/069).
+- **OPEN 4 Sep 2026 — #1082 (Claude, on Swaroop's direction)**: `template_status` asks the
+  question of the ACCOUNT the route will send from. CodeRabbit's review of #1080 caught the
+  read accepting an approval on ANY of the merchant's accounts (in since #1065; #1080 moved
+  it verbatim) and proposed "refuse unless every account is clean" — the wrong shape, because
+  sends never fan out: the route is the primary active binding (partial-unique) → its
+  installation → one account. The fix mirrors the send door — primary pipe → installation →
+  the name's rows on that account → exactly-one rule; reasons name the sending account; no
+  primary pipe is its own reason and the registry is not read. No new SQL. Trigger written:
+  a send node naming `Message.binding_id` (unset today) moves the read to that binding.
 - **Structure PR 2 (connectivity + outreach hygiene) — RAISED, see above; the list it closes**: #1055's undelivered items
   3–5 (`merchant_scope` dependency + router-level translator + `TenantScoped` +
   route-walk test · `tests/crm/conftest.py`/`doubles.py` · docs) · crm_message words into
@@ -273,15 +288,17 @@ behind the adapter and the T23 registry (#1031, #1037, #1049, #1050). What separ
 this from a merchant-visible loop is now THREE external PRs, not machinery: #1040
 (the Meta ingress bay, reshaped) + #1052 (the extractor) close the delivery/reply
 feedback loop and the rollout's message half; #1021 (consent ledger + `may_contact`)
-unlocks B5 and phase 19; X1's relay makes facts flow. Then structure PR 2 pays the
-hygiene the rollout deferred.
+unlocks B5 and phase 19; X1's relay makes facts flow. Structure PR 2 (#1080, merged 4 Sep)
+has paid the hygiene the rollout deferred; #1079 closed the audit's spine and seam gaps.
 
 ## Suggested next slices
 
-PR-next: #1040 reshaped into record's ingress bay (Rabi) → #1052 rebased on it →
-rollout phase 18 message half · #1021 renumbered (068+), rebased, extended with
-`may_contact()` (Rabi) → B5 → phase 19 · structure PR 2 (owner: Swaroop's call) ·
-the one-line cart `on_publish: migrate` docs fix · the `crm_workflow_version` DELETE
-guard migration · #1047 event catalog review (renumbers to 068/069) · #1053 renumbered ·
-X1 reshape on nautilus#195 · recorded Shopify fixtures at shadow-live · PgBouncer
-before the pod count grows again.
+PR-next: merge #1082 (template_status on the sending account) · #1052 rebased on the
+merged #1040 with template/account letters returning `Extracted(about="merchant")` (Rabi)
+→ rollout phase 18 message half · #1021 renumbered (070+, after #1047), rebased, extended
+with `may_contact()` (Rabi) → B5 → phase 19 · #1047 event catalog review (renumbers to
+068/069, rebases onto the outreach db/ split) · #1053 renumbered · X1 reshape on
+nautilus#195 · recorded Shopify fixtures at shadow-live · PgBouncer before the pod count
+grows again. Delivered since the last list: #1040 (Meta bay in record), #1079 (cart
+`on_publish: migrate`, the T25 DELETE guard as 067, `Extracted.about`, the ingress words),
+#1080 (structure PR 2).

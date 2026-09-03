@@ -45,6 +45,15 @@ pipeline, and the build-order table. Read it before touching api.py or ingest.py
   compared as text on the payload — still one indexed EXISTS, never a foreign SELECT.
 - **Extractors are pure functions** registered per (source, topic): payload →
   `{handles, facts}`. Adding a channel = one adapter + one extractor registration.
+  An extractor also says WHO a letter is about — `Extracted.about`, `customer` (the
+  default) or `merchant` (built #1079, 3 Sep 2026): a template review or an account notice
+  names no person BY DESIGN, so the pass skips resolve(), stamps `customer_id` NULL
+  (T13 col 14 (b): processed, not about a person, NULL forever, correctly) and still hands
+  the letter to every consumer with `customer_id=None`; each consumer decides whether a
+  letter with no person is its business (outreach returns; the template-status consumer is
+  exactly who it is for). A `customer` letter with no handle still quarantines `no_handle`.
+  The extractor is the one source-aware place, so it is the one that can tell "no person
+  here by design" from "could not find the person".
 - **The processor stamps `customer_id`** (nullable, ADR 0020) on the event_raw row in
   the same update that sets `processed_at`, right after `resolve()`. This is how the
   journey's commerce arm finds "order placed" per customer: resolve once at processing

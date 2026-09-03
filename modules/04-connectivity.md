@@ -39,12 +39,16 @@ Diagram: `../diagrams/04-connectivity.html`. Squad: Pod C.
   templates" as an explicit one-shot action if a pilot merchant ever arrives with
   approved templates — still never a clock. **Two reads the
   registry answers for outreach (built 3 Sep 2026)**: `template_status(merchant, channel,
-  name)` — the publish-time question (#1065: is this NAME approved on this channel,
-  across the merchant's accounts; ambiguity "approved in N languages" refused at publish
-  exactly as the send door refuses it) and `registers_templates_for(channel)` — both on
-  `contracts.py`; today the answer is free text and outreach compares against the literal
-  "approved" across the seam — named follow-up: make it verdict-shaped
-  `{publishable, reason}` so the words never leave this module. **Retirement is guarded
+  name) -> TemplateVerdict {publishable, reason}` — the publish-time question, verdict-shaped
+  since #1080 so outreach quotes the reason and never compares a status word across the
+  seam — asked of the ACCOUNT the route will send from (#1082, 4 Sep 2026): the merchant's
+  primary active pipe on the channel and its installation, exactly as `resolve_send_route`
+  picks it; rows on any other account neither help nor hurt. "Approved on some account"
+  passed publish and then blocked every send when the approval sat on an unused account;
+  "clean on every account" would refuse a board for a pending copy on an account it never
+  sends from. Same rule as the send door (exactly one approved row), earlier, on the same
+  account. Trigger: a send node naming its own pipe (`Message.binding_id`) moves the read
+  to that binding. And `registers_templates_for(channel)` — both on `contracts.py`. **Retirement is guarded
   (#1071, ADR 0023 §6)**: `retire()` takes the template's advisory lock EXCLUSIVE inside its
   atom (`shared/locks.py` key; the lock SQL stays in each module's db/queries), asks
   outreach "who would still send this?" through the `register_retire_guard` slot

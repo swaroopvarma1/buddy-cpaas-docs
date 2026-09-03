@@ -198,7 +198,20 @@ The ordered queue lives in the repo: `docs/crm/workflow-rollout/` (README · PIP
   `cart-recovery-fallback.json`): carries no word and so PINS; the notes' intent (§16.1) is
   `migrate` — runs are a day long and a template fix should reach every waiting run.
   One-line docs PR before the pilot publishes it
-- **Structure PR 2 (connectivity + outreach hygiene, owed)**: #1055's undelivered items
+- **OPEN 3 Sep 2026 (Claude, on Swaroop's direction; merge BEFORE any other PR)**:
+  **#1079** `fix(crm)` = the audit's gap closures in one PR — `Extracted.about`
+  (merchant-level letters processed with a NULL customer, consumers still hear them —
+  the template-status consumer's precondition), `ProviderLetter` names source /
+  channel / connector_key apart + `OWNER_ENDPOINT`, migration **066** (T25 DELETE
+  guard), cart plans `on_publish: migrate`, phase-19 interim cap struck; and
+  **structure PR 2** (two commits: connectivity's `merchant_scope` + `TranslatingRoute`
+  + `TenantScoped` + route-walk test, MESSAGE_* words in `status.py` with the SQL bound
+  as `$n` and the vocabulary test's fixed four-family list, `TemplateVerdict`,
+  `template_reads.py` + `retire_guard.py` out of `templates.py` (648 → 538), shared
+  test doubles; then outreach `db/` → `queries/ accessors/ decoders/ × {workflow,
+  enrollment, version}` + `queries/tables.py`, a pure AST-driven move). Order: #1079 →
+  structure 2 → #1047 / #1052 / #1021 rebase. Both also renumber: #1047 to 067/068.
+- **Structure PR 2 (connectivity + outreach hygiene) — RAISED, see above; the list it closes**: #1055's undelivered items
   3–5 (`merchant_scope` dependency + router-level translator + `TenantScoped` +
   route-walk test · `tests/crm/conftest.py`/`doubles.py` · docs) · crm_message words into
   `status.py` (out of `dispatch.py`), the five SQL literals in `db/queries/message.py`

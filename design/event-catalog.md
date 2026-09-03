@@ -189,7 +189,7 @@ lookup:
 | Publish validator | declared fields only | same rule — their signature instead of our PR |
 
 One spine, one editor, one validator — two declarers. The storage/lifecycle spec is
-canon **T24 `crm_event_schema`** (canon/02-record.md, migration 066 — renumbered 3 Sep 2026 after the workflow rollout took 062–064; #1047 carries it): detected →
+canon **T24 `crm_event_schema`** (canon/02-record.md, migration 068 — renumbered 3 Sep 2026 after the workflow rollout took 062–064, buddy 065/066 and #1079's guard 067; #1047 carries it): detected →
 registered, cold by design (discovery writes once per topic ever; counts computed on
 read), and the runtime hot paths NEVER read it — registration governs authoring,
 publish-time validation guarantees op↔type fit, runtime evaluates conditions
@@ -220,7 +220,7 @@ value) is a dashboard fact within hours, never a merchant complaint within weeks
 3. Typed where-grammar: validator + entry-processor evaluator (+ canon touch:
    `entry.where` shape).
 4. Seen-vs-matched counters on the entry processor.
-5. Vendor schema registration: table (record-owned, canon T24 sealed — migration 066, as carried by #1047) +
+5. Vendor schema registration: table (record-owned, canon T24 sealed — migration 068, as carried by #1047) +
    `POST /ingest/schemas` + catalog-API layer merge + unregistered-topic nudge +
    wizard pre-fill query. 6. Where-shape migration (maps → typed lists, one PR
    with the where-grammar).

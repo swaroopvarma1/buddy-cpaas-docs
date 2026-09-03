@@ -93,7 +93,7 @@ the whole registration; the row is cold by design.
   pure). **The FLOW runtime (entry evaluator, walker) never reads this table; the DECODE step reads only the cached identity mapping** (same in-process TTL cache as topic discovery — table cold, cache warm):
   the validator guaranteed op↔type fit at publish; conditions evaluate directly
   against the payload.
-- Migration **066** (trail: sealed as 060 on 1 Sep 2026, renumbered to 061 same day, then 062 on 2 Sep when #1038's crm_template took 061, then 066 on 3 Sep when the workflow rollout took 062–064 and buddy's #1022 took 065 — #1047 carries 066/067 as of 3 Sep —
+- Migration **068** (trail: sealed as 060 on 1 Sep 2026, renumbered to 061 same day, then 062 on 2 Sep when #1038's crm_template took 061, then 066 on 3 Sep when the workflow rollout took 062–064 and buddy's #1022 took 065, then 068 the same day when buddy's #1073 took 066 and #1079's T25 delete guard took 067 — #1047 renumbers to 068/069 at rebase —
   #1037 took 060 for the connector tables first; numbers go to whoever merges,
   the 026/034 scar says verify before merge). Owner: record (TABLE_OWNERS).
   Registration validator + code

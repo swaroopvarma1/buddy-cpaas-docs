@@ -173,7 +173,7 @@ The ordered queue lives in the repo: `docs/crm/workflow-rollout/` (README · PIP
   schemas registered at enrollment): CATALOG registry + pin tests beside EXTRACTORS ·
   catalog API (merges code + registered layers) · typed where-grammar (validator +
   entry evaluator; canon touch on entry.where; ONE migration maps→lists) ·
-  seen-vs-matched counters · **T24 `crm_event_schema` (migration 066 — 062–064 taken by the workflow rollout, 065 by buddy's #1022; #1047 carries 066/067 as of 3 Sep)** +
+  seen-vs-matched counters · **T24 `crm_event_schema` (migration 068 — 062–064 taken by the workflow rollout, 065 by buddy's #1022, 066 by buddy's #1073, 067 by #1079's T25 delete guard; #1047 renumbers to 068/069 at rebase)** +
   `POST /ingest/schemas` + unregistered-topic nudge + wizard pre-fill query ·
   "Your events" console wizard (U-lane design, after runs monitor). Blocks the
   schema-driven workflow editor and push-vendor (NammaYatri-type) onboarding.
@@ -186,9 +186,10 @@ The ordered queue lives in the repo: `docs/crm/workflow-rollout/` (README · PIP
   (founding event never a repeat) and P10 (`GREATEST` debounce) guards; manas's #1041
   closed 2 Sep 2026 as superseded
 - **Migration numbers moved (3 Sep 2026)**: 062 attempts · 063 exit reasons · 064
-  `crm_workflow_version` · 065 buddy (#1022) · **066/067 = #1047 (T24 + where→conditions; MERGEABLE against release as of 3 Sep
-  09:43Z, review pending)** · next free = 068. Stale numbers on open PRs: **#1021 carries 055/056** (long taken —
-  renumber to 068+ and rebase; it also exposes `record_consent`/`log_decision` only, no
+  `crm_workflow_version` · 065 buddy (#1022) · 066 buddy (#1073 widget config, merged 3 Sep 12:24Z — took the number
+  #1079 had used; #1079 renumbered to **067** and rebased the same day) · **067 = #1079 (T25 DELETE guard)** ·
+  **#1047 (T24 + where→conditions; MERGEABLE, review pending) renumbers to 068/069 at rebase** · next free = 068. Stale numbers on open PRs: **#1021 carries 055/056** (long taken —
+  renumber after #1047 lands, 070+, and rebase; it also exposes `record_consent`/`log_decision` only, no
   `may_contact`, so B5 and phase 19 wait on it) · **#1053 carries 061** (taken by
   crm_channel_template — renumber)
 - **`crm_workflow_version` DELETE guard** (ADR 0023 §5 amended): versions are never
@@ -202,8 +203,8 @@ The ordered queue lives in the repo: `docs/crm/workflow-rollout/` (README · PIP
   **#1079** `fix(crm)` = the audit's gap closures in one PR — `Extracted.about`
   (merchant-level letters processed with a NULL customer, consumers still hear them —
   the template-status consumer's precondition), `ProviderLetter` names source /
-  channel / connector_key apart + `OWNER_ENDPOINT`, migration **066** (T25 DELETE
-  guard), cart plans `on_publish: migrate`, phase-19 interim cap struck; and
+  channel / connector_key apart + `OWNER_ENDPOINT`, migration **067** (T25 DELETE
+  guard — renumbered from 066 when buddy's #1073 merged first), cart plans `on_publish: migrate`, phase-19 interim cap struck; and
   **#1080 = structure PR 2** (two commits: connectivity's `merchant_scope` + `TranslatingRoute`
   + `TenantScoped` + route-walk test, MESSAGE_* words in `status.py` with the SQL bound
   as `$n` and the vocabulary test's fixed four-family list, `TemplateVerdict`,
@@ -281,6 +282,6 @@ PR-next: #1040 reshaped into record's ingress bay (Rabi) → #1052 rebased on it
 rollout phase 18 message half · #1021 renumbered (068+), rebased, extended with
 `may_contact()` (Rabi) → B5 → phase 19 · structure PR 2 (owner: Swaroop's call) ·
 the one-line cart `on_publish: migrate` docs fix · the `crm_workflow_version` DELETE
-guard migration · #1047 event catalog review (carries 066/067) · #1053 renumbered ·
+guard migration · #1047 event catalog review (renumbers to 068/069) · #1053 renumbered ·
 X1 reshape on nautilus#195 · recorded Shopify fixtures at shadow-live · PgBouncer
 before the pod count grows again.

@@ -63,6 +63,15 @@ zero requests because it is never selected by the Service.
 Adding a role = one line in `ROLES` + a manifest — and a review. The dict is closed
 on purpose; dynamic discovery is how frameworks are born.
 
+**The same file is the composition root for slots** (modules/00 §11): at import it
+registers `consume_attributed_event` into record's consumer slot (#1046) and
+outreach's `template_references` into connectivity's retire-guard slot (#1071); the
+INGRESS entries register the same way (ruled 2 Sep 2026). `app/main.py` imports
+`worker_main`, so the API pod is wired identically — a route that needs a slot
+(template retire) never runs unregistered. Roles as of 3 Sep 2026: still three
+(event-worker · walker · dispatcher); the walker's claim callable also runs the
+hourly exited-run retention sweep — versions are NOT swept (ADR 0023 §5).
+
 ## The shared scaffold (the generic module — deliberately small)
 
 The three loops are the same machine with different contents. `app/crm/shared/worker.py`

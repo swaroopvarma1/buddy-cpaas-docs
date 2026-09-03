@@ -33,6 +33,16 @@ pipeline, and the build-order table. Read it before touching api.py or ingest.py
 - **Decode failures quarantine, never reject**: set `quarantine_reason`, keep the row,
   alert on the RATE. `replay(event_id)` re-runs the CURRENT parser over stored raw —
   replay is the recovery mechanism that survives being wrong about a schema.
+- **Poison rows quarantine too** (built 3 Sep 2026, #1062, T13 col 15): the claim SPENDS
+  an attempt (`attempts = attempts + 1` in the claim statement, order kept by a CTE); a
+  consumer that still raises at `CRM_EVENT_MAX_ATTEMPTS` (config, default 5) gets
+  `quarantine_reason = "consumer_error after N attempts: …"` in its own savepoint, so a
+  deterministic failure never sits at the head of the queue re-running resolve() every
+  poll and never kills the batch. Below the ceiling the row stays pending, as before.
+- **`customer_has_event(merchant, customer, topics, since, where=(field, value))`** is the
+  contract the walker's goal re-check uses; `where` narrows the EXISTS to the letters
+  about ONE thing (the order carrying this run's cart token — outreach's goal key, #1063),
+  compared as text on the payload — still one indexed EXISTS, never a foreign SELECT.
 - **Extractors are pure functions** registered per (source, topic): payload →
   `{handles, facts}`. Adding a channel = one adapter + one extractor registration.
 - **The processor stamps `customer_id`** (nullable, ADR 0020) on the event_raw row in

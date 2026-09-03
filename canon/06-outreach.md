@@ -77,9 +77,9 @@ The plan — ONE document a walker reads live. Many customers walk the same one;
 | 1 | `id` | uuid | PK |  |
 | 2 | `merchant_id` | text | IX |  |
 | 3 | `name` | text |  |  |
-| 6 | `definition` | jsonb |  | THE plan, whole: {entry, nodes, edges, goal, exits}. Entry carries reenter + cooldown; waits carry local-time windows — sections of one document, never columns. Node ids are minted once at creation and NEVER regenerated: current_node resolves against this live document, and a regenerated id strands every waiting walker |
+| 6 | `definition` | jsonb |  | The LATEST published version's document, whole: {entry, nodes, edges, goals, exits, purpose_key, on_publish, stages?} — read by the entry consumer (new runs start here) and the console; **never what a run executes** (that is its pinned T25 row — ADR 0023, 3 Sep 2026). `entry` is one door or a LIST of doors `{topic, start, reenter, cooldown_hours, key, on_repeat, debounce_minutes, restart_on_repeat}` (a journey first seen at KYC starts on the KYC square); `goals` is a list of tiers `{topics, key?: {event, run}, exit_reason}`; `stages` is the ladder sugar stored beside the board it expanded to. Node ids are minted once at creation and NEVER regenerated |
 | 9 | `status` | text | CK | draft · live · paused · archived. paused = no new enrolments AND the sweeper skips its rows; archived = walkers force-exited as ejected. Written down because nobody leaves it implicit twice |
-| 10 | `version` | integer |  | Bumped on publish — an AUDIT stamp ("she entered under v3", the DPDP story), never an execution pin: the walker reads the live document. The publish-time validator is what makes live reads safe — it blocks the unsafe edit classes (deleting an occupied node without a strand-to-exit rule, changing entry semantics mid-flight) |
+| 10 | `version` | integer |  | Bumped on publish; every publish writes an immutable `crm_workflow_version` row (T25) under this number, and runs PIN to it — **ADR 0023 (3 Sep 2026) reversed the earlier "audit stamp, never an execution pin"**. Under `on_publish: pin` (default) the stranding refusals do not apply — a new version cannot strand anyone; under `migrate` the validator still blocks deleting an occupied node and changing `entry` while runs are open, because every open run is re-pinned inside the publish atom |
 | 11 | `created_by` | text |  |  |
 | 12 | `created_at` | timestamptz |  |  |
 | 13 | `updated_at` | timestamptz |  |  |
@@ -87,11 +87,22 @@ The plan — ONE document a walker reads live. Many customers walk the same one;
 
 
 **Wiring**
-- `definition` jsonb is THE plan, whole: `{entry, nodes, edges, goal, exits}` — read live by
-  the walker; node ids are minted once and never regenerated. `draft` receives edits;
-  publish copies to `definition` and bumps `version` (an audit stamp, never an execution
-  pin). The publish validator blocks unsafe edit classes (deleting an occupied node without
-  a strand-to-exit rule, changing entry semantics mid-flight).
+- `definition` jsonb is the LATEST plan document; the walker executes each run's PINNED
+  version (T25 by `(workflow_id, version)`, ADR 0023). Node ids are minted once and never
+  regenerated. `draft` receives edits; publish validates, copies `draft` → `definition`,
+  bumps `version`, writes the T25 row, and (migrate mode only) re-pins open runs — one atom.
+  Publish also refuses a send node whose template the T23 registry does not hold approved
+  (#1065, via connectivity's `template_status` contract). A ladder draft is stored beside the
+  board it expands to; publish re-expands and must find the same board (#1075).
+- Words as built 2–3 Sep 2026 (rollout 00–18): doors (`entry` as a list, #1072) · goal
+  tiers with a payload key and their own `exit_reason` (#1063) · `on_repeat` /
+  `debounce_minutes` / `restart_on_repeat` per door (#1058, #1074) · `wait_event.key:
+  "$topic"` (branch on the letter's name), edge labels `timeout` and `else` (catch-all),
+  `wait_event.match {payload, run}` (WHOSE letter a square hears — a call's outcome names
+  its `enrollment_id`) (#1072, #1076) · `node.stage` labels (#1074) · `stages` ladder
+  `{order, idle_minutes, on_idle, after_action_minutes, restart_on_repeat, overrides}`
+  expanded by `outreach/ladder.py` into `at-`/`act-`/`after-` squares per stage (#1075) ·
+  `on_publish: pin | migrate` (#1068).
 - Entry carries reenter + cooldown — the admission guards enforced for BOTH doors.
   Sealed follow-up (31 Aug 2026, not yet built): entry also names its repeat policy —
   `on_repeat: ignore · refresh_latest · refresh_max(<field>) · accumulate` +
@@ -109,16 +120,16 @@ One person’s run through a workflow — the board-game token: the only statefu
 | 1 | `id` | uuid | PK | Surrogate — she can re-enrol later; each run is its own row |
 | 2 | `merchant_id` | text | IX |  |
 | 3 | `workflow_id` | uuid | FK | → workflow |
-| 4 | `workflow_version` | integer |  | The AUDIT stamp, written at entry — what was current when she walked in, never an execution pin: the walker reads the live definition, so a long run may finish under a newer plan. Its live reader is the did-the-edit-help read — goal_met rate GROUP BY version, v3 against v2 — the entry cohort, four bytes, queryable. The per-step truth lives where it always did: each send’s diary page records what actually fired |
+| 4 | `workflow_version` | integer |  | **The EXECUTION PIN (ADR 0023, 3 Sep 2026)**: names the T25 row this run executes — written at entry as the latest version, changed only by a `migrate` publish or a migrate-forward (`POST /workflows/{id}/versions/{from}/migrate`), kept on exit as the audit fact ("what did this run execute"). The walker parks a run whose version row is missing rather than fall back to the live document. Still the did-the-edit-help read — goal_met rate GROUP BY version |
 | 5 | `customer_id` | uuid | IX |  |
-| 6 | `status` | text | CK | waiting · parked · exited. enrolled folded into waiting (it was waiting with an immediate wake); parked = attempts exhausted, held for the merchant to see and resume — errors never silently discard a run |
+| 6 | `status` | text | CK | waiting · parked · exited. enrolled folded into waiting (it was waiting with an immediate wake); parked = attempts exhausted, held for the merchant to see and resume — errors never silently discard a run. Trail (3 Sep 2026, #1074): a letter the parked run's CURRENT square listens for also resumes it (waiting, attempts reset, last_error cleared) — an event is evidence the customer moved, so a parked journey is never unwatched |
 | 7 | `current_node` | text |  | The token’s square — a STABLE node id, resolved against the live definition at each wake |
-| 8 | `wake_at` | timestamptz | IX | The durable timer AND the lease: the claim pushes it forward by the lease interval, so a dead worker’s row self-heals — comes due again with no reaper. Immutable as a delay once entered (the timing she was promised); jittered on mass writes — 8,400 rows must never come due the same second. Partial index (wake_at, id) WHERE status=waiting. This is what replaces a workflow engine |
+| 8 | `wake_at` | timestamptz | IX | The durable timer AND the lease: the claim pushes it forward by the lease interval, so a dead worker’s row self-heals — comes due again with no reaper. Immutable as a delay once entered (the timing she was promised); jittered on mass writes — 8,400 rows must never come due the same second. Partial index (wake_at, id) WHERE status=waiting. This is what replaces a workflow engine. **Trail (3 Sep 2026, #1061): the lease is also the GENERATION** — every walker write (advance, exit, park, record error) is compare-and-set on `wake_at = <the leased value>`; event-side writes (goal-cancel, a reply, a repeat patch) are unconditional and move `wake_at`, so a reply landing mid-visit makes the walker's write match zero rows and defer — the answer is never clobbered by the timeout path |
 | 9 | `entered_at` | timestamptz |  | The run’s birth — the clock timeout arithmetic reads: timed_out is entered_at + the plan’s max age, and "stuck over 7 days" is one predicate on it |
 | 10 | `exited_at` | timestamptz |  | The death clock — the retention sweep reads it: exited rows age out on a partial index over exited_at, which is most of what keeps the hot table small |
-| 11 | `exit_reason` | text | CK | goal_met · timed_out · withdrawn · ejected · completed (amended 31 Aug 2026, ratifying #1029). withdrawn = she said stop, exactly that; converting IS goal_met; ejected = the workflow was archived or the merchant cancelled the run; completed = the run executed its last node WITHOUT the goal firing — finished-without-converting, the funnel's denominator (goal_met ÷ (goal_met + completed) is the flow's conversion rate). NEVER presented as success in any UI — the label is "finished without converting". Late conversions are a REPORTING join (exited completed + goal event within the attribution window), never a reason to hold runs open: completion frees the open-run key for her next journey. errored is gone — errors park, never exit |
-| 12 | `context` | jsonb |  | POINTERS to the spark plus the few small facts the sends will need — {chk_88412, 1850, blue kurti} — never the payload itself: e-91 already stores the cart verbatim, and a photocopy read at every wake bloats and goes stale (the artifact_ref habit). Random branch outcomes are recorded here BEFORE the send — a retry must never re-roll the dice |
-| 13 | `enrollment_key` | text |  | Defaults to the customer id; the partial unique is (merchant_id, workflow_id, enrollment_key) WHERE status <> ’exited’ (merchant-first per tenancy law — amended 31 Aug 2026 ratifying #1029). Keyed runs are how two open orders get two live WISMO flows — Dittofeed’s orderId lesson. RULED 31 Aug 2026: the key is chosen by the plan document (`entry.key` names the payload field; omitted = customer id) — the author declares what a run is about |
+| 11 | `exit_reason` | text | CK | goal_met · timed_out · withdrawn · ejected · completed · **converted_elsewhere** (063, 3 Sep 2026: a goal TIER keyed to the run's own cart says "THIS cart recovered" = goal_met; any other order by the customer still ends the run — never nudge someone who just bought — but distinguishably; the CHECK was re-created under the explicit name `crm_workflow_enrollment_exit_reason_ck`, and a new reason is a migration that re-creates it). Tiers may end a run with goal_met · converted_elsewhere · withdrawn; timed_out · ejected · completed are the walker's own. (amended 31 Aug 2026, ratifying #1029). withdrawn = she said stop, exactly that; converting IS goal_met; ejected = the workflow was archived or the merchant cancelled the run; completed = the run executed its last node WITHOUT the goal firing — finished-without-converting, the funnel's denominator (goal_met ÷ (goal_met + completed) is the flow's conversion rate). NEVER presented as success in any UI — the label is "finished without converting". Late conversions are a REPORTING join (exited completed + goal event within the attribution window), never a reason to hold runs open: completion frees the open-run key for her next journey. errored is gone — errors park, never exit |
+| 12 | `context` | jsonb |  | POINTERS to the spark plus the few small facts the sends will need — {chk_88412, 1850, blue kurti} — never the payload itself: e-91 already stores the cart verbatim, and a photocopy read at every wake bloats and goes stale (the artifact_ref habit). Random branch outcomes are recorded here BEFORE the send — a retry must never re-roll the dice. **Bookkeeping keys as built (one list, `outreach/nodes.py`, never template variables):** `source_event_id` · `entered_event_at` (the founding letter's own time — goals measure from it, G7) · `goal` (the letter that ended the run + its amount, for recovered revenue) · `phone` · `repeat_event_ids` / `repeat_items` (a repeat marks itself used; accumulate's list) · `facts.<square>` (each listened letter's scalar facts, namespaced per square, replaced not appended) · `latest_letter` (which square heard the most recent letter) · `reply_<node>` (cleared when the token leaves the square) · `lead_<node>` / `message_<node>`; `current_node` / `current_stage` are computed at fire time. Scalars ≤256 chars only, so the row stays small |
+| 13 | `enrollment_key` | text |  | Defaults to the customer id; the partial unique is (merchant_id, workflow_id, enrollment_key) WHERE status <> ’exited’ (merchant-first per tenancy law — amended 31 Aug 2026 ratifying #1029). Keyed runs are how two open orders get two live WISMO flows — Dittofeed’s orderId lesson. RULED 31 Aug 2026: the key is chosen by the plan document (`entry.key` names the payload field; omitted = customer id) — the author declares what a run is about. As built (#1060, #1076): on a keyed plan the reenter/cooldown guards judge THAT key's history, not the customer's; a keyed ladder gives every listening square `match {payload: key, run: key}` so two applications never move on each other's letters |
 | 15 | `attempts` | smallint |  | Incremented on claim BY THE CLAIM — a poison run that crashes its worker must count against itself. Backoff with jitter written into wake_at; exhausted → parked |
 | 16 | `last_error` | text |  | Why the run parked, readable on the merchant’s screen — debugging a journey that silently stopped, without reading logs |
 | 18 | `source_broadcast_id` | uuid | FK·IX | The spark, resolved once at enrolment — stamp at write, never a jsonb hop at read. NULL for unsparked runs: a cart flow has no blast. The broadcast-level read is WHERE source_broadcast_id = B7; the campaign-level read is one indexed join to the blast’s badge. The run wears no key of its own — a photocopy one FK away drifts the day the blast is retagged (replaced campaign_key, col 17, the same day it arrived) |
@@ -134,7 +145,34 @@ One person’s run through a workflow — the board-game token: the only statefu
   enforced.
 - Every send node: build template+variables → `may_contact()` → `send(token, …)`. A gate
   refusal completes/parks per the plan's rules — never retries around the gate.
-  Cancel-on-goal: the goal event (e.g. orders/create) resolves open enrolments.
+  Cancel-on-goal: the goal event (e.g. orders/create) resolves open enrolments — per open
+  run, judged by ITS pinned version's tiers, keyed-first, time-aware on the founding
+  letter's `occurred_at` (#1063, #1070).
+- Reads built 3 Sep 2026 (#1066): `GET /workflows/{id}/summary?since&until` (runs, by
+  exit reason, open by status, median minutes to exit, recovered amount — one grouping-sets
+  statement) and `GET /customers/{id}/runs` (her runs across every plan, in entry order —
+  the journey while a funnel runs). Both admin-only per ADR 0007.
+
+### crm.workflow_version (T25) — 8 columns *(sealed 3 Sep 2026 — ADR 0023; migration 064; owner outreach)*
+
+One immutable row per publish: the document a run is pinned to. Rows only — never edits (BEFORE UPDATE trigger `crm_workflow_version_immutable_guard`), never deletes (ADR 0023 §5 as amended; the DELETE-refusing trigger is a named follow-up migration).
+
+| # | column | type | keys | notes |
+|---|---|---|---|---|
+| 1 | `id` | uuid | PK |  |
+| 2 | `merchant_id` | text | UQ·FK | Tenancy — first in the unique; half of the tenant-pinned FK |
+| 3 | `workflow_id` | uuid | UQ·FK | Composite FK `(merchant_id, workflow_id) → crm_workflow (merchant_id, id)` — the 057 tenant-pin precedent |
+| 4 | `version` | integer | UQ | `UNIQUE (merchant_id, workflow_id, version)`; the number T19 col 10 bumped and T20 col 4 pins to |
+| 5 | `definition` | jsonb |  | NOT NULL — the document exactly as it became live (the draft, copied verbatim) |
+| 6 | `on_publish` | text | CK | `pin` · `migrate` — a closed status enum, so a CHECK (law 11) |
+| 7 | `published_by` | text |  | The publish route threads the caller's email |
+| 8 | `published_at` | timestamptz |  | DEFAULT now() |
+
+**Wiring**
+- Written ONLY inside the publish atom (`plans._publish_in_txn`): validate → template check → copy → version row → (migrate) re-pin open runs. No ON CONFLICT: a second row for one version is a bug the unique must surface.
+- Read by the walker and the entry consumer through `outreach/definitions.py` (one point read per `(workflow_id, version)`, process-local LRU of 512 — safe because rows are immutable and kept), by `GET /workflows/{id}/versions` (each with its open-run count), by migrate-forward (both documents read inside its atom), and by the template-retirement guard (`runs_referencing_template_query` joins open runs to their pinned document's send nodes).
+- Backfilled at 064 from every live plan's current `definition`; open runs on unrecoverable older versions were re-pinned to the current one (exactly what they executed under 057).
+- No partitioning, no `updated_at` (nothing updates): a plan publishes tens of versions, not millions of rows.
 
 ### crm.campaign (T22) — 7 columns
 

@@ -37,7 +37,23 @@ Diagram: `../diagrams/04-connectivity.html`. Squad: Pod C.
   no row but whose (WABA, name, language) matches a `submitting` row with a NULL
   provider id stamps it. Named follow-up, not code: "import a WABA's existing
   templates" as an explicit one-shot action if a pilot merchant ever arrives with
-  approved templates — still never a clock. Provider quirks (Meta's uppercase
+  approved templates — still never a clock. **Two reads the
+  registry answers for outreach (built 3 Sep 2026)**: `template_status(merchant, channel,
+  name)` — the publish-time question (#1065: is this NAME approved on this channel,
+  across the merchant's accounts; ambiguity "approved in N languages" refused at publish
+  exactly as the send door refuses it) and `registers_templates_for(channel)` — both on
+  `contracts.py`; today the answer is free text and outreach compares against the literal
+  "approved" across the seam — named follow-up: make it verdict-shaped
+  `{publishable, reason}` so the words never leave this module. **Retirement is guarded
+  (#1071, ADR 0023 §6)**: `retire()` takes the template's advisory lock EXCLUSIVE inside its
+  atom (`shared/locks.py` key; the lock SQL stays in each module's db/queries), asks
+  outreach "who would still send this?" through the `register_retire_guard` slot
+  `worker_main` fills (open runs by their PINNED document, live/paused plans by their
+  LATEST — fail CLOSED when nothing is registered), refuses with 409 `TemplateInUseError`
+  while either count is non-zero, withdraws locally in the same transaction, and only
+  then tells the provider (best effort, logged — the order REVERSED from #1050's
+  provider-first: the guard and the local write must share one transaction and no
+  provider round-trip may separate them). Pinning paths hold the same key SHARED. Provider quirks (Meta's uppercase
   statuses, edit-in-place vs re-register, delete-by-name nuking every language) are
   normalised INSIDE the provider's template face, never in the generic registry
   file.

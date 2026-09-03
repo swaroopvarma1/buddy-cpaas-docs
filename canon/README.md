@@ -5,7 +5,7 @@ merchants). The design inversion everything follows from: **the agent writes the
 record as a side-effect of doing the work, and reads it before it speaks.** Humans approve
 decisions; nobody types into the record.
 
-Schema: **17 tables + 1 view**, PostgreSQL, two namespaces (`crm`, `platform`) — realized
+Schema: **18 tables + 1 view**, PostgreSQL, two namespaces (`crm`, `platform`) — realized
 as `crm_*`/`platform_*` table prefixes in `public` (one DB role org-wide; ADR 0001
 amendment, 23 Aug 2026). Logical `crm.x` here = physical `crm_x`. This corpus is
 the implementation-facing description: final column shapes plus how the pieces wire together.
@@ -22,7 +22,8 @@ canon/
 ├── 04-connectivity.md   connector_installation (T11) · channel_binding (T12) · message (T16) · send()
 ├── 05-audiences.md      segment (T15) · segment_member (T21)
 ├── 06-outreach.md       broadcast (T17) · broadcast_recipient (T18) · workflow (T19)
-│                        workflow_enrollment (T20) · campaign (T22) — the launch-button model
+│                        workflow_enrollment (T20) · workflow_version (T25, ADR 0023)
+│                        · campaign (T22) — the launch-button model
 └── 07-wiring.md         end-to-end flows · module contracts · tenancy law · clairvoyance transform
 ```
 
@@ -53,7 +54,7 @@ Read 07-wiring.md after the table files; it assumes their vocabulary.
 |---|---|
 | customer | The customer as ONE merchant knows them; handles (phone, email, igsid…) are columns on this row |
 | journey_event | A thing that already happened; all of them in order are her journey (a view, not storage) |
-| workflow | The plan — the whole treatment, as one live-read document; templates and waits live on its nodes |
+| workflow | The plan — the whole treatment, as one document; templates and waits live on its nodes. Each publish is an immutable version (T25) and a run executes the version it entered under (ADR 0023) |
 | workflow_enrollment | One person's run through a workflow |
 | broadcast | **The launch button**: one deliberate execution — a segment admitted into a workflow, now or scheduled |
 | campaign | A registered tag on executions — never a container |

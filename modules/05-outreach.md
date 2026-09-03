@@ -7,12 +7,23 @@ Owns: `crm.workflow` (T19) · `crm.workflow_enrollment` (T20) · `crm.broadcast`
 
 ## Build it like this
 
-- **The workflow is ONE live-read document**: `definition` jsonb `{entry, nodes,
-  edges, goal, exits}`. Edits land in `draft`; publish copies to definition and bumps
-  `version` (an AUDIT stamp — "she entered under v3" — never an execution pin). The
-  publish validator blocks unsafe edit classes (deleting an occupied node without a
-  strand-to-exit rule; changing entry semantics mid-flight). **Node ids are minted once
-  and NEVER regenerated** — current_node resolves against the live document.
+- **The workflow is ONE document; a run executes the VERSION it entered under** (ADR
+  0023, built 3 Sep 2026 — reverses the earlier "never an execution pin"): `definition`
+  jsonb `{entry, nodes, edges, goals, exits, purpose_key, on_publish, stages?}` is the
+  LATEST document (entries, console); every publish writes an immutable
+  `crm_workflow_version` row (T25) and `enrollment.workflow_version` pins the run to it.
+  Edits land in `draft`; publish validates, checks every send template is approved in the
+  T23 registry (#1065), copies, bumps `version`, writes the version row, and under
+  `on_publish: migrate` re-pins every open run — one atom. Under `pin` (default) the
+  stranding refusals do not apply; under `migrate` the validator still blocks deleting an
+  occupied node and changing `entry` while runs are open. The walker resolves the pin
+  through `definitions.py` (one point read, process-local LRU; a missing version row is an
+  honest park, never a fallback to the live document) and reads the live row for STATUS
+  only. Fixes reach pinned runs through `POST /workflows/{id}/versions/{from}/migrate?to=N`
+  (the stranding laws as a pure function + the target's template check). **Node ids are
+  minted once and NEVER regenerated.** The decision rule per plan: runs of minutes-to-hours
+  → `migrate` (a template fix should reach every waiting run); runs of days-to-weeks →
+  `pin`.
 - **wake_at is the timer AND the lease**: the walker's claim pushes wake_at forward one
   lease window, so a dead worker's row self-heals when the clock passes — **no reaper**.
   Immutable as a delay once entered; jittered on mass writes (8,400 rows must never
@@ -26,12 +37,11 @@ Owns: `crm.workflow` (T19) · `crm.workflow_enrollment` (T20) · `crm.broadcast`
   (bursts coalesce), WISMO writes `"order_id"` (parallel threads). The entry
   processor reads `payload[entry.key]` and passes it to `enrol()`; goal-match-by-key
   (a keyed goal closes only its own run) AND reply-match-by-key (a reply wakes only
-  its own run — today `resume_run_on_event` patches every waiting run of the customer
-  on that node, correct only while runs are customer-keyed) land with the first keyed
-  flow. Also with cyclic documents (the validator permits loops): the walker must
-  CONSUME `reply_<node>` when taking its edge, or a loop back to the same wait_event
-  re-branches instantly on the stale answer — one-line fix, owed before the first
-  looping plan.
+  its own run) — BOTH BUILT 3 Sep 2026: goal tiers carry `key {event, run}` (#1063), every
+  consumer write names the run it is about (#1070), a listening square may say WHOSE
+  letter it hears via `match {payload, run}` (#1076), and the walker CONSUMES `reply_<node>`
+  when the token leaves the square (#1072) so a revisited square never resolves on a stale
+  answer. Admission guards on a keyed plan judge that key's history (#1060).
 - **Per send node**: build template+variables → `may_contact()` → `send(token, …)`.
   Goal re-checked AT FIRE TIME (never "did you forget?" to someone who just paid);
   the goal event (orders/create) cancels open enrollments. **Random branch outcomes are
@@ -71,11 +81,18 @@ per-plan words, never walker behavior):
   `refresh_max(<payload field>)` · `accumulate`
 - `debounce_minutes`: every matching repeat slides the entry wait's alarm
 
-**Mechanics when built**: one idempotent UPDATE in the entry processor (the
-`resume_run_on_event` shape): `WHERE status='waiting' AND current_node = <entry
-node>` — a run past its first square is NEVER patched; what it already said was true
-when it said it. Source-event idempotency unchanged (each event still marks itself
-used).
+**Mechanics — BUILT 3 Sep 2026 (#1058, rollout phase 00; carried manas-narra's #1041
+with two guards folded in)**: `outreach/repeat.py` (vocabulary, PURE `repeat_plan`,
+`apply_repeat`) + ONE idempotent UPDATE (`patch_open_run_query`): `WHERE status='waiting'
+AND current_node = <the door's start square> AND enrollment_key = $key AND NOT
+(repeat_event_ids ? event_id) AND context->>'source_event_id' IS DISTINCT FROM event_id`
+— a run past its first square is never patched (unless the door says `restart_on_repeat`,
+#1074: then the repeat re-arms whatever square the run stands on, "KYC retried, the timer
+restarts"); the founding event is never a repeat (P9); the debounce may only EXTEND the
+window — `GREATEST(wake_at, now() + N)` (P10); `refresh_max` refuses NaN/inf; the words
+judged are the OPEN RUN'S version's door (#1070). A letter the run's current square
+answers is its wake, never also its repeat (#1075). `repeat_count` is a fact templates may
+read; `repeat_event_ids` / `repeat_items` are bookkeeping.
 
 **Where each policy earns its keep**: `refresh_max` — abandonment (biggest cart) ·
 `refresh_latest` — failed-payment bursts (quote the LATEST error), order edits before
@@ -142,16 +159,64 @@ Where canon named the mechanism, #1029 chose the numbers and shapes. Sealed as b
   there closes an import cycle; `app/crm/worker_main.py`, the one composition root,
   takes the pass from `record/workers.py` directly.
 
-Still open after #1029: per-node `purpose_key` override (with T23) · keyed goal-match
-(first keyed flow) · W5 branch-limit lift owner.
+Still open after #1029: per-node `purpose_key` override (with T23) · W5 branch-limit lift
+owner. (Keyed goal-match and reply-match landed 3 Sep 2026 — see the rollout section.)
+
+## The workflow rollout as built (2–3 Sep 2026, phases 00–18 · #1056–#1077)
+
+Twenty ordered, PR-sized phases dispatched from `clairvoyance/docs/crm/workflow-rollout/`
+(README, PIPELINE, `context/reading-notes.md` = the intent, `context/nits.md`); every phase
+one PR, one commit, red tests first. The vocabulary the corpus now carries, by phase:
+
+| Phase / PR | Delivered |
+|---|---|
+| 00 #1058 | Repeat entries (`on_repeat`, `debounce_minutes`) with the P9/P10 guards — above |
+| 01 #1059 | A `wait_event` letter without the key does NOT end the window (B1); entry compare by meaning (B3); `live` on an unpublished draft is a 422, not a 500 (B4) |
+| 02 #1060 | Admission guards scope to the enrollment key on keyed plans (B2) |
+| 03 #1061 | Walker writes are compare-and-set on the leased `wake_at`; event-side writes win (P1) |
+| 04 #1062 | `crm_event_raw.attempts` spent by the claim; poison rows quarantine after `CRM_EVENT_MAX_ATTEMPTS` (P2; record's) |
+| 06 #1063 | Goal TIERS `{topics, key?, exit_reason}`, keyed-first; `converted_elsewhere` (063); time-aware on the founding letter's `occurred_at` (`context.entered_event_at`, G7); `customer_has_event(where=)` on record's contract |
+| 07 #1064 | Plan templates validated in CI (`docs/crm/plans/*.json`) + runbooks |
+| 08 #1065 | Publish refuses a send node whose template the registry does not hold approved (G12) — `template_status` / `registers_templates_for` on connectivity's contract |
+| 09 #1066 | `GET /workflows/{id}/summary` (counts by exit reason, open, median minutes, recovered amount from `context.goal.amount`) · `GET /customers/{id}/runs` (G9) |
+| 10 #1067 | ADR 0023 |
+| 11 #1068 | T25 `crm_workflow_version` (064) · `on_publish` · publish writes the row, migrate re-pins |
+| 12 #1069 | The walker executes the pin (`definitions.py` LRU); missing row = park |
+| 13 #1070 | The consumer's two reads: her open runs (goals, listening, per pinned version; `cancel_run` / `resume_run_by_id` by run id) then the live plans' latest (entries) |
+| 14 #1071 | Migrate-forward route · versions list · template-retirement guard (409) under the advisory lock (`shared/locks.py`) registered from the composition root · retention DROPPED (versions kept) |
+| 15 #1072 | `wait_event.key: "$topic"` · `entry` as a list of doors `{topic, start, …}` (shared admission words at the top level fold into every door) · `reply_<node>` cleared on advance |
+| 16 #1074 | Letters' scalar facts ride into the run under `context.facts.<square>` (namespaced, replaced per square); `current_node` / `current_stage` reach templates; a PARKED run moves when its square hears a letter; `restart_on_repeat` re-arms any square (G8); send variables drop bool/None |
+| 17 #1075 | `stages` ladder → `at-/act-/after-<slug>` squares + one labelled arrow per later stage, expanded PURE and idempotent by `ladder.py` at create/draft/publish (the walker never learns the word); loan-dropoff is ONE pinned board (`docs/crm/plans/loan-dropoff.json`, `key: application_id`, cooldown 1h); `latest_letter` wins the call's facts |
+| 18 #1076 (call half) | `call.completed` mirrors `enrollment_id`; `wait_event.match {payload, run}`; edge label `else` (catch-all out of a listening square — a connected call's outcome is the buddy template's own word); keyed ladders match on the key; `cart-recovery-fallback.json`. The MESSAGE half (receipts, STOP → suppression) waits for #1040/#1052 |
+| 19 | Permission-gate wiring (G1) — DEFERRED until #1021 lands `may_contact()`; see the B-lane |
+
+Reserved edge/branch words: `timeout` · `else` · `$topic` (all in `outreach/nodes.py`).
+Files as built: `entry.py` (the consumer) · `enrol.py` · `walker.py` · `nodes.py`
+(NODE_TYPES + the bookkeeping keys) · `plans.py` (validator + publish atom) ·
+`definitions.py` (the pin read + LRU) · `versions.py` (migrate-forward, list, the
+retire guard's count) · `repeat.py` · `ladder.py` · `runs.py` (summary, journey, resume,
+retention sweep) · `api.py` (12 routes; `customer_router` under `/customers`).
+
+**Hygiene triggers that FIRED in this rollout and are OWED (structure PR, not a
+feature PR)**: `outreach/db/queries.py` is 814 lines over THREE tables (the ruled
+subfolder trigger — `db/queries/<table>.py` · `accessors/<table>.py` ·
+`decoders/<table>.py` — fired at #1068 and did not land); `outreach/db/accessor.py` 502.
+Named triggers still ahead: `entry.py` (427) splits the consumer's three reads when the
+segments consumer lands; `schemas.py` (388) becomes a package at the next document
+family.
 
 ## Do NOT
 
 - **Don't build a workflow engine.** No BPMN, no Temporal, no state-machine framework.
-  wake_at + the live document IS the engine; everything else is a liability with a
+  wake_at + the document IS the engine; everything else is a liability with a
   roadmap.
-- **Don't pin execution to a version.** Long runs finish under newer plans by design;
-  the per-step truth lives in each send's decision page.
+- **Don't fall back to the live document for a pinned run** (ADR 0023): a run whose
+  version row is missing parks honestly. And **don't delete a version row** — an exited
+  run's pin must keep answering "what did this run execute"; the DELETE-refusing trigger
+  is a named follow-up migration.
+- **Don't let the walker overwrite an event-side write.** Walker writes are conditional
+  on the leased `wake_at`; goal-cancel, replies and repeat patches are unconditional and
+  win (#1061).
 - **Don't regenerate node ids on edit/save** — a regenerated id strands every waiting
   walker at a square that no longer exists.
 - **Don't record gate refusals as recipient skips.** Skips are pre-enrolment deaths

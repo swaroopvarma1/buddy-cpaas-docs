@@ -3,7 +3,7 @@
 Everything that happens lands as an event; the journey is a view over the sources; memory is
 what the agent carries between conversations.
 
-### crm.event_raw (T13) — 12 columns
+### crm.event_raw (T13) — 13 columns
 
 Everything that arrives, verbatim and immutable. Replay is the only recovery mechanism that survives being wrong about the schema. (The payload is immutable; the envelope carries processing state — `processed_at`, `quarantine_reason`, and since ADR 0020 the `customer_id` stamp.)
 
@@ -21,6 +21,7 @@ Everything that arrives, verbatim and immutable. Replay is the only recovery mec
 | 10 | `processed_at` | timestamptz |  | NULL = pending — the partial index on this IS the work queue |
 | 12 | `quarantine_reason` | text |  | NULL = clean; NOT NULL = quarantined, and why — one column carries the state and the answer |
 | 14 | `customer_id` | uuid | IX | Nullable — stamped by the processor right after `resolve()`, same pattern as lead_call_tracker (ADR 0017). NULL = arrived but not yet (or never) resolved to a person. The journey's commerce arm reads `WHERE customer_id IS NOT NULL`; replay re-stamps. Partial index `(merchant_id, customer_id, occurred_at)`. Added 21 Aug 2026, ADR 0020 |
+| 15 | `attempts` | smallint |  | NOT NULL DEFAULT 0 — ENVELOPE, like processed_at. Spent BY THE CLAIM (the T20 col 15 shape: `UPDATE … SET attempts = attempts + 1 WHERE id IN (… FOR UPDATE SKIP LOCKED) RETURNING …`, order kept by a CTE), so a crash mid-row counts against the row; a row whose consumer still raises at `CRM_EVENT_MAX_ATTEMPTS` (config, default 5) is QUARANTINED (`quarantine_reason = "consumer_error after N attempts: …"`, processed_at set) instead of sitting at the head of the queue re-running resolve() every poll. Replay clears both. Added 3 Sep 2026, migration 062 (#1062); the 051 immutability trigger was re-created (CREATE OR REPLACE, the 060 precedent) so its message names every mutable envelope column |
 
 
 **Wiring**
@@ -30,6 +31,9 @@ Everything that arrives, verbatim and immutable. Replay is the only recovery mec
 - Dedupe: `UNIQUE (merchant_id, source, external_id)` — conflict = silent drop, still 200.
 - Decode failure = `quarantine_reason` set, row kept — never reject. `replay(event_id)`
   re-runs the current parser over stored raw; alert on quarantine rate, not per row.
+  Poison rows (a consumer that raises deterministically) quarantine after
+  `CRM_EVENT_MAX_ATTEMPTS` claims (col 15, #1062) — the quarantine write runs in its own
+  savepoint so one row's bookkeeping never kills the batch.
   Trail (24 Aug 2026, A2 design): quarantine ALSO sets `processed_at`, so quarantined
   rows leave the work queue — states: pending (NULL/NULL) · done (set/NULL) ·
   quarantined (set/set); replay resets both.
@@ -89,7 +93,7 @@ the whole registration; the row is cold by design.
   pure). **The FLOW runtime (entry evaluator, walker) never reads this table; the DECODE step reads only the cached identity mapping** (same in-process TTL cache as topic discovery — table cold, cache warm):
   the validator guaranteed op↔type fit at publish; conditions evaluate directly
   against the payload.
-- Migration **062** (trail: sealed as 060 on 1 Sep 2026, renumbered to 061 same day, then 062 on 2 Sep when #1038's crm_template took 061 —
+- Migration **066** (trail: sealed as 060 on 1 Sep 2026, renumbered to 061 same day, then 062 on 2 Sep when #1038's crm_template took 061, then 066 on 3 Sep when the workflow rollout took 062–064 and buddy's #1022 took 065 — #1047 carries 066/067 as of 3 Sep —
   #1037 took 060 for the connector tables first; numbers go to whoever merges,
   the 026/034 scar says verify before merge). Owner: record (TABLE_OWNERS).
   Registration validator + code

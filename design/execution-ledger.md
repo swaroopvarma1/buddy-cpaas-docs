@@ -88,6 +88,26 @@ Five tests closing #1025's coverage gaps: the default_address-only park regressi
 
 Record hears, never calls: `record/consumers.py` slot (idempotent register, ordered execution) + worker_main registration + **boundary rule 12** (record imports no subscriber, red-tested both ways). Behavior-identical; multi-pod-safe by construction (per-process registry, deterministic at import). A new spine consumer (segments, A13) is now one `register_consumer` line, zero edits in the pass.
 
+### PRs [#1054](https://github.com/juspay/clairvoyance/pull/1054) · [#1055](https://github.com/juspay/clairvoyance/pull/1055) — channel-neutral route · connectivity structure *(MERGED 2 Sep 2026, `7058087` · `719d88f`)*
+
+| Item | Delivered |
+|---|---|
+| #1054 (Claude, on Swaroop's direction) | `Channel.registers_templates` gates the T23 lookup per channel; `SendRoute.template` carries the approved ROW; queue.py's phone-channel tuple → `CHANNELS.gate_handle_kind` |
+| #1055 (Rahul) — brief items 1–2 | `schemas/` package by table family (`connector` · `message` · `template`; `__init__` exports nothing; 0 package-level imports left) · `status.py` for template/installation/binding words + `test_vocabulary.py` (AST walk of `query = …`) |
+| #1055 — NOT delivered (owed, structure PR 2) | item 3 `merchant_scope` dependency + router-level exception translator + `TenantScoped` + route-walk test (tenancy is still 10 hand-written `assert_merchant_access` calls) · item 4 shared test doubles (`_graph` ×2, `_mocked`, `_FakeInstallationAccessor` ×2 remain) · item 5 docs. Gaps found at audit 3 Sep: crm_message words live in `dispatch.py` with `'sending'/'queued'/'dead'` literals still in `db/queries/message.py` and the vocabulary test only sees `status.py` words (blind spot); one behaviour change rode a "pure structure" PR (`OnboardResult.address` Optional + a new onboarding refusal — defensible, now recorded) |
+
+### The workflow rollout — phases 00–18 (call half) *(MERGED 2–3 Sep 2026, #1056–#1077, Swaroop + Claude — 17 PRs in 13 hours)*
+
+The ordered queue lives in the repo: `docs/crm/workflow-rollout/` (README · PIPELINE · phase files · `context/reading-notes.md` = intent · `context/nits.md` · `99-backlog.md`). Merged phase by phase (the table in modules/05-outreach §"The workflow rollout as built" carries each phase's vocabulary):
+
+| Item | Delivered |
+|---|---|
+| Correctness (00–04) | repeat entries with P9/P10 guards (#1058, superseding manas's #1041 — close it) · B1/B3/B4 (#1059) · keyed admission B2 (#1060) · walker CAS on the lease P1 (#1061) · event attempts + quarantine P2, migration **062** (#1062) |
+| Cart flow (06–09) | goal tiers + key + `converted_elsewhere`, migration **063** (#1063) · plan templates + runbooks in CI (#1064) · publish template check G12 (#1065) · run summary + customer journey routes G9 (#1066) |
+| Version pinning (10–14) | **ADR 0023** (#1067, mirrored to decisions/0023) · T25 `crm_workflow_version`, migration **064** (#1068) · walker reads the pin (#1069) · consumer's two reads (#1070) · migrate-forward + versions list + template-retirement guard under an advisory lock, retention dropped (#1071) |
+| Long boards (15–18) | `$topic`, doors, reply clearing (#1072) · facts on resume, parked runs move, `restart_on_repeat` (#1074) · `stages` ladder, loan-dropoff = one pinned board (#1075) · call outcomes into runs, `match`, `else` (#1076) · phase 19 deferred (#1077) |
+| Review posture | none of the 17 passed the review skill before merge (single-author, single-session, CI green: 679 tests, boundaries/black/isort/pyrefly clean). Post-merge audit 3 Sep 2026: every law holds; findings are trails and owed hygiene — see §follow-ups |
+
 ## Open — phase 1
 
 | Lane | Items | Notes |
@@ -96,7 +116,7 @@ Record hears, never calls: `record/consumers.py` slot (idempotent register, orde
 | B (Permission) | T07/T08 + `record_consent()` · B3 blacklist backfill · B4 `decision_log` · **B5 `may_contact()` gate** (token, tz ladder, quiet hours, caps — ADR 0018 spec done, zero code) · Shopify consent importer | **B5 definition-of-done grew (ruled 1 Sep 2026, #1037 review)**: the C4 gate slice (suppression probe) runs WITHOUT decision_log writes — ratified as part of the sealed B5 deferral because T14's writer is permission's contract. B5 must therefore ship: decision_log rows for allow AND refuse (retroactively covering the slice's verdicts), `decision_id` through `SendToken` → T16 col 18, Redis GETDEL token consumption. The seam + column + token field already wait; a B5 PR landing without them is the trigger sweep's MAJOR |
 | C (Connectivity) | **#1040 (Rabi, WhatsApp webhooks) — REVIEWED 2 Sep 2026, REQUEST CHANGES (single comment on the PR)**: the first cut built the Meta door in connectivity at `/connectors/webhooks/whatsapp` with a per-connector `subscribe.py` and rule 11 widened — the body was right (raw-bytes HMAC, constant-time compare, batch split, tenancy from the receiving number, 580 tests), the PLACEMENT was the drift; ruled: record's `INGRESS` is a slot filled from `app/crm/api.py`, the Meta entry is built beside its other faces (`providers/meta/inbound.py` + root `connectivity/ingress.py`), key `meta`, GET handshake on the same bay; four MAJORs ride along (template/account letters dropped at the door — the only status path; store failure answered 200 via `record_event` → `ingest_event` + 503; `resubscribe` on the onboarder port via CONNECTORS, no new roots; resubscribe must re-stamp health since usable = `{healthy}`). **Ownership ruled: #1040 IS the Meta bay (Rabi); Rahul's PR C shrinks to the `template.status` consumer.** #1052 (extractor) rebases after · **PR B = #1050 — MERGED 2 Sep 2026 (`197ccf4`, Rahul)** after two rounds (9 findings + the structure map; all delivered incl. `accounts.py`, `ProviderError` base, `topics.py`, CAS on in-place edit) · **channel-neutral route fix PR (Claude, 2 Sep, on Swaroop's direction)**: `Channel.registers_templates` gates the T23 lookup per channel (email would otherwise have been refused before its adapter), `SendRoute.template` carries the approved ROW instead of `template_language`, queue.py's parallel phone-channel tuple replaced by the registry's handle kind — WhatsApp behaviour unchanged, one observable difference (unregistered channel refused at proposal, not at the gate) · **structure PR next** (schemas/ package, status vocabularies, merchant_scope dependency, ConnectorSpec.key done, shared test doubles) — [PR B review history: T23 registry as `crm_channel_template` (five-column natural key incl. provider_account_ref — canon trail owed), `TemplateProvider` face, rejected→edit path, claim release, hsm_id, **the T23 send-time lookup in send.py DELIVERED** (`template_not_approved`, language from the registry), ZERO sync code; 484 tests. Asks before merge: CAS guard on the in-place edit (unused `get_template_for_transition`), declared `TemplateProviderError` (no bug text in 400s), `TOPIC_*` constants out of the provider package; scalability: `ConnectorSpec.key`, provider request models into `providers/<name>/`; structure map sealed on the PR; **round 2 (review 5089608057)** added three more for this PR — `resolve_template` moves into templates.py as the registry's read (before the vault decrypt), `accounts.py` (healthy door + bundle, one usable-states set; three callers today), one `ProviderError` base with faces translating GraphError — and the brief for a **structure PR right after B** (pure moves, ~20 min, #1045/#1046-style): `schemas/` package by table family, one home per table for status vocabularies + transition sets, `merchant_scope` dependency + router-level exception translator, `ConnectorSpec.key` lookup collapse, shared test doubles in conftest. **C1/C2/C8 SHIPPED — PR A = #1049 — MERGED 2 Sep 2026 (`f181e79`, Rahul)** after three review rounds (9 findings + 2 renames, all delivered: `conn` handle naming restored, `peek_binding_by_address`): the ratified shape delivered in full — providers/whatsapp/ faces, providers/meta/graph.py, CONNECTORS + pins, generic onboarding, db/ subfolders, face-precise rule 11 with red tests, /connectors routes, tenancy check in crm/auth.py, all four onboarding defects fixed and tested; 442 tests green. Asks: app secret off the query string (POST the OAuth exchange), `channel: Optional` for pipe-less connectors (Shopify next), disabled/retired pre-checks before the one-shot code is spent, route-level tests, PR body states the ADR 0007 departure. Supersedes #1038's onboarding half; #1038's template half becomes PR B. (#1038 round-3 history [review 5082190361]: owes the T23 send-time lookup, the `CONNECTORS` registry, the provider package split + `providers/meta/graph.py`, db/ subfolders, webhooks-primary with on-demand sync; plus 7 correctness MAJORs — token_expires_at never written, delete-by-name nukes every language, healer blind to deletion, rejected templates a dead end, claim never released on failure, healthy written over a failed subscription; both calls DECIDED 2 Sep — table `crm_channel_template`, auth = early X2 accepted; three-PR landing plan posted) · C6 receipt walker · C7 WABA template registry (T23 sealed) · C8 connectors door | C3+C5 SHIPPED (#1031) · **C4 SHIPPED (#1037)** — WhatsApp sends for real behind the adapter + channel registries, gated by the suppression slice |
 | X (external) | **loom#320 (ADR 0022 root endpoints in the console — Claude subagent, 2 Sep) OPEN, Swaroop to merge**: `/crm/customers` → `/customers`, dev proxy bypass keyed on `Accept: application/json` (loom's own `/customers` marketing pages would otherwise be hijacked), 33 tests; heads-up: branch `assist-onboarding-in-console` carries 24 more `/crm` paths · **X1 nautilus relay — cmd-err, #195 IN REVIEW** (with the door, #1025): reshape per the two-plane ruling — relay at webhook receipt, letter verbatim, `source=shopify`, shadow-only (cutover branch deleted; returns as per-shop `dispatch_brain` when W-lane lands) · **X2 embedded signup — Rahul, ruled 2 Sep 2026: merchant-facing behind RBAC + tenancy check, an accepted early departure from ADR 0007 (admins pass, so our team still drives the pilot)** · X3 pilot merchant + WABA — Swaroop | ADR 0022: no never-words on external surfaces — `/crm/*` → `/ingest/events`, `/customers/*` (called out on #1025) |
-| W (Outreach) | W6 broadcast tables/scheduler (T17/T18) · W8 broadcast send path (**trigger: fairness lanes + per-table db split land here**) · repeat-entry vocabulary (`on_repeat` + debounce) · keyed-flow bucket (reply-match · consume-reply-on-branch · key-count cap) · W3-cadence ruling before voice takeover | W1–W5 SHIPPED (#1029) — walker + entry rules live behind `dispatch_brain` |
+| W (Outreach) | W6 broadcast tables/scheduler (T17/T18) · W8 broadcast send path (**trigger: fairness lanes land here**) · **rollout phase 18 message half** (delivery receipts + STOP → suppression; needs #1040 + #1052) · **phase 19 gate wiring** (needs #1021's `may_contact`; the phase file's "interim connectivity-side frequency cap" must NOT be built — caps are permission's, ADR 0018) · key-count cap · W3-cadence ruling before voice takeover · **outreach `db/` subfolders (trigger FIRED at #1068 — queries.py 814 lines, three tables — owed)** | W1–W5 SHIPPED (#1029) · **rollout phases 00–18 (call half) SHIPPED 2–3 Sep 2026 (#1058–#1077)**: repeat entries, keyed admission, CAS walker, goal tiers, plan templates, publish template check, run summary + journey, **version pinning (ADR 0023, T25)**, migrate-forward, retire guard, doors, `$topic`/`else`/`match`, facts on resume, `stages` ladder — the cart board and the loan board both run end to end |
 | U (Swaroop + Claude) | U1 loom wiring · U2 customers list (**backend live** — `GET /crm/customers` returns `CrmCustomerSummary` rows; detail GET carries full attributes) · U3 customer 360 (needs A12+B4) · U4 template manager (needs C7) | design complete (ADR 0019) |
 | P0 remainder | PgBouncer (**before** A2 multiplies connections) · fail-closed voice DND · P0.4 LIKE-over-JSONB fix · reseller backfill | |
 
@@ -153,7 +173,7 @@ Record hears, never calls: `record/consumers.py` slot (idempotent register, orde
   schemas registered at enrollment): CATALOG registry + pin tests beside EXTRACTORS ·
   catalog API (merges code + registered layers) · typed where-grammar (validator +
   entry evaluator; canon touch on entry.where; ONE migration maps→lists) ·
-  seen-vs-matched counters · **T24 `crm_event_schema` (migration 062 — 061 taken by #1038's crm_channel_template)** +
+  seen-vs-matched counters · **T24 `crm_event_schema` (migration 066 — 062–064 taken by the workflow rollout, 065 by buddy's #1022; #1047 carries 066/067 as of 3 Sep)** +
   `POST /ingest/schemas` + unregistered-topic nudge + wizard pre-fill query ·
   "Your events" console wizard (U-lane design, after runs monitor). Blocks the
   schema-driven workflow editor and push-vendor (NammaYatri-type) onboarding.
@@ -162,9 +182,44 @@ Record hears, never calls: `record/consumers.py` slot (idempotent register, orde
   (record imports no subscriber, red-tested). Trigger honesty: this fired on
   #1025 (a record-touching PR) and the review sweep MISSED it — caught in the
   post-merge growth audit; the skill now sweeps per-PR, not per-session
-- **Repeat-entry debounce + refresh** (sealed position, modules/05 §Repeat entries,
-  31 Aug): `on_repeat` + `debounce_minutes` entry vocabulary + one idempotent
-  entry-processor UPDATE — named follow-up AFTER #1029 merges, not part of its fix round
+- **Repeat-entry debounce + refresh — SHIPPED (#1058, 2 Sep 2026)** with the P9
+  (founding event never a repeat) and P10 (`GREATEST` debounce) guards; manas's #1041 is
+  superseded and should be closed
+- **Migration numbers moved (3 Sep 2026)**: 062 attempts · 063 exit reasons · 064
+  `crm_workflow_version` · 065 buddy (#1022) · **066/067 = #1047 (T24 + where→conditions)**
+  · next free = 068. Stale numbers on open PRs: **#1021 carries 055/056** (long taken —
+  renumber to 068+ and rebase; it also exposes `record_consent`/`log_decision` only, no
+  `may_contact`, so B5 and phase 19 wait on it) · **#1053 carries 061** (taken by
+  crm_channel_template — renumber)
+- **`crm_workflow_version` DELETE guard** (ADR 0023 §5 amended): versions are never
+  deleted by decision, but 064 has only the UPDATE trigger — a DELETE-refusing trigger
+  is a one-file migration (next free number); with one DB role, invariants live in tables
+- **Cart template `on_publish`** (repo `docs/crm/plans/cart-recovery.json` +
+  `cart-recovery-fallback.json`): carries no word and so PINS; the notes' intent (§16.1) is
+  `migrate` — runs are a day long and a template fix should reach every waiting run.
+  One-line docs PR before the pilot publishes it
+- **Structure PR 2 (connectivity + outreach hygiene, owed)**: #1055's undelivered items
+  3–5 (`merchant_scope` dependency + router-level translator + `TenantScoped` +
+  route-walk test · `tests/crm/conftest.py`/`doubles.py` · docs) · crm_message words into
+  `status.py` (out of `dispatch.py`), the five SQL literals in `db/queries/message.py`
+  bound as `$n`, and `test_vocabulary.py` checking a fixed all-tables word list ·
+  `template_status` verdict-shaped (`{publishable, reason}`) so outreach stops comparing a
+  literal across the seam · `connectivity/templates.py` 648 lines → split the retire
+  guard/registration out · **outreach `db/` subfolders** (queries.py 814 / three tables —
+  the ruled trigger fired at #1068) · `lock_template_exclusive_query` in the `query = …`
+  shape the vocabulary test walks
+- **Rollout phase 18 message half + phase 19** (repo `docs/crm/workflow-rollout/`): receipts
+  (`message.status` letters → `wait_event` on the send's `message_<node>` id) and STOP →
+  `record_consent`/suppression via the consumer — after #1040 (reshaped per its review)
+  and #1052 (rebased) merge; phase 19 = `may_contact()` in dispatch `_gate` after #1021
+  lands it — **the phase file's fallback of a connectivity-side frequency count is a
+  second gate and must not be built** (ADR 0018: caps live in permission)
+- **Two documentation homes (decide)**: the repo now carries `docs/crm/adr/0023`,
+  `migrations.md`, `plans/`, `runbooks/`, `workflow-rollout/`. This corpus remains the
+  design truth (the review skill reads it); ADR 0023 is mirrored here. Standing
+  follow-up "corpus migration into clairvoyance/docs/crm/" is the moment to pick ONE home
+  for ADRs — until then, an ADR written in the repo is mirrored into decisions/ the day it
+  merges
 
 - DB-integration test harness (CI Postgres) for resolve()/suppression race tests
 - `crm_event_raw` partitioning when volume demands (documented in migration 051)
@@ -197,18 +252,22 @@ Record hears, never calls: `record/consumers.py` slot (idempotent register, orde
 
 ## State in one sentence
 
-Every stage of the loop now exists in code: the door is open (#1025), the spine
-drains (#1020), workflows walk (#1029, behind `dispatch_brain`), and WhatsApp
-sends for real (#1031 + #1037, gated by the suppression slice). What separates
-this from a merchant-visible loop is wiring, not machinery: X1's relay reshape
-(facts start flowing), #1038 onboarding (a merchant gets a door + a pipe),
-B4/B5 (the full permission verdict + the diary), C6 receipts + C7 templates
-(the delivery story closes).
+The loop is built end to end: the door is open (#1025), the spine drains and
+quarantines poison (#1020, #1062), workflows walk pinned versions with doors, tiers,
+ladders and outcome branches (#1029, rollout 00–18), and WhatsApp sends for real
+behind the adapter and the T23 registry (#1031, #1037, #1049, #1050). What separates
+this from a merchant-visible loop is now THREE external PRs, not machinery: #1040
+(the Meta ingress bay, reshaped) + #1052 (the extractor) close the delivery/reply
+feedback loop and the rollout's message half; #1021 (consent ledger + `may_contact`)
+unlocks B5 and phase 19; X1's relay makes facts flow. Then structure PR 2 pays the
+hygiene the rollout deferred.
 
 ## Suggested next slices
 
-PR-next: #1038 onboarding + templates (round-3 fixes: send-time lookup,
-CONNECTORS, package split, db/ folders, on-demand sync) · X1 reshape on nautilus#195 (the door is
-waiting) · B-pod starts T07/T08 + B4 (B5's diary is the sworn
-definition-of-done) · recorded Shopify fixtures at shadow-live · PgBouncer
-before the pod count grows again (dispatcher just added one).
+PR-next: #1040 reshaped into record's ingress bay (Rabi) → #1052 rebased on it →
+rollout phase 18 message half · #1021 renumbered (068+), rebased, extended with
+`may_contact()` (Rabi) → B5 → phase 19 · structure PR 2 (owner: Swaroop's call) ·
+the one-line cart `on_publish: migrate` docs fix · the `crm_workflow_version` DELETE
+guard migration · #1047 event catalog review (carries 066/067) · #1053 renumbered ·
+X1 reshape on nautilus#195 · recorded Shopify fixtures at shadow-live · PgBouncer
+before the pod count grows again.

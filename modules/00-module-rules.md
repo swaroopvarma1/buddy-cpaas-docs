@@ -108,6 +108,18 @@ this file wins. Diagram: `../diagrams/00-master-system.html`.
    table without a TABLE_OWNERS entry in the boundary guard fails the PR by itself.
 10. **Observability**: `set_log_context` at every entrypoint; `track_error` on degraded
     paths; if you bound coverage (top-N, sampling, no-retry) log what was dropped.
+11. **Slots are filled at the composition root, never by the module that owns them**
+    (sealed by three instances — `record/consumers.py` `register_consumer` #1046,
+    record's `INGRESS` `register_ingress` ruled 2 Sep 2026 for #1040, connectivity's
+    `register_retire_guard` #1071): when module A must ask module B a question but the
+    import arrow already runs B → A.contracts, A owns an idempotent registration
+    function and a fail-closed default (no registration = refuse and log), and
+    `app/crm/worker_main.py` (imported by `app/main.py`, so the API pod is wired too)
+    hands B's contract function in. Boundary rule 12 keeps record from importing a
+    subscriber; the same inversion serves any owner. A pure key helper both sides derive
+    from (`shared/locks.py` — a stable 64-bit advisory-lock key from natural identity)
+    is a legal `shared/` leaf: no I/O, no business logic; each module executes the lock
+    through its own db/queries.
 
 ## Table self-defense (sealed 23 Aug 2026 — promoted from the PR #1016 review round)
 

@@ -25,7 +25,9 @@ again — eight instances and counting:
 | `CONNECTORS` (committed, #1038) | connector_key → onboarder + template provider + request model (canon T11 col 3's dict) | connectivity `connectors.py` | spec.channel ∈ `CHANNELS` pin; face-precise rule 11 — provider faces reachable only through the registry; unknown key = 404 |
 | `INGRESS` (#1040 in review) | provider webhook bays — `GET\|POST /ingest/webhooks/{provider}` | record owns the SLOT (`record/ingress.py`); entries are built beside each vendor's faces (`connectivity/providers/<vendor>/inbound.py` + root `ingress.py`) and registered from `app/crm/api.py` — ruled 2 Sep 2026 | one verifier per bay; record imports no vendor (rule 12); unknown provider = 404; store failure = 503, never a silent 200 |
 | `CATALOG` (owed) | events + their fields | record | extractor↔catalog square, fields-in-fixtures |
-| `CONSUMERS` (committed) | spine subscribers | worker_main registers | record imports nobody |
+| `CONSUMERS` (#1046) | spine subscribers | `record/consumers.py` slot; worker_main registers | record imports nobody (rule 12) |
+| **Composition-root SLOTS** (pattern, modules/00 §11) | one owner asks a question only the composition root may answer: consumers · INGRESS entries · the template-retire guard (#1071) | the owner holds `register_*` + a fail-closed default; `worker_main` fills it | no registration = refuse and log; import arrows never reverse |
+| `NODE_TYPES` vocabulary grew by WORDS, not entries (rollout 15–18) | `$topic` · `timeout` · `else` · `match` · `stage` · doors · goal tiers · `stages` ladder | outreach `nodes.py` / `schemas.py` / `ladder.py` | the ladder is compile-time sugar (pure, idempotent expansion) — the walker never learned a new type; CI pins the arrow set of the shipped loan plan |
 
 (`ADAPTERS` and `CHANNELS` are two registries for ONE vocabulary on purpose: the
 confinement law keeps adapters behind the send door, so the metadata other code
@@ -103,12 +105,14 @@ and dedupe keys, never worker uniqueness. Add pods, not code.
 Scaling honesty means saying where it WILL hurt and pre-deciding the fix, so the
 person who hits the wall finds a door already drawn on it:
 
-1. **Entry matching at event volume.** Every attributed event evaluates its
-   merchant's live plans, in Python, inside the spine's pass — heavy event flow
-   taxes the drain. Relief (ledger trigger): the **live-plan cache** — validated
-   definitions cached by (workflow_id, version); plans are authored, not
-   generated, so seconds of staleness is free. Detection: the queue-lag alert
-   already fires.
+1. **Entry matching at event volume.** Every attributed event evaluates the
+   customer's open runs (each by its pinned version — one indexed read, then point
+   reads served by `definitions.py`'s LRU, built #1069/#1070) and the merchant's
+   live plans, in Python, inside the spine's pass — heavy event flow taxes the
+   drain. Relief (ledger trigger): the **live-plan cache** for the entries read —
+   validated latest definitions cached by (workflow_id, version); plans are
+   authored, not generated, so seconds of staleness is free. Detection: the
+   queue-lag alert already fires.
 2. **One global dispatch queue meets its first broadcast.** Correct today; but a
    10k-recipient blast queues beside COD confirmations with no priority. Relief
    (trigger: the W8/broadcast PR): **fairness lanes** — claim ordering by purpose

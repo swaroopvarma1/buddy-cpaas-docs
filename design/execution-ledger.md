@@ -204,7 +204,7 @@ The ordered queue lives in the repo: `docs/crm/workflow-rollout/` (README · PIP
   the template-status consumer's precondition), `ProviderLetter` names source /
   channel / connector_key apart + `OWNER_ENDPOINT`, migration **066** (T25 DELETE
   guard), cart plans `on_publish: migrate`, phase-19 interim cap struck; and
-  **structure PR 2** (two commits: connectivity's `merchant_scope` + `TranslatingRoute`
+  **#1080 = structure PR 2** (two commits: connectivity's `merchant_scope` + `TranslatingRoute`
   + `TenantScoped` + route-walk test, MESSAGE_* words in `status.py` with the SQL bound
   as `$n` and the vocabulary test's fixed four-family list, `TemplateVerdict`,
   `template_reads.py` + `retire_guard.py` out of `templates.py` (648 → 538), shared

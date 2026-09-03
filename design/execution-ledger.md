@@ -102,7 +102,7 @@ The ordered queue lives in the repo: `docs/crm/workflow-rollout/` (README · PIP
 
 | Item | Delivered |
 |---|---|
-| Correctness (00–04) | repeat entries with P9/P10 guards (#1058, superseding manas's #1041 — close it) · B1/B3/B4 (#1059) · keyed admission B2 (#1060) · walker CAS on the lease P1 (#1061) · event attempts + quarantine P2, migration **062** (#1062) |
+| Correctness (00–04) | repeat entries with P9/P10 guards (#1058, superseding manas's #1041 — closed 2 Sep 2026) · B1/B3/B4 (#1059) · keyed admission B2 (#1060) · walker CAS on the lease P1 (#1061) · event attempts + quarantine P2, migration **062** (#1062) |
 | Cart flow (06–09) | goal tiers + key + `converted_elsewhere`, migration **063** (#1063) · plan templates + runbooks in CI (#1064) · publish template check G12 (#1065) · run summary + customer journey routes G9 (#1066) |
 | Version pinning (10–14) | **ADR 0023** (#1067, mirrored to decisions/0023) · T25 `crm_workflow_version`, migration **064** (#1068) · walker reads the pin (#1069) · consumer's two reads (#1070) · migrate-forward + versions list + template-retirement guard under an advisory lock, retention dropped (#1071) |
 | Long boards (15–18) | `$topic`, doors, reply clearing (#1072) · facts on resume, parked runs move, `restart_on_repeat` (#1074) · `stages` ladder, loan-dropoff = one pinned board (#1075) · call outcomes into runs, `match`, `else` (#1076) · phase 19 deferred (#1077) |
@@ -183,11 +183,11 @@ The ordered queue lives in the repo: `docs/crm/workflow-rollout/` (README · PIP
   #1025 (a record-touching PR) and the review sweep MISSED it — caught in the
   post-merge growth audit; the skill now sweeps per-PR, not per-session
 - **Repeat-entry debounce + refresh — SHIPPED (#1058, 2 Sep 2026)** with the P9
-  (founding event never a repeat) and P10 (`GREATEST` debounce) guards; manas's #1041 is
-  superseded and should be closed
+  (founding event never a repeat) and P10 (`GREATEST` debounce) guards; manas's #1041
+  closed 2 Sep 2026 as superseded
 - **Migration numbers moved (3 Sep 2026)**: 062 attempts · 063 exit reasons · 064
-  `crm_workflow_version` · 065 buddy (#1022) · **066/067 = #1047 (T24 + where→conditions)**
-  · next free = 068. Stale numbers on open PRs: **#1021 carries 055/056** (long taken —
+  `crm_workflow_version` · 065 buddy (#1022) · **066/067 = #1047 (T24 + where→conditions; MERGEABLE against release as of 3 Sep
+  09:43Z, review pending)** · next free = 068. Stale numbers on open PRs: **#1021 carries 055/056** (long taken —
   renumber to 068+ and rebase; it also exposes `record_consent`/`log_decision` only, no
   `may_contact`, so B5 and phase 19 wait on it) · **#1053 carries 061** (taken by
   crm_channel_template — renumber)

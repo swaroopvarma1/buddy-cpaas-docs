@@ -1,4 +1,4 @@
-# The Event Catalog — schema-driven flows (sealed 1 Sep 2026)
+# The Event Catalog — schema-driven flows (sealed 1 Sep 2026 · BUILT 4 Sep 2026, clairvoyance #1047 `2a00ef44`, migrations 068/069)
 
 *The ruling in one sentence: **nobody types a field name — every field the product
 shows, filters on, keys by, or templates with comes from ONE declared registry that
@@ -55,7 +55,16 @@ trigger picker, filter builder and variable menus update themselves on next load
 |---|---|
 | string · enum | `is` · `is not` · `in` |
 | number | `>` · `≥` · `<` · `≤` · `=` |
+| yes-no | `is` · `is not` |
+| date-time | `>` · `≥` · `<` · `≤` |
 | any | `exists` |
+
+*(Yes-no and date-time rows added 4 Sep 2026 as built — the sealed type set already had both.
+The `is` family compares like with like and never coerces: "007" is not "7", 1.0 is not "1",
+true is not "true"; numbers compare under `=` and the ordering ops, where numeric strings
+count (Shopify posts money as "1850.00"). A field absent from the payload satisfies nothing,
+not even `is not`. Record's `OPS_BY_TYPE` is spelled from the evaluator's own op families,
+so parity is structural.)*
 
 Explicitly NOT v1: regex, contains, array-any. The same predicate shape compiles to
 SQL for segments (P2, per console-ui's segment-predicate rule) — so **an op lands in
@@ -189,7 +198,7 @@ lookup:
 | Publish validator | declared fields only | same rule — their signature instead of our PR |
 
 One spine, one editor, one validator — two declarers. The storage/lifecycle spec is
-canon **T24 `crm_event_schema`** (canon/02-record.md, migration 068 — renumbered 3 Sep 2026 after the workflow rollout took 062–064, buddy 065/066 and #1079's guard 067; #1047 carries it): detected →
+canon **T24 `crm_event_schema`** (canon/02-record.md, migration 068 — built 4 Sep 2026, #1047): detected →
 registered, cold by design (discovery writes once per topic ever; counts computed on
 read), and the runtime hot paths NEVER read it — registration governs authoring,
 publish-time validation guarantees op↔type fit, runtime evaluates conditions
@@ -213,17 +222,42 @@ value) is a dashboard fact within hours, never a merchant complaint within weeks
 - **Array operators**: only if a real flow needs them past derived fields.
 - **Catalog i18n / size**: non-issues for years; one cached GET.
 
-## Owed (backend, small, in order)
+## Owed (backend, small, in order) — ALL SIX BUILT 4 Sep 2026 (#1047)
 
-1. CATALOG registry + pin tests in record (with the Shopify orders/create entry).
-2. Catalog API endpoint (ETag).
-3. Typed where-grammar: validator + entry-processor evaluator (+ canon touch:
-   `entry.where` shape).
-4. Seen-vs-matched counters on the entry processor.
-5. Vendor schema registration: table (record-owned, canon T24 sealed — migration 068, as carried by #1047) +
-   `POST /ingest/schemas` + catalog-API layer merge + unregistered-topic nudge +
-   wizard pre-fill query. 6. Where-shape migration (maps → typed lists, one PR
-   with the where-grammar).
+1. ✔ CATALOG registry + pin tests (Shopify as the engine's first code spec: five topics,
+   recorded fixtures, `SPEC_MODULES` assembly — `record/catalog.py` never names a source).
+2. ✔ `GET /catalog` (ETag → 304 before the counts query; layer-blind merge).
+3. ✔ Typed where-grammar: `shared/predicate.py` (one evaluator) + `outreach/catalog_laws.py`
+   (the validator's catalog laws) + canon T19 touch.
+4. ✔ Seen-vs-matched on the flow list, computed on read (`topic_counts` + `enrollment_counts`).
+5. ✔ T24 (migration 068) + `POST /ingest/schemas` (s2s, declared dependency) + `GET|POST
+   /schemas` (console, admin) + the nudge (one `detected` row per topic ever, marked known
+   after the batch commits) + `GET /catalog/samples` (wizard pre-fill). Registration laws in
+   code: closed types, one field per identity role, keyable types, choice values,
+   additive-or-deprecate (a dropped path is refused), and a code-declared (source, topic)
+   may not be registered (it would be gathered by the validator, hidden by the console and
+   ignored by decode).
+6. ✔ Migration 069 (maps → typed lists, both entry shapes, idempotent).
+
+**Landed with it**: the one decode engine (`extractors/engine.py`) executing a `DecodeSpec`
+from either layer — identity roles in precedence order with code-only fallbacks, variable
+paths, `derive()`, and `about` (who the letters are about, passed through to
+`Extracted.about`); a send node's explicit `variables` map; the `AmbiguousTopic` refusal.
+
+**Migration onto the engine, each its own PR (in order)**: (1) WhatsApp as the SECOND code spec
+on #1052's rebase — `extractors/whatsapp.py` exporting ENTRIES, template/account entries
+`about: merchant`, one `SPEC_MODULES` line; (2) outreach's seven raw `payload.get` reads (goal
+keys, tier keys, the wait_event match key, the reply key, the repeat key, the scalar copy
+into context, the phone fallback) resolve through `field_value` and the validator checks each
+named key against the catalog; (3) the buddy mirrors' flat shape (lead-api, telephony)
+declared as house spec entries with recorded fixtures, then the imperative `EXTRACTORS` dict
+and the phone fallback are deleted; (4) the console's flow editor renders from `GET
+/catalog` from day one; (5) P2 segments' SQL compiler under the parity law.
+
+**Later surfaces, named**: conformance counters ("registered Number, arrived Text in 12%"); the
+deprecated-field warning reaching the author + the flows-list badge (a log line today); the
+plain "cannot start a flow" message on a registration with no identity role (the console
+derives the disabled state from the identity roles on the fields, which the API returns).
 
 Refs: design/ingest-doors.md (the decoder's obligations gain the catalog) ·
 modules/01-record.md (registry home) · modules/05-outreach.md (entry vocabulary) ·

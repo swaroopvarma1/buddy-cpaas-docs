@@ -1,6 +1,7 @@
 # Record (the event spine) — build guide
 
-Owns: `crm.event_raw` (T13) · the ingest front door · the topic + extractor registries ·
+Owns: `crm.event_raw` (T13) · `crm.event_schema` (T24, built #1047) · the ingest front door · the topic ·
+extractor · CATALOG registries ·
 the consumer runtime · `replay()` · (later) the journey view. Diagram:
 `../diagrams/01-event-spine.html`. Squad: Pod A.
 
@@ -43,8 +44,24 @@ pipeline, and the build-order table. Read it before touching api.py or ingest.py
   contract the walker's goal re-check uses; `where` narrows the EXISTS to the letters
   about ONE thing (the order carrying this run's cart token — outreach's goal key, #1063),
   compared as text on the payload — still one indexed EXISTS, never a foreign SELECT.
-- **Extractors are pure functions** registered per (source, topic): payload →
-  `{handles, facts}`. Adding a channel = one adapter + one extractor registration.
+- **Decoding is a SPEC executed by ONE engine** (built 4 Sep 2026, #1047 — design/event-catalog.md
+  §One decode engine): `extractors/engine.py` reads a payload by its `DecodeSpec` — identity
+  roles in precedence order (with code-only `fallbacks`), `variable` paths, `derive()` for the
+  ~10% that is logic, and `about`. Two spec sources, one shape: a code `CatalogEntry` (a spec
+  module `extractors/<source>.py` exporting `ENTRIES` + `DERIVERS`, assembled through
+  `extractors/__init__.py::SPEC_MODULES` — adding a source = one import + one registry line,
+  beside its recorded fixtures; `record/catalog.py` never names a source) or a registered T24
+  row (read through a process-local TTL cache, `CRM_SCHEMA_CACHE_SECONDS`; the table stays cold
+  and the flow runtime never reads it). The imperative `EXTRACTORS` dict remains only for the
+  buddy mirrors' flat shape; a source is in ONE of the two, never both (pinned). Pin tests close
+  the square: no code entry without a fixture, every declared field in a fixture, every derived
+  field provided. The catalog's doors: `GET /catalog` (ETag, layer-blind merge, seen-this-week on
+  read) · `GET /catalog/samples` · `GET|POST /schemas` (console, admin) · `POST /ingest/schemas`
+  (s2s, declared `verified_merchant_caller`). Discovery writes one `detected` row per
+  (merchant, source, topic) EVER, inside the row's savepoint, marked known after the batch
+  commits. Registration is validated in code (closed types; one field per identity role;
+  keyable types; choice values; additive-or-deprecate; a code-declared key may not be
+  registered). Adding a channel = one adapter + one spec module.
   An extractor also says WHO a letter is about — `Extracted.about`, `customer` (the
   default) or `merchant` (built #1079, 3 Sep 2026): a template review or an account notice
   names no person BY DESIGN, so the pass skips resolve(), stamps `customer_id` NULL

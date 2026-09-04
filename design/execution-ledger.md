@@ -327,12 +327,14 @@ has paid the hygiene the rollout deferred; #1079 closed the audit's spine and se
 
 ## Suggested next slices
 
-PR-next: #1047 re-verified after Manas's response → merge · #1052 rebased on the
-merged #1040 with template/account letters returning `Extracted(about="merchant")` (Rabi)
+PR-next: #1052 rebased onto the merged catalog as the engine's SECOND SPEC — `extractors/whatsapp.py`
+exporting ENTRIES (+ one `SPEC_MODULES` line), template/account entries `about: merchant` (Rabi)
 → rollout phase 18 message half · #1021 renumbered (070+, after #1047), rebased, extended
 with `may_contact()` (Rabi) → B5 → phase 19 · #1047 event catalog review (renumbers to
 068/069, rebases onto the outreach db/ split) · #1053 renumbered · X1 reshape on
 nautilus#195 · recorded Shopify fixtures at shadow-live · PgBouncer before the pod count
 grows again. Delivered since the last list: #1040 (Meta bay in record), #1079 (cart
 `on_publish: migrate`, the T25 DELETE guard as 067, `Extracted.about`, the ingress words),
-#1080 (structure PR 2).
+#1080 (structure PR 2), #1082 (template_status on the sending account), **#1047 (the event
+catalog: T24 068 + where→conditions 069 — merged 4 Sep 12:15Z as `2a00ef44`)**. Next free
+migration = 070. Route inventory 34 (record 9 · outreach 12 · connectivity 11 · identity 2).

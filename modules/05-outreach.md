@@ -123,7 +123,8 @@ Where canon named the mechanism, #1029 chose the numbers and shapes. Sealed as b
 - **Document shapes** (T19 names the sections; these are the words): `nodes[0]` is the
   start square; an edge is `[from, to]` (+ `on` only out of a `wait_event`); node
   vocabulary `wait · send · call · wait_event`, registry-backed (ruling above);
-  `entry.where` = payload-equality map ANDed with the topic. `wait_event` = topics +
+  `entry.where` = typed conditions `[{field, op, value}]` ANDed with the topic (#1047, 4 Sep
+  2026; the equality map retired by migration 069). `wait_event` = topics +
   key + minutes (event OR timer, whichever first); the consumer writes
   `context.reply_<node> = payload[key]` + `wake_at = now()` on the run still standing
   on that node (late/repeat replies change nothing); the walker takes the edge whose
@@ -188,6 +189,7 @@ one PR, one commit, red tests first. The vocabulary the corpus now carries, by p
 | 16 #1074 | Letters' scalar facts ride into the run under `context.facts.<square>` (namespaced, replaced per square); `current_node` / `current_stage` reach templates; a PARKED run moves when its square hears a letter; `restart_on_repeat` re-arms any square (G8); send variables drop bool/None |
 | 17 #1075 | `stages` ladder → `at-/act-/after-<slug>` squares + one labelled arrow per later stage, expanded PURE and idempotent by `ladder.py` at create/draft/publish (the walker never learns the word); loan-dropoff is ONE pinned board (`docs/crm/plans/loan-dropoff.json`, `key: application_id`, cooldown 1h); `latest_letter` wins the call's facts |
 | 18 #1076 (call half) | `call.completed` mirrors `enrollment_id`; `wait_event.match {payload, run}`; edge label `else` (catch-all out of a listening square — a connected call's outcome is the buddy template's own word); keyed ladders match on the key; `cart-recovery-fallback.json`. The MESSAGE half (receipts, STOP → suppression) waits for #1040/#1052 |
+| catalog #1047 (4 Sep) | Typed `entry.where` + `entry.key` as catalog paths (dot-walks + code-layer derived fields through record's `field_value`) · send `variables: {blank: fact}` = EXACTLY what is posted (positional or named, one style; empty = nothing) · publish gathers the merged catalog → pure `catalog_laws.py` (undeclared field / ill-fitting op / unknown choice value / unkeyable key refused; an unknown topic may trigger but not filter) · seen-vs-matched on the flow list, computed on read · a topic two sources declare refuses publish (`AmbiguousTopic`) until `entry.source` is ruled · `lead_request_id` = the enrollment key on a keyed plan |
 | 19 | Permission-gate wiring (G1) — DEFERRED until #1021 lands `may_contact()`; see the B-lane |
 
 Reserved edge/branch words: `timeout` · `else` · `$topic` (all in `outreach/nodes.py`).

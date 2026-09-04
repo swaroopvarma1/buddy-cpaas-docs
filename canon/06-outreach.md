@@ -103,6 +103,20 @@ The plan — ONE document a walker reads live. Many customers walk the same one;
   `{order, idle_minutes, on_idle, after_action_minutes, restart_on_repeat, overrides}`
   expanded by `outreach/ladder.py` into `at-`/`act-`/`after-` squares per stage (#1075) ·
   `on_publish: pin | migrate` (#1068).
+- **Catalog words as built 4 Sep 2026 (#1047, design/event-catalog.md)**: `entry.where` is a
+  typed condition list `[{field, op, value}]`, ANDed (the equality map is retired — migration
+  069 rewrote every stored document, both entry shapes; an immutable T25 row still holding a
+  map is converted on read) · `entry.key` names a catalog path (a bare name canonicalises to
+  `payload.<key>`; nested paths and code-layer derived fields resolve through record's
+  `field_value`) · a send node's `variables: {blank: fact}` map is EXACTLY what is posted to
+  the provider — positional `"1"` or named, one style per template, empty = zero parameters —
+  every fact a declared `variable` field of the entry topic, `current_node` /
+  `current_stage`, or a listened square's `facts_<square>_<key>` · publish GATHERS the merged
+  catalog (code + registered layers, cold) and the PURE validator refuses an undeclared field,
+  an op that does not fit the field's type, an unknown choice value, an unkeyable key; a topic
+  no layer knows may trigger but not filter, key or template. **Ruling owed: `entry.source`** —
+  a door names its topic alone while catalog identity is (source, topic); until then a topic
+  two sources declare for one merchant refuses publish naming both.
 - Entry carries reenter + cooldown — the admission guards enforced for BOTH doors.
   Sealed follow-up (31 Aug 2026, not yet built): entry also names its repeat policy —
   `on_repeat: ignore · refresh_latest · refresh_max(<field>) · accumulate` +

@@ -192,8 +192,18 @@ The ordered queue lives in the repo: `docs/crm/workflow-rollout/` (README · PIP
   (REQUEST CHANGES, one comment: 069 misses list-shaped multi-door entries · `is`-family numeric
   coercion widens matches · `catalog_fields` unions by topic across sources while the door carries
   topic only — **RULING OWED: `entry.source` on the door (canon T19)** · shipped cart plans/runbook
-  carry no send `variables` map and test_plan_templates passes no catalog; + 7 MINOR, 7 NIT)** ·
-  next free after #1047 = 070. Stale numbers on open PRs: **#1021 carries 055/056** (long taken —
+  carry no send `variables` map and test_plan_templates passes no catalog; + 7 MINOR, 7 NIT)**.
+  **Manas answered the same day (head `c110346c`): every finding addressed** — 069 rewrites both
+  entry shapes (I ran the file twice against a real Postgres: object, three-door list, typed,
+  no-where — correct and idempotent), the `is` family is like-with-like strict, `AmbiguousTopic`
+  becomes a validation problem naming both sources, cart sends map `{"1": "customer_name"}` and
+  `test_plan_templates` validates the boards against the code catalog + the loan registration,
+  nudges marked known after the commit, the s2s schema door declares its verifier and the
+  door-walk covers ingest + catalog routers, `catalog_laws.py` (plans.py 613 → 468), `OPS_BY_TYPE`
+  spelled from predicate's families (parity pinned), ETag before the GROUP BY, re-registration
+  refuses dropped paths. Re-verified by me: 856 tests, every gate, one commit, clean merge.
+  Left: the PR DESCRIPTION still says migrations 061/062 and "#1041" (the commit message is
+  right) — a one-line edit before merge. **Merge on green CI.** Next free after #1047 = 070. Stale numbers on open PRs: **#1021 carries 055/056** (long taken —
   renumber after #1047 lands, 070+, and rebase; it also exposes `record_consent`/`log_decision` only, no
   `may_contact`, so B5 and phase 19 wait on it) · **#1053 carries 061** (taken by
   crm_channel_template — renumber)

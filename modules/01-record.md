@@ -155,12 +155,25 @@ pipeline, and the build-order table. Read it before touching api.py or ingest.py
   clean states — pending (NULL/NULL) · done (set/NULL) · quarantined (set/set) —
   and `replay()` resets both to re-queue. This keeps the pending partial index
   exact; a quarantined row with processed_at NULL would be re-picked forever.
-- **Capacity, for sizing conversations**: extractor is microseconds; ~two small
-  transactions per event → 5–15 ms/event → roughly 70–200 events/sec per worker,
-  ~5–15M/day per replica, near-linear with replicas via SKIP LOCKED. Phase-1
-  volume is <100k/day — one replica at a 1s poll is ~1% duty cycle, and the A15b
-  backlog is minutes of work. The real constraint is the CONNECTION BUDGET:
-  PgBouncer lands before A2 multiplies connections (P0, ledgered).
+- **Capacity, for sizing conversations (revised 4 Sep 2026, as built through #1047)**:
+  the DOOR is one local JWT decode (no DB for the relay token) + one INSERT … ON CONFLICT
+  on four indexes → ~1–3 ms of DB time per letter; one API pod (a single uvicorn process,
+  pool 5 + overflow 10) sustains a few hundred letters/sec on this path alone, and
+  Postgres itself thousands. The PASS is the ceiling: decode is microseconds (spec cached,
+  discovery once per topic ever), but one row costs ~6–12 round trips — resolve() probes +
+  the possible insert, assert_facts, the entry consumer (open runs, live plans, goal/reply/
+  repeat writes, enrol's atom when a door matches), the stamp — each standalone read on its
+  own pooled connection while the batch's claim transaction stays open; at ~1–2 ms per
+  round trip that is ~10–25 ms/event, SEQUENTIAL per replica → **roughly 40–100 events/sec
+  per event-worker replica, ~3–8M/day**, near-linear with replicas via SKIP LOCKED until
+  the CONNECTION BUDGET (no PgBouncer yet — P0, #1018 open; every process holds up to 15)
+  is spent. Safe standing rate with ONE replica: ~30 events/sec sustained (bursts drain at
+  the batch rate, 100 rows per poll); pilot volume (<100k/day, ~1/sec) is ~2% duty cycle.
+  What breaks first past that: the connection count (before throughput), then a growing
+  backlog (the queue-lag log line), then the 7-day GROUP BY the flow list and the catalog
+  pay on every load (the design's latency trigger). These are estimates from the code —
+  a 15-minute load test over the recorded Shopify fixtures against staging is the named
+  step that replaces them with measurements before the pod count grows.
 
 ## The consumer registry — COMMITTED for the next PR (Swaroop, 31 Aug 2026)
 

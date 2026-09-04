@@ -188,7 +188,12 @@ The ordered queue lives in the repo: `docs/crm/workflow-rollout/` (README · PIP
 - **Migration numbers moved (3 Sep 2026)**: 062 attempts · 063 exit reasons · 064
   `crm_workflow_version` · 065 buddy (#1022) · 066 buddy (#1073 widget config, merged 3 Sep 12:24Z — took the number
   #1079 had used; #1079 renumbered to **067** and rebased the same day) · **067 = #1079 (T25 DELETE guard)** ·
-  **#1047 (T24 + where→conditions; MERGEABLE, review pending) renumbers to 068/069 at rebase** · next free = 068. Stale numbers on open PRs: **#1021 carries 055/056** (long taken —
+  **#1047 (T24 + where→conditions) — rebased onto the db/ split, carries 068/069; REVIEWED 4 Sep 2026
+  (REQUEST CHANGES, one comment: 069 misses list-shaped multi-door entries · `is`-family numeric
+  coercion widens matches · `catalog_fields` unions by topic across sources while the door carries
+  topic only — **RULING OWED: `entry.source` on the door (canon T19)** · shipped cart plans/runbook
+  carry no send `variables` map and test_plan_templates passes no catalog; + 7 MINOR, 7 NIT)** ·
+  next free after #1047 = 070. Stale numbers on open PRs: **#1021 carries 055/056** (long taken —
   renumber after #1047 lands, 070+, and rebase; it also exposes `record_consent`/`log_decision` only, no
   `may_contact`, so B5 and phase 19 wait on it) · **#1053 carries 061** (taken by
   crm_channel_template — renumber)

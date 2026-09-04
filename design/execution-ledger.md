@@ -327,8 +327,20 @@ has paid the hygiene the rollout deferred; #1079 closed the audit's spine and se
 
 ## Suggested next slices
 
-PR-next: #1052 rebased onto the merged catalog as the engine's SECOND SPEC — `extractors/whatsapp.py`
-exporting ENTRIES (+ one `SPEC_MODULES` line), template/account entries `about: merchant` (Rabi)
+PR-next: **#1085 (Rabi — #1052 re-raised on the merged catalog; REVIEWED 4 Sep, REQUEST CHANGES,
+issuecomment-5542196555)**: the WhatsApp spec via `SPEC_MODULES` with `message.inbound` /
+`message.status`, the one-key `reply` derive, catalog-resolved `_is_about` / `_answer_for`, the
+bytes `compare_digest` fix — but the four MERCHANT topics (`template.*`, `account.update`) are left
+out and a test pins the omission, so #1084's consumer would never hear a template letter; and
+`crm_message.reason` is written as WORDS for named provider codes where canon T16 col 13 stores
+the CODE (**ruling owed: keep the code in the row + label at read (recommended), or amend T16
+col 13**); MINOR: receipts attributed to the customer (three resolves per send) against the
+spine note's "not about a person". **#1084 (Rahul, PR C: template webhooks → the registry —
+`template_events.py` consumer registered at the root) CONFLICTS with #1085 on
+`extractors/whatsapp.py`**: #1084 carries the retired imperative `extract()` + `EXTRACTORS` line.
+Order ruled in the review: #1085 first with all six topics → #1084 rebased to drop its extractor
+and keep the consumer (pointer posted, issuecomment-5542196907); #1084's full review follows
+that rebase
 → rollout phase 18 message half · #1021 renumbered (070+, after #1047), rebased, extended
 with `may_contact()` (Rabi) → B5 → phase 19 · #1047 event catalog review (renumbers to
 068/069, rebases onto the outreach db/ split) · #1053 renumbered · X1 reshape on

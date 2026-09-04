@@ -203,7 +203,12 @@ The ordered queue lives in the repo: `docs/crm/workflow-rollout/` (README · PIP
   spelled from predicate's families (parity pinned), ETag before the GROUP BY, re-registration
   refuses dropped paths. Re-verified by me: 856 tests, every gate, one commit, clean merge.
   Left: the PR DESCRIPTION still says migrations 061/062 and "#1041" (the commit message is
-  right) — a one-line edit before merge. **Merge on green CI.** Next free after #1047 = 070. Stale numbers on open PRs: **#1021 carries 055/056** (long taken —
+  right). **Follow-up comment posted 4 Sep (issuecomment-5540030083) with three pre-merge asks**:
+  (1) `CatalogEntry.about` carried by `DecodeSpec` and passed through `engine.extract` — without it
+  the second code spec (WhatsApp, #1052's rebase) cannot say its template/account letters are the
+  MERCHANT's; (2) `SPEC_MODULES` registry line in `extractors/__init__.py` so `catalog.py` never
+  names a source; (3) description/commit text (068/069; #1058 not #1041). **Then merge on green
+  CI.** Next free after #1047 = 070. Stale numbers on open PRs: **#1021 carries 055/056** (long taken —
   renumber after #1047 lands, 070+, and rebase; it also exposes `record_consent`/`log_decision` only, no
   `may_contact`, so B5 and phase 19 wait on it) · **#1053 carries 061** (taken by
   crm_channel_template — renumber)

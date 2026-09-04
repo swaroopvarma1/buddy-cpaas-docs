@@ -223,7 +223,7 @@ The ordered queue lives in the repo: `docs/crm/workflow-rollout/` (README · PIP
   merchant in a POST's query → 403, query-merchant on a POST now accepted) and a
   parameter-substitution proof that the `$n`-bound message SQL renders identically to the
   old literals. Now #1047 / #1052 / #1021 rebase (#1047 renumbers to 068/069).
-- **OPEN 4 Sep 2026 — #1082 (Claude, on Swaroop's direction)**: `template_status` asks the
+- **MERGED 4 Sep 2026 (release `cde86230`) — #1082 (Claude, on Swaroop's direction)**: `template_status` asks the
   question of the ACCOUNT the route will send from. CodeRabbit's review of #1080 caught the
   read accepting an approval on ANY of the merchant's accounts (in since #1065; #1080 moved
   it verbatim) and proposed "refuse unless every account is clean" — the wrong shape, because
@@ -298,7 +298,7 @@ has paid the hygiene the rollout deferred; #1079 closed the audit's spine and se
 
 ## Suggested next slices
 
-PR-next: merge #1082 (template_status on the sending account) · #1052 rebased on the
+PR-next: #1047 re-verified after Manas's response → merge · #1052 rebased on the
 merged #1040 with template/account letters returning `Extracted(about="merchant")` (Rabi)
 → rollout phase 18 message half · #1021 renumbered (070+, after #1047), rebased, extended
 with `may_contact()` (Rabi) → B5 → phase 19 · #1047 event catalog review (renumbers to

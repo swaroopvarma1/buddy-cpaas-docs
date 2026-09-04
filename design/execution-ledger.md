@@ -213,8 +213,16 @@ The ordered queue lives in the repo: `docs/crm/workflow-rollout/` (README · PIP
   decode ignore the row — refuse it in `validate_registration`. Sweep verdict: product intent
   delivered clause for clause; nothing over-built; three later surfaces named (conformance
   counters, deprecated-field warning to the author + flows-list badge, the no-identity plain
-  message); corpus owes the yes-no/date-time rows in the where-grammar op table. **Then merge on
-  green CI.** Next free after #1047 = 070. Stale numbers on open PRs: **#1021 carries 055/056** (long taken —
+  message); corpus owes the yes-no/date-time rows in the where-grammar op table. **All four asks landed at `c6c649b8` (about word through
+  DecodeSpec → extract; SPEC_MODULES assembly; text; shadow-registration refusal — each with a
+  test). Final skill sweep incl. db/accessor discipline: accessor shapes by signature (one
+  in-atom `conn: DbTxn` for the nudge, standalone `crm_connection()` for the rest), handle names
+  clean (no `txn` in db/, no `conn` in logic), every query `$n`-bound and merchant-scoped, SQL
+  only in record's db/, contracts from logic. 859 tests, every gate, one commit, clean merge.
+  VERDICT: APPROVE on the green build. Three NITs at the author's discretion for the next
+  touch: T24 queries use `SELECT *`/`RETURNING *` where every other module spells a column
+  list; the decoder re-implements `shared/decode.jsonb_value`; the samples accessor shapes
+  rows (json.loads) that a decoder should.** Next free after #1047 = 070. Stale numbers on open PRs: **#1021 carries 055/056** (long taken —
   renumber after #1047 lands, 070+, and rebase; it also exposes `record_consent`/`log_decision` only, no
   `may_contact`, so B5 and phase 19 wait on it) · **#1053 carries 061** (taken by
   crm_channel_template — renumber)

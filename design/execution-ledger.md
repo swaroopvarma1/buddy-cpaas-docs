@@ -207,8 +207,14 @@ The ordered queue lives in the repo: `docs/crm/workflow-rollout/` (README · PIP
   (1) `CatalogEntry.about` carried by `DecodeSpec` and passed through `engine.extract` — without it
   the second code spec (WhatsApp, #1052's rebase) cannot say its template/account letters are the
   MERCHANT's; (2) `SPEC_MODULES` registry line in `extractors/__init__.py` so `catalog.py` never
-  names a source; (3) description/commit text (068/069; #1058 not #1041). **Then merge on green
-  CI.** Next free after #1047 = 070. Stale numbers on open PRs: **#1021 carries 055/056** (long taken —
+  names a source; (3) description/commit text (068/069; #1058 not #1041); (4) product-sweep
+  finding, posted separately (issuecomment-5540081736): a registration under a CODE-declared
+  (source, topic) is accepted and its fields leak into the validator's gather while merge and
+  decode ignore the row — refuse it in `validate_registration`. Sweep verdict: product intent
+  delivered clause for clause; nothing over-built; three later surfaces named (conformance
+  counters, deprecated-field warning to the author + flows-list badge, the no-identity plain
+  message); corpus owes the yes-no/date-time rows in the where-grammar op table. **Then merge on
+  green CI.** Next free after #1047 = 070. Stale numbers on open PRs: **#1021 carries 055/056** (long taken —
   renumber after #1047 lands, 070+, and rebase; it also exposes `record_consent`/`log_decision` only, no
   `may_contact`, so B5 and phase 19 wait on it) · **#1053 carries 061** (taken by
   crm_channel_template — renumber)

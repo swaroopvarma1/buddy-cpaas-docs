@@ -416,7 +416,7 @@ two-account merchant); N7 landed; the consumer is live
 **#1057 (Sharifajahan — the `action` square + the Shopify connector's action face via nautilus;
 Manas reviewed 4 Sep + 7 Sep, both REQUEST CHANGES) — FULL REVIEW 7 Sep at head `a4b38e6c`
 (one commit, merges clean on `3d57931a`; gates on the merged tree: 993 tests · pyrefly 0 ·
-boundaries · black · isort): REQUEST CHANGES, advisory, NOT posted.** Right shape in
+boundaries · black · isort): REQUEST CHANGES — POSTED 7 Sep on Swaroop's go as issuecomment-5569557158.** Right shape in
 connectivity (root → registry → face → confined transport; args as contract; two failure
 classes; sign-the-bytes; usable-door policy bound as a parameter; NULL credential as the
 migration switch). Three MAJORs: (1) the Shopify face reads OUTREACH's run context

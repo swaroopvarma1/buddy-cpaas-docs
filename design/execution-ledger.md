@@ -433,7 +433,7 @@ CRM_WALKER_LEASE_SECONDS`; placeholders not judged against the fact allow-list a
 omits the header instead of refusing locally; nautilus#201 (merged 10:05Z) answers 401 on a bad
 signature and made notes idempotent but still throws → 500 on permanent lookup failures
 (unknown shop, bad order id), so those spend three walker attempts before parking — a nautilus
-follow-up; `onboarding.py` 488 → 516 (hygiene owed). Corpus now carries both rulings (modules/04
+follow-up; `onboarding.py` 502 → 516 (already over the line before this PR; hygiene owed, not this PR's). Corpus now carries both rulings (modules/04
 fourth verb, modules/05 `action` word + `nodes/` package, how-it-scales, ADR 0009 trail, T11
 col 6 trail); #1078 A/03 (`http` node with an author URL) is superseded and Swaroop's docs PR
 should say so. Manas's blocker (the door writing a decoded `reply`) closed by REMOVAL — the

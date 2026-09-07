@@ -346,8 +346,10 @@ defect): the seam test Rabi's reply describes — one Meta envelope through the 
 `letters()` walk, each filed letter decoded by its own spec — is NOT in the branch.** The
 merchant-topic test hardcodes the four topic strings instead of deriving them from the door's
 constants, so a seventh topic filed later would quarantine again with nothing failing. Ask for
-it in the follow-up. **#1084 (Rahul, PR C: template webhooks → the registry) — REBASED onto `ff0aaf81` and FULLY
-REVIEWED 7 Sep at head `73713c4e` (one commit, clean merge, CI green; locally: black · isort ·
+it in the follow-up. **#1084 (Rahul, PR C: template webhooks → the registry) — MERGED 7 Sep 09:13Z as `a55a9f53`
+(final head `fbbdd4af`: the guard-anchor line landed and was re-proven on the merged release by
+injecting the reverse import — caught; 964 tests). History of the round: REBASED onto `ff0aaf81`
+and FULLY REVIEWED 7 Sep at head `73713c4e` (one commit, clean merge, CI green; locally: black · isort ·
 pyrefly 0 · boundaries · 69 migrations · 959 tests): APPROVE WITH ONE MAJOR TO LAND FIRST —
 POSTED 7 Sep on Swaroop's go (issuecomment-5567441321), plus his STRUCTURE RULING posted on his
 behalf (issuecomment-5567441554): the three root template files + `retire_guard.py` become the
@@ -418,5 +420,9 @@ nautilus#195 · recorded Shopify fixtures at shadow-live · PgBouncer before the
 grows again. Delivered since the last list: #1040 (Meta bay in record), #1079 (cart
 `on_publish: migrate`, the T25 DELETE guard as 067, `Extracted.about`, the ingress words),
 #1080 (structure PR 2), #1082 (template_status on the sending account), **#1047 (the event
-catalog: T24 068 + where→conditions 069 — merged 4 Sep 12:15Z as `2a00ef44`)**. Next free
-migration = 070. Route inventory 34 (record 9 · outreach 12 · connectivity 11 · identity 2).
+catalog: T24 068 + where→conditions 069 — merged 4 Sep 12:15Z as `2a00ef44`)**, **#1085 (the WhatsApp code spec, all six
+topics — merged 7 Sep 06:39Z as `ff0aaf81`)**, **#1084 (the template webhook consumer +
+`connectivity/templates/` package — merged 7 Sep 09:13Z as `a55a9f53`)**. Owed from #1084's own
+backlog: the tombstone dead end (partial unique or reopen), the provider-clock column (the
+principled form of the skew), the `db/queries/template.py` split at its next builder. Next free migration = **071** — buddy's chameleon run (#1090–#1095, merged 7 Sep 09:35–10:27Z,
+release `4cfc0515`) took 070 as `070_create_ui_component.sql`; #1021 renumbers to 071+. Route inventory 34 (record 9 · outreach 12 · connectivity 11 · identity 2).

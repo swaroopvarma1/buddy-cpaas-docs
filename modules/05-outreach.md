@@ -246,5 +246,24 @@ family.
   knows it, walker doesn't — becomes structurally impossible). The schema's `Literal`
   stays in schemas.py (leaf shapes import nothing), pinned to the registry keys by a
   test. Precedent: record's `EXTRACTORS` registry (#1020) — same shape, same reason.
+- **The fifth word: `action` (ruled by Swaroop in Slack — "Approach 3"; recorded 7 Sep 2026
+  with #1057 in review).** A square says `{type: "action", connector, action, args}` and
+  NOTHING else — no URL, no credential, no transport: connectivity holds the merchant's door
+  and decides how the write travels (a relay today, the provider directly once we hold its
+  token), so a published plan never changes when the carrier does. `args` are the ACTION's own
+  contract (the connector's pydantic model, validated at publish); values may be
+  `{placeholder}` and resolve from the run's facts at fire time — the send node's explicit
+  `variables` law, applied to the fourth verb: **what the run is about (an order id) is an ARG
+  the author names as `{id}`, never something a provider face digs out of the run's context**.
+  Two failures, two classes: a DEFECT (unknown connector/action, args that do not fit, a 4xx)
+  parks; a BAD MOMENT (timeout, 5xx, 429) raises as itself and the lease ladder re-sends.
+  Supersedes #1078 A/03's `http` node with an author-supplied URL.
+- **`outreach/nodes.py` becomes the `outreach/nodes/` package (ruled by Swaroop 7 Sep 2026 at
+  #1057).** One file per word — `wait.py · wait_event.py · send.py · call.py · action.py`, each
+  holding its validate + execute — the shared run-context helpers in one sibling
+  (`context.py`: bookkeeping keys, `run_facts`, placeholders), and `NODE_TYPES` ASSEMBLED in
+  the package `__init__` from the word modules (the `SPEC_MODULES` precedent: the assembly
+  point is the package's `__init__`, not a re-export hub). Trigger fired by #1057: the file
+  crossed ~500 lines (431 → 596) as the fifth word landed. The Literal pin test is unchanged.
 
 Refs: 05-audiences.md + 06-outreach.md (corpus) · ADR 0004 / 0010 / 0016.

@@ -73,6 +73,24 @@ Diagram: `../diagrams/04-connectivity.html`. Squad: Pod C.
   `templates.py`), `reads.py` (was `template_reads.py`), `events.py` (was `template_events.py`,
   the spine consumer), `retire_guard.py`; `__init__` empty; `contracts.py` re-exports from
   inside it; `db/*/template.py` and `schemas/template.py` stay per-table where they are.
+- **The fourth verb — ACTIONS (ruled by Swaroop, "Approach 3"; recorded 7 Sep 2026 with #1057
+  in review)**: a run may ask a connector to DO something. Shape: `connectivity/actions.py` is
+  the generic root (resolve the door → find the action → type its args → perform; names no
+  connector), `ConnectorSpec.actions: {word: ConnectorAction}` is the vocabulary a plan may
+  say, `providers/<x>/actions.py` holds the faces (`args_model` is the CONTRACT — never the
+  wire body; `perform` returns the action's own facts, normalised), and a TRANSPORT file
+  (`providers/shopify/via_nautilus.py`) matches no door in rule 11 so it can be deleted
+  without touching anything above it. Two failure classes (`ActionError` = defect → park;
+  anything else = bad moment → the walker's ladder). **Shopify is the first connector that
+  acts and a door with no pipe**: `channel=None`, a relay-era onboard that records the shop
+  with a NULL `credential_id` — that NULL is the migration switch `actions._transport()`
+  reads (relay while NULL, direct once we hold the token; per-shop, no plan republished). The
+  door is REQUIRED, not optional: an action through no recorded door is a bypass flag by
+  another name (fail-closed law), and one onboard POST per shop is the setup cost.
+  `installation_for_connector_query` binds `INSTALLATION_USABLE` as a parameter — one home
+  for the usable-door policy. Laws: a provider face never reads outreach's run context
+  (the seam carries typed args + an opaque idempotency key); `ConnectorSpec.templates` is
+  Optional for a connector that sends nothing (no refusal stubs).
 - **The manifest**: one row per outbound attempt, **blocked attempts included**
   (reason, no provider call). Stores template_id + variables. `dedupe_key` (NOT NULL,
   total unique per merchant — strengthened 29 Aug, T16 amendment) makes retries and

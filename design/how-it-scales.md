@@ -23,6 +23,7 @@ again — eight instances and counting:
 | `ADAPTERS` (#1037) | channels → providers | connectivity `providers/` | CI rule 11 confinement (only send.py imports it) + red tests |
 | `CHANNELS` (#1037) | channel metadata — gate/address handle kind, `registers_templates` (W8 pacing joins) | connectivity `channels.py` | `ADAPTERS ⊆ CHANNELS` pin; missing entry fails closed at the gate, at queue, and at the registry lookup — every per-channel question generic code asks is answered here and nowhere else |
 | `CONNECTORS` (committed, #1038; `source` word #1084) | connector_key → onboarder + template provider + request model + the SPINE source word its letters carry (canon T11 col 3's dict) | connectivity `connectors.py` | spec.channel ∈ `CHANNELS` pin; face-precise rule 11 — provider faces reachable only through the registry; unknown key = 404 |
+| `<spec>.actions` (#1057 in review) | connector → what a run may ask it to DO (`ConnectorAction` faces + args models) | connectivity `providers/<x>/actions.py`, assembled into `CONNECTORS` | rule 11: the actions face answers to connectors.py only; a transport matches no door; the publish validator refuses an unknown word and names the alternatives |
 | `INGRESS` (#1040 in review) | provider webhook bays — `GET\|POST /ingest/webhooks/{provider}` | record owns the SLOT (`record/ingress.py`); entries are built beside each vendor's faces (`connectivity/providers/<vendor>/inbound.py` + root `ingress.py`) and registered from `app/crm/api.py` — ruled 2 Sep 2026 | one verifier per bay; record imports no vendor (rule 12); unknown provider = 404; store failure = 503, never a silent 200 |
 | `CATALOG` (owed) | events + their fields | record | extractor↔catalog square, fields-in-fixtures |
 | `CONSUMERS` (#1046) | spine subscribers | `record/consumers.py` slot; worker_main registers | record imports nobody (rule 12) |
@@ -78,6 +79,10 @@ schema's Literal. The pin test fails CI if you add one without the other. (This 
 not hypothetical: at only FOUR types, the pre-registry code had already half-wired
 one — a `wait_event` first node that never waited. The registry made that bug
 unwritable.)
+
+**More actions on a connector** — one face class + one line in `providers/<x>/actions.py`'s
+dict; the plan says `connector` + `action` + `args`, never a URL, so the transport can change
+under every published plan (#1057).
 
 **More channels on send nodes** — one adapter + one `ADAPTERS` line + one
 `CHANNELS` entry (as built #1037; the pin test fails CI on a half-add, and a

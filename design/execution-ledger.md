@@ -413,6 +413,32 @@ section is the seam, OWED at the next builder; pre-existing and now WIDENED — 
 partial unique excluding 'deleted' or create reopens the tombstone. Corpus after merge:
 modules/04 §Templates trail — the resume is age-gated and account-DERIVED (declines for a
 two-account merchant); N7 landed; the consumer is live
+**#1057 (Sharifajahan — the `action` square + the Shopify connector's action face via nautilus;
+Manas reviewed 4 Sep + 7 Sep, both REQUEST CHANGES) — FULL REVIEW 7 Sep at head `a4b38e6c`
+(one commit, merges clean on `3d57931a`; gates on the merged tree: 993 tests · pyrefly 0 ·
+boundaries · black · isort): REQUEST CHANGES, advisory, NOT posted.** Right shape in
+connectivity (root → registry → face → confined transport; args as contract; two failure
+classes; sign-the-bytes; usable-door policy bound as a parameter; NULL credential as the
+migration switch). Three MAJORs: (1) the Shopify face reads OUTREACH's run context
+(`_order_id(context["facts"])` with a three-key heuristic) while its own port docstring says
+args are `{order_id, tags}` and the root's docstring says context "never reaches the provider
+as data" — a seam spill; `order_id` is an ARG the plan names as `{id}`, the node resolves it;
+(2) `needs_installation = False` is a bypass flag on the one door the verb rests on, kept after
+the PR built the door itself (Manas's MAJOR, still open); (3) `outreach/nodes.py` 431 → 596
+lines with the fifth word — Swaroop's ruling: the `nodes/` package, one file per word,
+registry assembled in `__init__`. MINORs: no inequality pin `CRM_ACTION_TIMEOUT_SECONDS <
+CRM_WALKER_LEASE_SECONDS`; placeholders not judged against the fact allow-list at publish;
+`perform`'s normalised facts are computed and DISCARDED by `execute_action`; `NoTemplates` is a
+59-line refusal stub because `ConnectorSpec.templates` is not Optional; an empty signing secret
+omits the header instead of refusing locally; nautilus#201 (merged 10:05Z) answers 401 on a bad
+signature and made notes idempotent but still throws → 500 on permanent lookup failures
+(unknown shop, bad order id), so those spend three walker attempts before parking — a nautilus
+follow-up; `onboarding.py` 488 → 516 (hygiene owed). Corpus now carries both rulings (modules/04
+fourth verb, modules/05 `action` word + `nodes/` package, how-it-scales, ADR 0009 trail, T11
+col 6 trail); #1078 A/03 (`http` node with an author URL) is superseded and Swaroop's docs PR
+should say so. Manas's blocker (the door writing a decoded `reply`) closed by REMOVAL — the
+meta bay is no longer in the diff (#1085 derives `reply`).
+
 → rollout phase 18 message half · #1021 renumbered (070+, after #1047), rebased, extended
 with `may_contact()` (Rabi) → B5 → phase 19 · #1047 event catalog review (renumbers to
 068/069, rebases onto the outreach db/ split) · #1053 renumbered · X1 reshape on

@@ -22,7 +22,7 @@ this file wins. Diagram: `../diagrams/00-master-system.html`.
                     #   AT SCALE (ruled 7 Sep 2026, Swaroop at #1084): a
                     #   concern that reaches THREE root logic files becomes a
                     #   SUB-PACKAGE named for the concern, files named for
-                    #   what they do — connectivity/template/lifecycle.py ·
+                    #   what they do — connectivity/templates/lifecycle.py ·
                     #   reads.py · events.py · retire_guard.py; __init__ empty;
                     #   contracts.py re-exports from inside it. The logic-side
                     #   twin of the db/ rule below: same trigger (a third file

@@ -351,8 +351,27 @@ REVIEWED 7 Sep at head `73713c4e` (one commit, clean merge, CI green; locally: b
 pyrefly 0 · boundaries · 69 migrations · 959 tests): APPROVE WITH ONE MAJOR TO LAND FIRST —
 POSTED 7 Sep on Swaroop's go (issuecomment-5567441321), plus his STRUCTURE RULING posted on his
 behalf (issuecomment-5567441554): the three root template files + `retire_guard.py` become the
-`connectivity/template/` package (lifecycle · reads · events · retire_guard), preferred as the last
-change on this PR — the logic-side twin of the db/ subfolder rule, now in modules/00 §1.** Twelve files, 1,693 lines: `template_events.py` (the consumer,
+`connectivity/templates/` package (lifecycle · reads · events · retire_guard), preferred as the last
+change on this PR — the logic-side twin of the db/ subfolder rule, now in modules/00 §1.** **RE-VERIFIED
+7 Sep at head `a625b042`** (Rahul amended silently, no reply — one commit, merge-base = release, CI
+green, locally 964 tests · pyrefly 0 · boundaries · black · isort): the skew landed as
+`CRM_TEMPLATE_EVENT_SKEW_SECONDS` (10) in static config, `_not_older_than` takes a skew param and
+stays one clause for all three columns, the crash dial moved beside it as
+`CRM_TEMPLATE_CLAIM_CRASHED_AFTER_SECONDS` pinned `>= 10 × the Graph default`, the pass test now
+registers the REAL consumer beside the spy, the known-limit line is in the docstring, three
+follow-ups are in `99-backlog.md`, and the package landed as `connectivity/templates/` (plural —
+as-built name, corpus follows it): `lifecycle.py` · `reads.py` · `events.py` · `retire_guard.py`,
+`__init__` a docstring that exports nothing, all importers moved, renames at 99–100 % similarity.
+**Proven by execution against the real table** (clairvoyance_chameleon, rolled back): a letter 1.1 s
+behind our own stamp APPLIES, a replay is a no-op success, 60 s behind is refused, the edge is
+exactly the skew after truncation, a clockless letter applies and leaves the stamp, the tombstone
+refuses. **One regression the move introduced, one line to fix**:
+`test_connectivity_imports_no_outreach` walks `Path(templates.__file__).parent` — before the move
+that was the whole connectivity module, after it only the four template files, so the ONLY guard
+against the connectivity→outreach cycle (checker rule 4 permits `.contracts` imports, so nothing
+else catches it) silently shrank; an injected `import app.crm.outreach.contracts` in `send.py`
+is caught on release and passes at head. Fix: anchor the walk on `app.crm.connectivity`'s own
+`__file__`. Doc nit: the N7 backlog line still says `connectivity/template_events.py`. Twelve files, 1,693 lines: `template_events.py` (the consumer,
 4-arg signature, topic-filtered on `TEMPLATE_TOPICS`, dispatches `connector_for_source` →
 `spec.templates.normalize_event` → neutral `ProviderTemplateState`), `ConnectorSpec.source` +
 `connector_for_source`, three guarded CAS applies (status/category/quality, each on its own

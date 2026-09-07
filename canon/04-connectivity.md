@@ -81,7 +81,7 @@ decides the registry."
 | 10 | `category_updated_at` | timestamptz |  | When Meta last moved it |
 | 11 | `components` | jsonb |  | NOT NULL. HEADER/BODY/FOOTER/BUTTONS + variables + example values — THEIR registered structure, verbatim (store the letter). Never a rendered message string (that law lives on T16) |
 | 12 | `status` | text | IX | draft · submitted · pending · approved · rejected · paused · deleted (+ whatever Meta adds). NO CHECK — vocabulary dictionary in code. Editing an approved template puts the SAME row back to pending (Meta re-reviews in place; history = template.status events in the spine, replayable) |
-| 13 | `status_updated_at` | timestamptz |  |  |
+| 13 | `status_updated_at` | timestamptz |  | Trail (as built 7 Sep 2026, #1084): the ORDERING KEY for provider status letters — each apply is a CAS `date_trunc('second', col) <= occurred_at + skew` (`CRM_TEMPLATE_EVENT_SKEW_SECONDS`, 10 s, because our own submit/edit write `now()` here a round trip after Meta's whole-second decision); a clockless letter applies without moving it; `deleted` is a tombstone no letter reopens. Category and quality guard on cols 10 and 16 the same way |
 | 14 | `rejection_reason` | text |  | Meta's reason VERBATIM — the U4 console surfaces it word for word (console-ui law) |
 | 15 | `quality` | text |  | GREEN · YELLOW · RED · UNKNOWN — theirs, changes over time, no CHECK |
 | 16 | `quality_updated_at` | timestamptz |  |  |
@@ -102,7 +102,9 @@ first and cannot be created. merchant_id still leads. Pinned by test.
 - Status updates arrive THROUGH THE SPINE: Meta's `template.status` webhooks land in
   `event_raw` raw (T13 already names the topic), and a connectivity-owned
   template-status consumer updates this registry — replayable when Meta's payload
-  surprises us. Plus the periodic full sync (17) healing drift.
+  surprises us. ~~Plus the periodic full sync (17) healing drift.~~ Trail: the sync never
+  existed (col 17); the consumer is BUILT — `connectivity/templates/events.py`, merged 7 Sep 2026
+  (#1084), the only writer of provider-decided status/category/quality.
 - Read by: U4 (list/detail with status + verbatim rejection + quality), `send()`
   (template lookup by name+language at send time), and the gate indirectly
   (category informs purpose mapping).

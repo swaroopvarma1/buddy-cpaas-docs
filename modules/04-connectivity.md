@@ -23,7 +23,11 @@ Diagram: `../diagrams/04-connectivity.html`. Squad: Pod C.
   non-approved template is refused BEFORE the provider call — manifest row, honest
   reason. **Status path (ruled 2 Sep 2026, #1038 — amended the same day)**: webhooks
   are the ONLY path — the `template.status` spine consumer (one `register_consumer`
-  line + the consumer; goes live when record's Meta ingress bay lands at C6).
+  line + the consumer). **LIVE (as built 7 Sep 2026, #1084)**: `connectivity/templates/events.py`,
+  registered in `worker_main`; three guarded CAS applies (status · category · quality, each ordered
+  on its own stamped column, tombstone-shut, `COALESCE($n, column)` never `now()`); a
+  clock-skew dial `CRM_TEMPLATE_EVENT_SKEW_SECONDS` (10 s) because our own submit/edit stamps
+  land a round trip after Meta's whole-second decision.
   **No sync code exists**: not a timer, not a route, not a seed at onboarding. The
   arithmetic that killed the timer: at 1,000 merchants × 100 templates an hourly pass
   is ~1,000 Graph calls + ~100k row writes per hour for ~zero information, per-pod
@@ -35,7 +39,11 @@ Diagram: `../diagrams/04-connectivity.html`. Squad: Pod C.
   (`PENDING_DELETION` / `DELETED`), category (the money one), quality. The
   crashed-submit resume path lives in the CONSUMER: a status event whose id matches
   no row but whose (WABA, name, language) matches a `submitting` row with a NULL
-  provider id stamps it. Named follow-up, not code: "import a WABA's existing
+  provider id stamps it. **As built (#1084)**: STATUS letters only; the claim must be
+  older than `CRM_TEMPLATE_CLAIM_CRASHED_AFTER_SECONDS` (300 s) so a healthy in-flight submit is
+  never resumed; the WABA is DERIVED — the merchant's installations on that connector counted
+  unfiltered, exactly one = known, two or more = declined (a two-account merchant resubmits
+  the draft instead; never a guess across accounts). Named follow-up, not code: "import a WABA's existing
   templates" as an explicit one-shot action if a pilot merchant ever arrives with
   approved templates — still never a clock. **Two reads the
   registry answers for outreach (built 3 Sep 2026)**: `template_status(merchant, channel,

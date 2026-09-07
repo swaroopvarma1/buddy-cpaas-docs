@@ -349,7 +349,10 @@ constants, so a seventh topic filed later would quarantine again with nothing fa
 it in the follow-up. **#1084 (Rahul, PR C: template webhooks → the registry) — REBASED onto `ff0aaf81` and FULLY
 REVIEWED 7 Sep at head `73713c4e` (one commit, clean merge, CI green; locally: black · isort ·
 pyrefly 0 · boundaries · 69 migrations · 959 tests): APPROVE WITH ONE MAJOR TO LAND FIRST —
-verdict advisory, NOT posted.** Twelve files, 1,693 lines: `template_events.py` (the consumer,
+POSTED 7 Sep on Swaroop's go (issuecomment-5567441321), plus his STRUCTURE RULING posted on his
+behalf (issuecomment-5567441554): the three root template files + `retire_guard.py` become the
+`connectivity/template/` package (lifecycle · reads · events · retire_guard), preferred as the last
+change on this PR — the logic-side twin of the db/ subfolder rule, now in modules/00 §1.** Twelve files, 1,693 lines: `template_events.py` (the consumer,
 4-arg signature, topic-filtered on `TEMPLATE_TOPICS`, dispatches `connector_for_source` →
 `spec.templates.normalize_event` → neutral `ProviderTemplateState`), `ConnectorSpec.source` +
 `connector_for_source`, three guarded CAS applies (status/category/quality, each on its own

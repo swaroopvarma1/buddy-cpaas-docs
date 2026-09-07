@@ -36,7 +36,8 @@ app/crm/
 ├── connectivity/          # doors, pipes, templates, manifest, send()
 │   ├── installations.py   #   connector_installation lifecycle + health probe
 │   ├── bindings.py
-│   ├── templates.py       #   WABA template registry + Tech Provider API client (ADR 0011)
+│   ├── template/          #   the T23 registry as a package (ruled 7 Sep 2026, #1084):
+│   │                      #   lifecycle.py · reads.py · events.py (spine consumer) · retire_guard.py
 │   ├── manifest.py        #   crm.message writes; dedupe_key discipline
 │   ├── send.py            #   THE only provider call site; adapters imported only here
 │   ├── adapters/

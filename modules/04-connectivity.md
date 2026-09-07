@@ -60,7 +60,11 @@ Diagram: `../diagrams/04-connectivity.html`. Squad: Pod C.
   provider round-trip may separate them). Pinning paths hold the same key SHARED. Provider quirks (Meta's uppercase
   statuses, edit-in-place vs re-register, delete-by-name nuking every language) are
   normalised INSIDE the provider's template face, never in the generic registry
-  file.
+  file. **Package shape (ruled 7 Sep 2026, Swaroop at #1084)**: the three root
+  template files + the retire slot become `connectivity/template/` — `lifecycle.py` (was
+  `templates.py`), `reads.py` (was `template_reads.py`), `events.py` (was `template_events.py`,
+  the spine consumer), `retire_guard.py`; `__init__` empty; `contracts.py` re-exports from
+  inside it; `db/*/template.py` and `schemas/template.py` stay per-table where they are.
 - **The manifest**: one row per outbound attempt, **blocked attempts included**
   (reason, no provider call). Stores template_id + variables. `dedupe_key` (NOT NULL,
   total unique per merchant — strengthened 29 Aug, T16 amendment) makes retries and

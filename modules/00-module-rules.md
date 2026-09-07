@@ -19,6 +19,16 @@ this file wins. Diagram: `../diagrams/00-master-system.html`.
      <concern>.py   # BUSINESS LOGIC by name (resolve.py, facts.py, ingest.py,
                     #   suppression.py): gather → decide (PURE plan) → apply,
                     #   inside a boundary this file owns
+                    #   AT SCALE (ruled 7 Sep 2026, Swaroop at #1084): a
+                    #   concern that reaches THREE root logic files becomes a
+                    #   SUB-PACKAGE named for the concern, files named for
+                    #   what they do — connectivity/template/lifecycle.py ·
+                    #   reads.py · events.py · retire_guard.py; __init__ empty;
+                    #   contracts.py re-exports from inside it. The logic-side
+                    #   twin of the db/ rule below: same trigger (a third file
+                    #   of one concern), same shape. Connectivity defines it
+                    #   first (templates.py + template_reads.py +
+                    #   template_events.py).
      workers.py     # drain loops (only if the module owns one)
      db/            # ALL mechanics behind one hop — the root stays the story
        __init__.py  # the db door: re-exports transaction, DbTxn, domain errors

@@ -328,8 +328,8 @@ has paid the hygiene the rollout deferred; #1079 closed the audit's spine and se
 ## Suggested next slices
 
 PR-next: **#1085 (Rabi — #1052 re-raised on the merged catalog) — REVIEWED 4 Sep (REQUEST
-CHANGES, issuecomment-5542196555), ANSWERED + RE-VERIFIED 7 Sep at head `14034a60`: APPROVE,
-mergeable, awaiting Swaroop's go to post.** All four findings fixed and proven by running the
+CHANGES, issuecomment-5542196555), RE-VERIFIED 7 Sep at head `14034a60`: APPROVE; MERGED 7 Sep
+06:39Z as `ff0aaf81` (the approval was never posted — Swaroop merged on his own read).** All four findings fixed and proven by running the
 code, not by reading the reply: all SIX WhatsApp topics now carry a code spec (the four merchant
 ones `about="merchant"`, no identity fields, a recorded fixture each incl. the ban shape where
 `waba_ban_state` rides as a one-element list) — I enumerated the door's own `_TOPIC_FOR_FIELD`
@@ -346,12 +346,48 @@ defect): the seam test Rabi's reply describes — one Meta envelope through the 
 `letters()` walk, each filed letter decoded by its own spec — is NOT in the branch.** The
 merchant-topic test hardcodes the four topic strings instead of deriving them from the door's
 constants, so a seventh topic filed later would quarantine again with nothing failing. Ask for
-it in the follow-up. **#1084 (Rahul, PR C: template webhooks → the registry, `template_events.py`
-consumer registered at the root) has NOT moved since 4 Sep (head `714cebe2`) and STILL conflicts
-with #1085 on `extractors/whatsapp.py`** (it carries the retired imperative `extract()` +
-`EXTRACTORS` line). Order stands: #1085 first with all six topics → #1084 rebased to drop its
-extractor and keep its consumer (pointer posted, issuecomment-5542196907); #1084's full review
-follows that rebase
+it in the follow-up. **#1084 (Rahul, PR C: template webhooks → the registry) — REBASED onto `ff0aaf81` and FULLY
+REVIEWED 7 Sep at head `73713c4e` (one commit, clean merge, CI green; locally: black · isort ·
+pyrefly 0 · boundaries · 69 migrations · 959 tests): APPROVE WITH ONE MAJOR TO LAND FIRST —
+verdict advisory, NOT posted.** Twelve files, 1,693 lines: `template_events.py` (the consumer,
+4-arg signature, topic-filtered on `TEMPLATE_TOPICS`, dispatches `connector_for_source` →
+`spec.templates.normalize_event` → neutral `ProviderTemplateState`), `ConnectorSpec.source` +
+`connector_for_source`, three guarded CAS applies (status/category/quality, each on its own
+stamped column, `_not_retired` tombstone on all three, NULL-clock and NULL-column branches,
+second-truncation, `COALESCE($n, column)` never `now()`), the crashed-submit resume (STATUS
+letters only; account-free probe first; `CLAIM_CRASHED_AFTER_SECONDS = 300` age gate keeps a
+healthy submit out; account DERIVED from the merchant's installations on that connector counted
+UNFILTERED — exactly one = known, else decline), and `record_in_place_edit` widened to
+`status IN (destination, expected)` so the consumer winning the pending race no longer strands
+an edit. The extractor and the encryption change are GONE (extractor superseded by #1085's
+spec; encryption not re-raised anywhere yet). Rabi's 4 Sep findings: B1/B2/B3/M1/M2/M3/m1/m2/m3
+all closed in the diff and pinned by tests; M4 (heartbeat on the hot path) closed by REMOVAL
+of the ingress heartbeat; M5/M6 closed by #1085; B4/M7 moot (encryption left the PR). **Meta
+coupling: none in the generic layer** — the consumer, `templates.py`, `db/`, `status.py`,
+`topics.py` name no provider; an SMS-DLT provider is `providers/<name>/` (templates face with
+`normalize_event`, inbound face), one `CONNECTORS` line (`source`, `channel="sms"`), one
+`CHANNELS` line, one record spec + `SPEC_MODULES` line, one INGRESS registration — zero edits
+to this PR's files. **The one MAJOR (new, not in Rabi's list): our OWN transitions stamp
+`status_updated_at = now()`** (`record_submission`, `record_in_place_edit`) **on the same column
+the provider-letter guard orders by** — Meta stamps `entry.time` in whole seconds at the
+DECISION, our commit lands ~100–500 ms later, and whenever that crosses a second boundary the
+guard `date_trunc('second', column) <= occurred_at` REFUSES the provider's own decision letter.
+Exposure: an instant approval (the PR's own docstring: "Meta can approve an AUTHENTICATION
+template in seconds") after `edit()` — the WhatsApp face hardcodes the edit response as
+`pending`, so the refused APPROVED letter is the only source of truth, and the row sits
+'pending' forever with no sync to heal it (the PR removed every heal by design). Cheapest
+correct fix: a skew tolerance on the guard (`<= $param + make_interval(secs => SKEW)`, SKEW
+≈ 10 s in config, one clause for all three columns), which absorbs the RTT and still refuses a
+minutes-late redelivery; the principled fix is a provider-clock column (migration 070, one
+column per guarded topic). MINOR: `CLAIM_CRASHED_AFTER_SECONDS` is a tuning dial in db/queries
+(config + an inequality pin against the Graph timeout; the test pins `>= 60` only); hygiene —
+`db/queries/template.py` 353 → 686 lines, per-table so no ruled sub-split, the webhook-path
+section is the seam, OWED at the next builder; pre-existing and now WIDENED — a 'deleted' row
+(retire, or Meta's own DELETED letter) blocks re-creating that name+language forever
+(`create_draft` refuses a non-draft on the natural key, `edit` refuses 'deleted'): follow-up,
+partial unique excluding 'deleted' or create reopens the tombstone. Corpus after merge:
+modules/04 §Templates trail — the resume is age-gated and account-DERIVED (declines for a
+two-account merchant); N7 landed; the consumer is live
 → rollout phase 18 message half · #1021 renumbered (070+, after #1047), rebased, extended
 with `may_contact()` (Rabi) → B5 → phase 19 · #1047 event catalog review (renumbers to
 068/069, rebases onto the outreach db/ split) · #1053 renumbered · X1 reshape on

@@ -371,7 +371,8 @@ that was the whole connectivity module, after it only the four template files, s
 against the connectivity→outreach cycle (checker rule 4 permits `.contracts` imports, so nothing
 else catches it) silently shrank; an injected `import app.crm.outreach.contracts` in `send.py`
 is caught on release and passes at head. Fix: anchor the walk on `app.crm.connectivity`'s own
-`__file__`. Doc nit: the N7 backlog line still says `connectivity/template_events.py`. Twelve files, 1,693 lines: `template_events.py` (the consumer,
+`__file__`. Doc nit: the N7 backlog line still says `connectivity/template_events.py`. **Posted 7 Sep as
+issuecomment-5567846074 (Swaroop's go): mergeable once that line lands.** Twelve files, 1,693 lines: `template_events.py` (the consumer,
 4-arg signature, topic-filtered on `TEMPLATE_TOPICS`, dispatches `connector_for_source` →
 `spec.templates.normalize_event` → neutral `ProviderTemplateState`), `ConnectorSpec.source` +
 `connector_for_source`, three guarded CAS applies (status/category/quality, each on its own

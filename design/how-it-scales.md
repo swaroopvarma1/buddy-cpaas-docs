@@ -148,6 +148,10 @@ what to say to Priya, when to call, what a flow should do — stay in the plan
 documents and the catalog, where product lives. The machine underneath grows by
 vocabulary, never by surgery.
 
+This document is about FEATURE growth. For TRAFFIC growth — the three-stage plan,
+the pod arithmetic and the log/columnar/client-events build — see
+[design/scaling-stages.md](scaling-stages.md).
+
 Refs: design/ingest-doors.md · design/event-catalog.md · design/worker-runtime.md ·
 modules/01-record.md · modules/05-outreach.md · design/execution-ledger.md
 (§follow-ups holds every named trigger).

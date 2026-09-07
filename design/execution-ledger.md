@@ -327,20 +327,31 @@ has paid the hygiene the rollout deferred; #1079 closed the audit's spine and se
 
 ## Suggested next slices
 
-PR-next: **#1085 (Rabi — #1052 re-raised on the merged catalog; REVIEWED 4 Sep, REQUEST CHANGES,
-issuecomment-5542196555)**: the WhatsApp spec via `SPEC_MODULES` with `message.inbound` /
-`message.status`, the one-key `reply` derive, catalog-resolved `_is_about` / `_answer_for`, the
-bytes `compare_digest` fix — but the four MERCHANT topics (`template.*`, `account.update`) are left
-out and a test pins the omission, so #1084's consumer would never hear a template letter; and
-`crm_message.reason` is written as WORDS for named provider codes where canon T16 col 13 stores
-the CODE (**ruling owed: keep the code in the row + label at read (recommended), or amend T16
-col 13**); MINOR: receipts attributed to the customer (three resolves per send) against the
-spine note's "not about a person". **#1084 (Rahul, PR C: template webhooks → the registry —
-`template_events.py` consumer registered at the root) CONFLICTS with #1085 on
-`extractors/whatsapp.py`**: #1084 carries the retired imperative `extract()` + `EXTRACTORS` line.
-Order ruled in the review: #1085 first with all six topics → #1084 rebased to drop its extractor
-and keep the consumer (pointer posted, issuecomment-5542196907); #1084's full review follows
-that rebase
+PR-next: **#1085 (Rabi — #1052 re-raised on the merged catalog) — REVIEWED 4 Sep (REQUEST
+CHANGES, issuecomment-5542196555), ANSWERED + RE-VERIFIED 7 Sep at head `14034a60`: APPROVE,
+mergeable, awaiting Swaroop's go to post.** All four findings fixed and proven by running the
+code, not by reading the reply: all SIX WhatsApp topics now carry a code spec (the four merchant
+ones `about="merchant"`, no identity fields, a recorded fixture each incl. the ban shape where
+`waba_ban_state` rides as a one-element list) — I enumerated the door's own `_TOPIC_FOR_FIELD`
+map and asked the catalog for every topic it can file: none uncovered, so #1084's consumer will
+hear every template letter; `crm_message.reason` keeps the provider CODE and the word moved to
+the READ side as `reason_label` on connectivity's contracts (dispatch names it in a COMMENT
+only — no import, no call; the write test pins `"190"` on the row) — **this settles the T16
+col 13 ruling in the recommended direction, no canon amendment needed**; receipts are
+`about="merchant"` with no identity field, so `resolve()` no longer runs three times per send —
+**this settles the receipts-attribution ruling**, matching the spine note's "processed but not
+about a person". Gates on the head: 895 tests, boundaries, migration numbering, black, isort,
+pyrefly 0, one commit, clean merge with release, CI green. **One gap, MINOR (coverage, not a
+defect): the seam test Rabi's reply describes — one Meta envelope through the door's real
+`letters()` walk, each filed letter decoded by its own spec — is NOT in the branch.** The
+merchant-topic test hardcodes the four topic strings instead of deriving them from the door's
+constants, so a seventh topic filed later would quarantine again with nothing failing. Ask for
+it in the follow-up. **#1084 (Rahul, PR C: template webhooks → the registry, `template_events.py`
+consumer registered at the root) has NOT moved since 4 Sep (head `714cebe2`) and STILL conflicts
+with #1085 on `extractors/whatsapp.py`** (it carries the retired imperative `extract()` +
+`EXTRACTORS` line). Order stands: #1085 first with all six topics → #1084 rebased to drop its
+extractor and keep its consumer (pointer posted, issuecomment-5542196907); #1084's full review
+follows that rebase
 → rollout phase 18 message half · #1021 renumbered (070+, after #1047), rebased, extended
 with `may_contact()` (Rabi) → B5 → phase 19 · #1047 event catalog review (renumbers to
 068/069, rebases onto the outreach db/ split) · #1053 renumbered · X1 reshape on

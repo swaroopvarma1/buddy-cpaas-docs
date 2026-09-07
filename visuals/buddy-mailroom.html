@@ -1,0 +1,524 @@
+<title>The Buddy Mailroom</title>
+<style>
+:root{
+  --canvas:#eef1f6; --panel:#e5e9f1; --card:#ffffff; --card-border:#e2e6ee;
+  --shadow:0 1px 3px rgba(31,42,68,.10),0 4px 14px rgba(31,42,68,.06);
+  --ink:#1f2a44; --ink-soft:#4b5568; --muted:#8a93a6; --line:#3a4661;
+  --purple:#7c3aed; --purple-soft:#ede4ff; --purple-ink:#5b21b6;
+  --blue:#2563eb;   --blue-soft:#dce7fd;   --blue-ink:#1d4ed8;
+  --green:#10b981;  --green-soft:#d8f3e6;  --green-ink:#047857;
+  --teal:#0d9488;   --teal-soft:#d3f0ec;   --teal-ink:#0f766e;
+  --amber:#f59e0b;  --amber-soft:#ffeacb;  --amber-ink:#92400e;
+  --red:#ef4444;    --red-soft:#fde2e2;    --red-ink:#991b1b;
+  --font:"Inter","SF Pro Text",-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+body{margin:0;background:var(--canvas);font-family:var(--font);color:var(--ink);}
+.wrap{max-width:980px;margin:0 auto;padding:36px 20px 60px;}
+h1{font-size:34px;margin:0 0 6px;letter-spacing:-.01em;}
+.sub{font-size:16px;color:var(--ink-soft);margin:0 0 28px;line-height:1.5;}
+.pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;vertical-align:middle;}
+.p-purple{background:var(--purple-soft);color:var(--purple-ink);}
+.p-blue{background:var(--blue-soft);color:var(--blue-ink);}
+.p-green{background:var(--green-soft);color:var(--green-ink);}
+.p-teal{background:var(--teal-soft);color:var(--teal-ink);}
+.p-amber{background:var(--amber-soft);color:var(--amber-ink);}
+.p-red{background:var(--red-soft);color:var(--red-ink);}
+.p-ph{background:#dfe3ea;color:#4b5568;}
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 30px;}
+.toc a{font-size:12px;color:var(--blue-ink);background:var(--blue-soft);padding:4px 10px;border-radius:999px;text-decoration:none;}
+section{background:var(--card);border:1px solid var(--card-border);border-radius:14px;box-shadow:var(--shadow);padding:22px 24px;margin:0 0 22px;}
+section h2{font-size:21px;margin:0 0 4px;}
+section h2 .n{display:inline-block;width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;font-size:13px;line-height:28px;text-align:center;margin-right:8px;}
+.kid{font-size:15.5px;line-height:1.6;margin:10px 0 0;}
+.kid b{color:var(--ink);}
+.fig{margin:16px 0 8px;background:var(--panel);border-radius:12px;padding:12px;overflow-x:auto;}
+.fig svg{display:block;max-width:100%;height:auto;margin:0 auto;font-family:var(--font);}
+.cap{font-size:11.5px;color:var(--muted);margin:6px 0 0;text-align:center;}
+.grown{margin:14px 0 0;padding:10px 14px;border-left:3px solid var(--blue);background:var(--blue-soft);border-radius:0 10px 10px 0;font-size:12.5px;line-height:1.5;color:var(--ink-soft);}
+.grown b{color:var(--blue-ink);}
+.rules{margin:10px 0 0;padding:0;list-style:none;}
+.rules li{font-size:14px;line-height:1.55;padding:6px 0 6px 28px;position:relative;}
+.rules li:before{content:"";position:absolute;left:6px;top:13px;width:10px;height:10px;border-radius:50%;background:var(--green);}
+.rules li.no:before{background:var(--red);}
+table{border-collapse:collapse;width:100%;font-size:13px;margin:12px 0 0;}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--card-border);vertical-align:top;}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.score{display:grid;grid-template-columns:1fr;gap:8px;margin:12px 0 0;}
+.score .row{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border-radius:10px;background:var(--panel);}
+.score .dot{flex:0 0 14px;width:14px;height:14px;border-radius:50%;margin-top:3px;}
+.g{background:var(--green);} .a{background:var(--amber);} .r{background:var(--red);}
+.score .t{font-size:13.5px;line-height:1.5;}
+.score .t b{display:block;}
+.foot{font-size:11px;color:var(--muted);margin-top:26px;line-height:1.6;}
+@media (max-width:640px){h1{font-size:26px;} section{padding:16px;} .kid{font-size:15px;}}
+</style>
+<div class="wrap">
+  <h1>The Buddy Mailroom</h1>
+  <p class="sub">How the thing we built works, explained the way you'd explain it to a curious ten-year-old. Every part has a picture, a plain story, and a small blue box with the grown-up words so an engineer can find it in the code.</p>
+  <div class="toc">
+    <a href="#idea">1 The big idea</a><a href="#doors">2 The doors</a><a href="#tray">3 The tray</a><a href="#reader">4 The reader</a>
+    <a href="#book">5 The address book</a><a href="#rules">6 The rulebook</a><a href="#gate">7 The gate</a><a href="#postman">8 The postman</a>
+    <a href="#window">9 The window</a><a href="#grow">10 How big it can get</a><a href="#many">11 Many shops, clicks and servers</a><a href="#python">12 Is it built right?</a>
+  </div>
+
+  <!-- 1 THE BIG IDEA -->
+  <section id="idea">
+    <h2><span class="n">1</span>The big idea: a mailroom for every shop</h2>
+    <p class="kid">Imagine a shop. All day, little <b>letters</b> arrive about things that happened: "Priya put a kurti in her cart", "Rohan paid for his order", "the WhatsApp message was read". Our system is a <b>mailroom</b>. It keeps every letter, works out <b>who</b> each letter is about, follows the shop's <b>rulebook</b> to decide what to say next, asks a <b>gatekeeper</b> whether it's allowed to say it, and then a <b>postman</b> sends the message. That's it. Everything else is detail.</p>
+    <div class="fig">
+      <svg viewBox="0 0 900 190" width="900" height="190">
+        <rect x="0" y="0" width="900" height="190" rx="12" fill="#e5e9f1"/>
+        <!-- doors -->
+        <rect x="24" y="50" width="34" height="90" rx="6" fill="#ede4ff" stroke="#7c3aed" stroke-width="2"/><circle cx="50" cy="96" r="3" fill="#7c3aed"/>
+        <rect x="66" y="50" width="34" height="90" rx="6" fill="#ffeacb" stroke="#f59e0b" stroke-width="2"/><circle cx="92" cy="96" r="3" fill="#f59e0b"/>
+        <rect x="108" y="50" width="34" height="90" rx="6" fill="#ede4ff" stroke="#7c3aed" stroke-width="2"/><circle cx="134" cy="96" r="3" fill="#7c3aed"/>
+        <text x="83" y="166" font-size="12" text-anchor="middle" fill="#4b5568">doors</text>
+        <!-- conveyor -->
+        <rect x="160" y="100" width="150" height="14" rx="7" fill="#2563eb"/>
+        <circle cx="175" cy="107" r="5" fill="#dce7fd"/><circle cx="235" cy="107" r="5" fill="#dce7fd"/><circle cx="295" cy="107" r="5" fill="#dce7fd"/>
+        <rect x="185" y="78" width="26" height="18" rx="3" fill="#fff" stroke="#3a4661"/><path d="M185,78 l13,10 l13,-10" fill="none" stroke="#3a4661"/>
+        <rect x="245" y="78" width="26" height="18" rx="3" fill="#fff" stroke="#3a4661"/><path d="M245,78 l13,10 l13,-10" fill="none" stroke="#3a4661"/>
+        <text x="235" y="140" font-size="12" text-anchor="middle" fill="#4b5568">the tray (every letter kept)</text>
+        <!-- reader desk -->
+        <rect x="330" y="70" width="110" height="60" rx="8" fill="#fff" stroke="#e2e6ee"/>
+        <rect x="345" y="82" width="36" height="26" rx="3" fill="#d3f0ec" stroke="#0d9488"/><line x1="363" y1="82" x2="363" y2="108" stroke="#0d9488"/>
+        <circle cx="410" cy="88" r="9" fill="#dce7fd" stroke="#2563eb"/><rect x="399" y="98" width="22" height="18" rx="6" fill="#dce7fd" stroke="#2563eb"/>
+        <text x="385" y="152" font-size="12" text-anchor="middle" fill="#4b5568">the reader + dictionary</text>
+        <!-- address book -->
+        <rect x="462" y="66" width="70" height="68" rx="8" fill="#fff" stroke="#e2e6ee"/>
+        <rect x="472" y="76" width="50" height="14" rx="3" fill="#d3f0ec"/><rect x="472" y="95" width="50" height="14" rx="3" fill="#d3f0ec"/><rect x="472" y="114" width="50" height="14" rx="3" fill="#d3f0ec"/>
+        <text x="497" y="152" font-size="12" text-anchor="middle" fill="#4b5568">address book</text>
+        <!-- rulebook -->
+        <rect x="556" y="66" width="80" height="68" rx="8" fill="#fff" stroke="#e2e6ee"/>
+        <circle cx="574" cy="86" r="7" fill="#d8f3e6" stroke="#10b981"/><circle cx="598" cy="86" r="7" fill="#d8f3e6" stroke="#10b981"/><circle cx="622" cy="86" r="7" fill="#d8f3e6" stroke="#10b981"/>
+        <line x1="581" y1="86" x2="591" y2="86" stroke="#3a4661"/><line x1="605" y1="86" x2="615" y2="86" stroke="#3a4661"/>
+        <circle cx="586" cy="112" r="6" fill="#f59e0b"/><circle cx="610" cy="112" r="6" fill="#7c3aed"/>
+        <text x="596" y="152" font-size="12" text-anchor="middle" fill="#4b5568">rulebook + tokens</text>
+        <!-- gate -->
+        <rect x="662" y="60" width="8" height="80" fill="#3a4661"/><rect x="730" y="60" width="8" height="80" fill="#3a4661"/>
+        <rect x="670" y="80" width="60" height="8" fill="#ef4444"/><rect x="670" y="100" width="60" height="8" fill="#ef4444"/>
+        <text x="700" y="152" font-size="12" text-anchor="middle" fill="#4b5568">the gate</text>
+        <!-- postman -->
+        <circle cx="800" cy="72" r="12" fill="#d8f3e6" stroke="#10b981" stroke-width="2"/>
+        <rect x="786" y="88" width="28" height="36" rx="8" fill="#d8f3e6" stroke="#10b981" stroke-width="2"/>
+        <rect x="816" y="96" width="22" height="18" rx="3" fill="#fff" stroke="#10b981"/>
+        <path d="M850,86 q20,-14 30,0 q-8,10 -30,0z" fill="#d8f3e6" stroke="#10b981"/><text x="865" y="90" font-size="9" text-anchor="middle" fill="#047857">hi!</text>
+        <text x="808" y="152" font-size="12" text-anchor="middle" fill="#4b5568">the postman</text>
+      </svg>
+      <p class="cap">Letters come in through doors, sit in one tray, get read with a dictionary, matched to a person, checked against the rulebook, stopped at the gate if needed, and only then sent.</p>
+    </div>
+    <div class="grown"><b>Grown-up words.</b> The mailroom is <code>app/crm</code> in clairvoyance. Doors and tray = <b>record</b> (the event spine, table T13). Reader and dictionary = the decode engine and the <b>catalog</b> (T24). Address book = <b>identity</b>. Rulebook and tokens = <b>outreach</b> (workflows, runs). Gate = <b>permission</b>. Postman = <b>connectivity</b> (the manifest T16, one send path). One sentence rules them all: edges translate, the spine records, bridges call contracts, contracts write.</div>
+  </section>
+
+  <!-- 2 THE DOORS -->
+  <section id="doors">
+    <h2><span class="n">2</span>The doors: how letters get in</h2>
+    <p class="kid">There are three doors. The <b>front door</b> is where a shop's own computer pushes letters ("an order was placed"). The <b>side bays</b> are where WhatsApp rings the bell with its own letters ("delivered", "she replied"). The <b>little office door</b> is where a new company tells us what their letters will look like before they send any. Every door follows the same four steps, always in this order: <b>check the ID</b>, <b>stamp the envelope</b>, <b>put it in the tray</b>, say <b>"got it"</b>. The door never opens the letter to read it. Reading is someone else's job.</p>
+    <div class="fig">
+      <svg viewBox="0 0 900 200" width="900" height="200">
+        <rect x="0" y="0" width="900" height="200" rx="12" fill="#e5e9f1"/>
+        <g>
+          <rect x="40" y="40" width="200" height="120" rx="10" fill="#fff" stroke="#e2e6ee"/>
+          <rect x="60" y="60" width="50" height="80" rx="6" fill="#ede4ff" stroke="#7c3aed" stroke-width="2"/><circle cx="100" cy="102" r="3" fill="#7c3aed"/>
+          <text x="180" y="78" font-size="13" font-weight="700" text-anchor="middle" fill="#1f2a44">Front door</text>
+          <text x="180" y="98" font-size="11" text-anchor="middle" fill="#4b5568">the shop's server</text>
+          <text x="180" y="114" font-size="11" text-anchor="middle" fill="#4b5568">pushes letters</text>
+          <text x="180" y="134" font-size="10" text-anchor="middle" fill="#8a93a6">"order placed"</text>
+        </g>
+        <g>
+          <rect x="350" y="40" width="200" height="120" rx="10" fill="#fff" stroke="#e2e6ee"/>
+          <rect x="370" y="60" width="50" height="80" rx="6" fill="#ffeacb" stroke="#f59e0b" stroke-width="2"/><circle cx="410" cy="102" r="3" fill="#f59e0b"/>
+          <circle cx="395" cy="52" r="6" fill="#f59e0b"/><text x="395" y="56" font-size="8" text-anchor="middle" fill="#fff">!</text>
+          <text x="490" y="78" font-size="13" font-weight="700" text-anchor="middle" fill="#1f2a44">Side bays</text>
+          <text x="490" y="98" font-size="11" text-anchor="middle" fill="#4b5568">WhatsApp rings</text>
+          <text x="490" y="114" font-size="11" text-anchor="middle" fill="#4b5568">the bell itself</text>
+          <text x="490" y="134" font-size="10" text-anchor="middle" fill="#8a93a6">"delivered", "she replied"</text>
+        </g>
+        <g>
+          <rect x="660" y="40" width="200" height="120" rx="10" fill="#fff" stroke="#e2e6ee"/>
+          <rect x="680" y="60" width="50" height="80" rx="6" fill="#d3f0ec" stroke="#0d9488" stroke-width="2"/><circle cx="720" cy="102" r="3" fill="#0d9488"/>
+          <text x="800" y="78" font-size="13" font-weight="700" text-anchor="middle" fill="#1f2a44">Office door</text>
+          <text x="800" y="98" font-size="11" text-anchor="middle" fill="#4b5568">a new company tells us</text>
+          <text x="800" y="114" font-size="11" text-anchor="middle" fill="#4b5568">what its letters contain</text>
+          <text x="800" y="134" font-size="10" text-anchor="middle" fill="#8a93a6">"ride cancelled has a fare"</text>
+        </g>
+        <text x="450" y="185" font-size="12" text-anchor="middle" fill="#4b5568">check ID  ->  stamp  ->  tray  ->  "got it"   (never open it first)</text>
+      </svg>
+      <p class="cap">Three doors, one habit. Store first, understand later.</p>
+    </div>
+    <ul class="rules">
+      <li>If the ID is wrong, the door says no and nothing is stored.</li>
+      <li>If the same letter arrives twice, the second one is quietly dropped, but we still say "got it" so the sender doesn't keep knocking.</li>
+      <li class="no">A door in any other part of the building is not allowed. One mailroom, one set of doors.</li>
+    </ul>
+    <div class="grown"><b>Grown-up words.</b> <code>POST /ingest/events</code> (front door, s2s token), <code>GET|POST /ingest/webhooks/{provider}</code> (the provider bays, dispatched through record's <b>INGRESS</b> registry, Meta's entry registered at the composition root), <code>POST /ingest/schemas</code> (vendor registration into T24). Verify, stamp the envelope, <code>INSERT ... ON CONFLICT DO NOTHING</code> on <code>(merchant, source, external_id)</code>, 200. Parsing before storing is a BLOCKER (ADR 0020). A body over 1 MiB is refused while streaming.</div>
+  </section>
+
+  <!-- 3 THE TRAY -->
+  <section id="tray">
+    <h2><span class="n">3</span>The tray: every letter is kept, in order</h2>
+    <p class="kid">All letters land in <b>one tray</b>, oldest first. Nobody ever throws a letter away. A worker takes a small pile from the top, deals with each letter, and stamps it "done". If a letter can't be understood (say, it has no phone number and no name at all), it goes to the <b>"look again" shelf</b>. It stays there, safe, until someone teaches the reader how to read that kind of letter. Then it's read again as if it just arrived.</p>
+    <div class="fig">
+      <svg viewBox="0 0 900 200" width="900" height="200">
+        <rect x="0" y="0" width="900" height="200" rx="12" fill="#e5e9f1"/>
+        <rect x="60" y="120" width="340" height="40" rx="8" fill="#d3f0ec" stroke="#0d9488" stroke-width="2"/>
+        <text x="230" y="182" font-size="12" text-anchor="middle" fill="#4b5568">the tray (crm_event_raw) — oldest at the front</text>
+        <g><rect x="80" y="92" width="34" height="24" rx="3" fill="#fff" stroke="#3a4661"/><path d="M80,92 l17,12 l17,-12" fill="none" stroke="#3a4661"/></g>
+        <g><rect x="122" y="96" width="34" height="24" rx="3" fill="#fff" stroke="#3a4661"/><path d="M122,96 l17,12 l17,-12" fill="none" stroke="#3a4661"/></g>
+        <g><rect x="164" y="92" width="34" height="24" rx="3" fill="#fff" stroke="#3a4661"/><path d="M164,92 l17,12 l17,-12" fill="none" stroke="#3a4661"/></g>
+        <g><rect x="206" y="96" width="34" height="24" rx="3" fill="#fff" stroke="#3a4661"/><path d="M206,96 l17,12 l17,-12" fill="none" stroke="#3a4661"/></g>
+        <g><rect x="248" y="92" width="34" height="24" rx="3" fill="#fff" stroke="#3a4661"/><path d="M248,92 l17,12 l17,-12" fill="none" stroke="#3a4661"/></g>
+        <g><rect x="290" y="96" width="34" height="24" rx="3" fill="#dce7fd" stroke="#2563eb"/><path d="M290,96 l17,12 l17,-12" fill="none" stroke="#2563eb"/><text x="307" y="88" font-size="9" text-anchor="middle" fill="#1d4ed8">done</text></g>
+        <g><rect x="332" y="92" width="34" height="24" rx="3" fill="#dce7fd" stroke="#2563eb"/><path d="M332,92 l17,12 l17,-12" fill="none" stroke="#2563eb"/><text x="349" y="84" font-size="9" text-anchor="middle" fill="#1d4ed8">done</text></g>
+        <!-- worker -->
+        <circle cx="470" cy="70" r="12" fill="#dce7fd" stroke="#2563eb" stroke-width="2"/>
+        <rect x="456" y="86" width="28" height="36" rx="8" fill="#dce7fd" stroke="#2563eb" stroke-width="2"/>
+        <text x="470" y="146" font-size="12" text-anchor="middle" fill="#4b5568">worker: takes a pile,</text>
+        <text x="470" y="160" font-size="12" text-anchor="middle" fill="#4b5568">one letter at a time</text>
+        <!-- shelf -->
+        <rect x="600" y="60" width="240" height="8" fill="#8a93a6"/>
+        <rect x="620" y="32" width="34" height="24" rx="3" fill="#f3f4f6" stroke="#8a93a6" stroke-dasharray="3 2"/><path d="M620,32 l17,12 l17,-12" fill="none" stroke="#8a93a6"/>
+        <rect x="668" y="32" width="34" height="24" rx="3" fill="#f3f4f6" stroke="#8a93a6" stroke-dasharray="3 2"/><path d="M668,32 l17,12 l17,-12" fill="none" stroke="#8a93a6"/>
+        <text x="720" y="92" font-size="12" font-weight="700" text-anchor="middle" fill="#4b5568">the "look again" shelf</text>
+        <text x="720" y="108" font-size="11" text-anchor="middle" fill="#8a93a6">kept, never binned; re-read once we learn</text>
+        <rect x="600" y="130" width="240" height="40" rx="8" fill="#fde2e2" stroke="#ef4444"/>
+        <text x="720" y="154" font-size="11" text-anchor="middle" fill="#991b1b">there is no bin in this building</text>
+      </svg>
+      <p class="cap">Stored raw, immutable, replayable. The worker's pile is small so a bad letter costs one letter, not the whole day.</p>
+    </div>
+    <div class="grown"><b>Grown-up words.</b> <code>crm_event_raw</code> is partitioned by month and immutable by trigger; only <code>processed_at</code>, <code>quarantine_reason</code>, <code>customer_id</code> and <code>attempts</code> may change. The worker claims a batch with <code>FOR UPDATE SKIP LOCKED</code>, one savepoint per row, five attempts then quarantine. <code>replay()</code> resets a row. Consumers never dedupe; the tray already did.</div>
+  </section>
+
+  <!-- 4 THE READER -->
+  <section id="reader">
+    <h2><span class="n">4</span>The reader and the dictionary</h2>
+    <p class="kid">Letters come in many languages. A Shopify letter and a WhatsApp letter and a ride-app letter all say "who" and "what" in different places. So we have <b>one reader</b> and a <b>dictionary</b> for every kind of letter. The dictionary says: "in a Shopify order letter, the phone is here, the name is there, the total is there." For our own connectors, <b>we</b> write the dictionary page (and we test it against real letters we recorded). For a new company, <b>they</b> write their page when they sign up. Same reader, same rules. Nobody ever types a field name from memory again. If it's not in the dictionary, you can't filter on it, and so you can't misspell it.</p>
+    <div class="fig">
+      <svg viewBox="0 0 900 210" width="900" height="210">
+        <rect x="0" y="0" width="900" height="210" rx="12" fill="#e5e9f1"/>
+        <!-- envelopes in -->
+        <g><rect x="40" y="50" width="44" height="30" rx="3" fill="#fff" stroke="#3a4661"/><path d="M40,50 l22,15 l22,-15" fill="none" stroke="#3a4661"/><text x="62" y="98" font-size="10" text-anchor="middle" fill="#4b5568">Shopify</text></g>
+        <g><rect x="40" y="110" width="44" height="30" rx="3" fill="#fff" stroke="#3a4661"/><path d="M40,110 l22,15 l22,-15" fill="none" stroke="#3a4661"/><text x="62" y="158" font-size="10" text-anchor="middle" fill="#4b5568">WhatsApp</text></g>
+        <g><rect x="120" y="80" width="44" height="30" rx="3" fill="#fff" stroke="#3a4661"/><path d="M120,80 l22,15 l22,-15" fill="none" stroke="#3a4661"/><text x="142" y="128" font-size="10" text-anchor="middle" fill="#4b5568">ride app</text></g>
+        <path d="M175,95 H230" stroke="#3a4661" stroke-width="1.5" fill="none"/><path d="M226,90 l8,5 l-8,5" fill="#3a4661"/>
+        <!-- reader -->
+        <circle cx="280" cy="70" r="14" fill="#dce7fd" stroke="#2563eb" stroke-width="2"/>
+        <rect x="264" y="88" width="32" height="42" rx="9" fill="#dce7fd" stroke="#2563eb" stroke-width="2"/>
+        <text x="280" y="152" font-size="12" font-weight="700" text-anchor="middle" fill="#1f2a44">ONE reader</text>
+        <text x="280" y="167" font-size="10" text-anchor="middle" fill="#8a93a6">reads every letter</text>
+        <!-- dictionary -->
+        <rect x="360" y="40" width="200" height="130" rx="8" fill="#fff" stroke="#e2e6ee"/>
+        <rect x="372" y="52" width="86" height="106" rx="4" fill="#d8f3e6" stroke="#10b981"/>
+        <text x="415" y="72" font-size="10" font-weight="700" text-anchor="middle" fill="#047857">OUR pages</text>
+        <text x="415" y="90" font-size="9" text-anchor="middle" fill="#047857">Shopify · WhatsApp</text>
+        <text x="415" y="106" font-size="9" text-anchor="middle" fill="#047857">written in code</text>
+        <text x="415" y="122" font-size="9" text-anchor="middle" fill="#047857">tested on real letters</text>
+        <rect x="462" y="52" width="86" height="106" rx="4" fill="#d3f0ec" stroke="#0d9488"/>
+        <text x="505" y="72" font-size="10" font-weight="700" text-anchor="middle" fill="#0f766e">THEIR pages</text>
+        <text x="505" y="90" font-size="9" text-anchor="middle" fill="#0f766e">a ride app, a bank</text>
+        <text x="505" y="106" font-size="9" text-anchor="middle" fill="#0f766e">written at sign-up</text>
+        <text x="505" y="122" font-size="9" text-anchor="middle" fill="#0f766e">stored in a table</text>
+        <text x="460" y="190" font-size="12" text-anchor="middle" fill="#4b5568">the dictionary (the catalog) — two kinds of pages, one shape</text>
+        <!-- out -->
+        <path d="M570,95 H625" stroke="#3a4661" stroke-width="1.5" fill="none"/><path d="M621,90 l8,5 l-8,5" fill="#3a4661"/>
+        <rect x="640" y="46" width="220" height="30" rx="8" fill="#fff" stroke="#e2e6ee"/><text x="750" y="65" font-size="11" text-anchor="middle" fill="#1f2a44">who: +91 98765 43210</text>
+        <rect x="640" y="84" width="220" height="30" rx="8" fill="#fff" stroke="#e2e6ee"/><text x="750" y="103" font-size="11" text-anchor="middle" fill="#1f2a44">facts: name = Priya</text>
+        <rect x="640" y="122" width="220" height="30" rx="8" fill="#fff" stroke="#e2e6ee"/><text x="750" y="141" font-size="11" text-anchor="middle" fill="#1f2a44">fill-ins: total = 1850, items = 2</text>
+        <text x="750" y="178" font-size="11" text-anchor="middle" fill="#8a93a6">what comes out, for everyone downstream</text>
+      </svg>
+      <p class="cap">One reader, two kinds of dictionary pages. The editor, the filters and the message fill-ins all read from the same pages.</p>
+    </div>
+    <div class="grown"><b>Grown-up words.</b> <code>extractors/engine.py</code> executes a <code>DecodeSpec</code> built from either a code <code>CatalogEntry</code> (<code>extractors/shopify.py</code>, <code>extractors/whatsapp.py</code>, assembled via <code>SPEC_MODULES</code>) or a registered T24 row (cached 60s; the table stays cold). Identity roles in precedence order, fallbacks, <code>derive()</code> for the 10% that is logic, <code>about</code> for letters that name no person. Fixtures double as conformance tests: every declared field must appear in a recorded payload. The publish validator only accepts declared fields; ops are a function of type.</div>
+  </section>
+
+  <!-- 5 THE ADDRESS BOOK -->
+  <section id="book">
+    <h2><span class="n">5</span>The address book: who is this letter about?</h2>
+    <p class="kid">Every letter is about a person, and the address book finds them. It looks for a <b>phone number</b> first, then an <b>email</b>, then a few other ids. It never guesses ("Priya S. is probably Priya Sharma"? No. Never.). If nobody matches, a new card is made. Sometimes we discover two cards are the same person, because a letter carries both her old phone and her new email. Then we <b>staple</b> the cards together. We never melt them into one, and we never throw one away, so we can always un-staple if we were wrong.</p>
+    <p class="kid">A <b>website visitor</b> who hasn't logged in yet gets a card too, with just a <b>sticker number</b> from a cookie. The day she types her phone at checkout, her sticker card and her phone card get stapled. Nothing special has to happen. A letter carrying both is enough.</p>
+    <div class="fig">
+      <svg viewBox="0 0 900 200" width="900" height="200">
+        <rect x="0" y="0" width="900" height="200" rx="12" fill="#e5e9f1"/>
+        <!-- card 1 -->
+        <rect x="50" y="40" width="200" height="110" rx="8" fill="#fff" stroke="#e2e6ee"/>
+        <rect x="62" y="52" width="60" height="12" rx="6" fill="#d3f0ec"/><text x="92" y="61" font-size="8" text-anchor="middle" fill="#0f766e">CARD</text>
+        <text x="150" y="88" font-size="12" font-weight="700" text-anchor="middle" fill="#1f2a44">Priya Sharma</text>
+        <text x="150" y="108" font-size="11" text-anchor="middle" fill="#4b5568">+91 98765 43210</text>
+        <text x="150" y="126" font-size="11" text-anchor="middle" fill="#4b5568">priya@example.com</text>
+        <!-- card 2 -->
+        <rect x="300" y="40" width="200" height="110" rx="8" fill="#fff" stroke="#e2e6ee"/>
+        <rect x="312" y="52" width="60" height="12" rx="6" fill="#d3f0ec"/><text x="342" y="61" font-size="8" text-anchor="middle" fill="#0f766e">CARD</text>
+        <text x="400" y="88" font-size="12" font-weight="700" text-anchor="middle" fill="#1f2a44">visitor</text>
+        <rect x="360" y="98" width="80" height="24" rx="12" fill="#ffeacb" stroke="#f59e0b"/><text x="400" y="114" font-size="10" text-anchor="middle" fill="#92400e">sticker #7</text>
+        <!-- stapler -->
+        <rect x="255" y="88" width="40" height="14" rx="3" fill="#3a4661"/><rect x="262" y="80" width="26" height="8" rx="2" fill="#3a4661"/>
+        <text x="275" y="122" font-size="10" text-anchor="middle" fill="#4b5568">staple</text>
+        <text x="275" y="176" font-size="12" text-anchor="middle" fill="#4b5568">a letter with her sticker AND her phone = the same person; cards are stapled, never melted</text>
+        <!-- rules -->
+        <rect x="560" y="40" width="300" height="110" rx="8" fill="#fff" stroke="#e2e6ee"/>
+        <text x="710" y="66" font-size="12" font-weight="700" text-anchor="middle" fill="#1f2a44">The address book's three rules</text>
+        <text x="710" y="90" font-size="11" text-anchor="middle" fill="#4b5568">1. Phone, then email, then other ids. Same order, always.</text>
+        <text x="710" y="110" font-size="11" text-anchor="middle" fill="#4b5568">2. Never guess. A near match is no match.</text>
+        <text x="710" y="130" font-size="11" text-anchor="middle" fill="#4b5568">3. Only the book makes cards. Nobody else.</text>
+      </svg>
+      <p class="cap">Deterministic, one creator, staple never melt. The sticker card is how tracking-before-login fits without a new rule.</p>
+    </div>
+    <div class="grown"><b>Grown-up words.</b> <code>resolve(merchant, handles)</code> is the only creator of <code>crm_customer</code> rows; probe order phone, email, igsid, shopify_customer_id, external_ref against partial unique indexes; no fuzzy matching (ADR 0017). Merge = status flip + <code>merged_into_id</code>, path-compressed to one hop; a handle owned by another row is staple evidence, survivor is the older card. Facts carry an evidence ladder (declared, observed, imported, inferred; ADR 0021). The visitor card is a proposed merchant-scoped <code>anon_id</code> handle column, the igsid precedent; a ruling owed.</div>
+  </section>
+
+  <!-- 6 THE RULEBOOK -->
+  <section id="rules">
+    <h2><span class="n">6</span>The rulebook and the board game</h2>
+    <p class="kid">The shop writes rules like a recipe: "<b>When</b> a checkout is left and the payment is cash-on-delivery, <b>wait</b> 15 minutes, <b>send</b> a WhatsApp, <b>if</b> she doesn't reply in an hour, <b>call</b> her." A rule is a little <b>board</b> with squares. When a letter matches the rule, a <b>token</b> is placed on the first square for that person, and a walker moves it square by square. If she pays in the middle, her token is taken off. Once a token starts on a board, it finishes on <b>that</b> version of the board, even if the shop edits the rule tomorrow. The shop can only choose words from the dictionary when writing a rule, so a rule can't quietly wait for a field that doesn't exist.</p>
+    <div class="fig">
+      <svg viewBox="0 0 900 200" width="900" height="200">
+        <rect x="0" y="0" width="900" height="200" rx="12" fill="#e5e9f1"/>
+        <!-- door -->
+        <rect x="40" y="60" width="120" height="70" rx="10" fill="#fff" stroke="#e2e6ee"/>
+        <rect x="52" y="48" width="42" height="12" rx="6" fill="#ede4ff"/><text x="73" y="57" font-size="8" text-anchor="middle" fill="#5b21b6">WHEN</text>
+        <text x="100" y="88" font-size="11" text-anchor="middle" fill="#1f2a44">checkout left</text>
+        <text x="100" y="106" font-size="10" text-anchor="middle" fill="#4b5568">payment is COD</text>
+        <path d="M160,95 H196" stroke="#3a4661" stroke-width="1.5"/><path d="M192,90 l8,5 l-8,5" fill="#3a4661"/>
+        <!-- squares -->
+        <rect x="200" y="60" width="110" height="70" rx="10" fill="#fff" stroke="#e2e6ee"/><text x="255" y="90" font-size="11" text-anchor="middle" fill="#1f2a44">wait 15 min</text>
+        <circle cx="255" cy="112" r="9" fill="#f59e0b" stroke="#92400e"/>
+        <path d="M310,95 H346" stroke="#3a4661" stroke-width="1.5"/><path d="M342,90 l8,5 l-8,5" fill="#3a4661"/>
+        <rect x="350" y="60" width="110" height="70" rx="10" fill="#fff" stroke="#e2e6ee"/><text x="405" y="90" font-size="11" text-anchor="middle" fill="#1f2a44">send WhatsApp</text>
+        <circle cx="405" cy="112" r="9" fill="#7c3aed" stroke="#5b21b6"/>
+        <path d="M460,95 H496" stroke="#3a4661" stroke-width="1.5"/><path d="M492,90 l8,5 l-8,5" fill="#3a4661"/>
+        <rect x="500" y="60" width="110" height="70" rx="10" fill="#fff" stroke="#e2e6ee"/><text x="555" y="86" font-size="11" text-anchor="middle" fill="#1f2a44">wait for reply</text><text x="555" y="102" font-size="10" text-anchor="middle" fill="#4b5568">1 hour</text>
+        <path d="M610,95 H646" stroke="#3a4661" stroke-width="1.5" stroke-dasharray="5 4"/><path d="M642,90 l8,5 l-8,5" fill="#3a4661"/>
+        <text x="628" y="82" font-size="9" text-anchor="middle" fill="#8a93a6">no reply</text>
+        <rect x="650" y="60" width="110" height="70" rx="10" fill="#fff" stroke="#e2e6ee"/><text x="705" y="95" font-size="11" text-anchor="middle" fill="#1f2a44">call her</text>
+        <!-- paid: token off -->
+        <rect x="790" y="46" width="90" height="98" rx="10" fill="#d8f3e6" stroke="#10b981"/>
+        <text x="835" y="72" font-size="11" font-weight="700" text-anchor="middle" fill="#047857">she paid!</text>
+        <text x="835" y="90" font-size="10" text-anchor="middle" fill="#047857">token comes</text><text x="835" y="104" font-size="10" text-anchor="middle" fill="#047857">off the board</text>
+        <text x="835" y="128" font-size="10" text-anchor="middle" fill="#047857">goal met</text>
+        <!-- version tag -->
+        <rect x="200" y="150" width="60" height="18" rx="9" fill="#dfe3ea"/><text x="230" y="163" font-size="9" text-anchor="middle" fill="#4b5568">board v3</text>
+        <text x="450" y="182" font-size="11" text-anchor="middle" fill="#4b5568">each token plays on the version of the board it started on; a new version is for new tokens</text>
+      </svg>
+      <p class="cap">Doors, squares, tokens, goals. Editing a live board never strands a token mid-game.</p>
+    </div>
+    <div class="grown"><b>Grown-up words.</b> Workflows (T19) with a typed <code>entry.where</code>, versions (T25, ADR 0023: a run executes the version it entered under, <code>on_publish: pin | migrate</code>), enrollments (T20) walked on leases with compare-and-set writes, goal tiers, repeat policies, ladders. Node vocabulary <code>wait · send · call · wait_event</code> in the <code>NODE_TYPES</code> registry. Publish gathers the catalog then validates purely; send nodes map template blanks to declared variables explicitly.</div>
+  </section>
+
+  <!-- 7 THE GATE -->
+  <section id="gate">
+    <h2><span class="n">7</span>The gate: may we talk to her?</h2>
+    <p class="kid">Before the postman sends anything, the gatekeeper asks four questions. <b>Did she say it's okay</b> to hear from this shop? <b>Is it a polite hour?</b> <b>Have we already messaged her a lot</b> this week? <b>Is this the right kind of message</b> for what she agreed to? If the answer to any question is no, the message doesn't go. And here is the strict part: if the gatekeeper <b>isn't sure</b>, because a lamp went out or a list can't be read, the answer is <b>NO</b>. Being unsure is never a yes. Every answer, yes or no, is written in the logbook so the shop can see why a message did or didn't go.</p>
+    <div class="fig">
+      <svg viewBox="0 0 900 190" width="900" height="190">
+        <rect x="0" y="0" width="900" height="190" rx="12" fill="#e5e9f1"/>
+        <rect x="120" y="40" width="10" height="110" fill="#3a4661"/><rect x="330" y="40" width="10" height="110" fill="#3a4661"/>
+        <rect x="130" y="70" width="200" height="10" fill="#ef4444"/><rect x="130" y="100" width="200" height="10" fill="#ef4444"/>
+        <circle cx="70" cy="80" r="12" fill="#d8f3e6" stroke="#10b981" stroke-width="2"/><rect x="56" y="96" width="28" height="36" rx="8" fill="#d8f3e6" stroke="#10b981" stroke-width="2"/>
+        <text x="70" y="160" font-size="11" text-anchor="middle" fill="#4b5568">the postman waits</text>
+        <circle cx="230" cy="52" r="12" fill="#fde2e2" stroke="#ef4444" stroke-width="2"/>
+        <text x="230" y="170" font-size="11" text-anchor="middle" fill="#4b5568">the gatekeeper</text>
+        <rect x="390" y="34" width="250" height="126" rx="8" fill="#fff" stroke="#e2e6ee"/>
+        <text x="515" y="56" font-size="12" font-weight="700" text-anchor="middle" fill="#1f2a44">four questions, every time</text>
+        <text x="405" y="80" font-size="11" fill="#4b5568">1. did she say yes?</text>
+        <text x="405" y="98" font-size="11" fill="#4b5568">2. is it a polite hour?</text>
+        <text x="405" y="116" font-size="11" fill="#4b5568">3. too many messages this week?</text>
+        <text x="405" y="134" font-size="11" fill="#4b5568">4. the right kind of message?</text>
+        <rect x="660" y="34" width="210" height="60" rx="8" fill="#fde2e2" stroke="#ef4444"/>
+        <text x="765" y="58" font-size="12" font-weight="700" text-anchor="middle" fill="#991b1b">not sure = NO</text>
+        <text x="765" y="78" font-size="10" text-anchor="middle" fill="#991b1b">a broken lamp never means yes</text>
+        <rect x="660" y="104" width="210" height="56" rx="8" fill="#fff" stroke="#e2e6ee"/>
+        <text x="765" y="126" font-size="11" font-weight="700" text-anchor="middle" fill="#1f2a44">the logbook</text>
+        <text x="765" y="146" font-size="10" text-anchor="middle" fill="#4b5568">every yes and every no, with the reason</text>
+      </svg>
+      <p class="cap">Fail closed. No override button exists anywhere in the building.</p>
+    </div>
+    <div class="grown"><b>Grown-up words.</b> <code>may_contact()</code> (ADR 0018): consent ledger + resolved state written in one transaction, quiet hours, frequency caps, purpose; every verdict writes a <code>decision_log</code> row; a gate verdict is never cached; no bypass flag, ever. Suppression on <code>platform_identity</code> is global across shops. Today's sends are gated by suppression; the full <code>may_contact()</code> is the open PR #1021.</div>
+  </section>
+
+  <!-- 8 THE POSTMAN -->
+  <section id="postman">
+    <h2><span class="n">8</span>The postman: one way out</h2>
+    <p class="kid">There is exactly <b>one</b> way a message leaves the building: the postman's bag. Not a side window, not a friend's pocket. Before a message goes in the bag, it gets a <b>ticket</b> that is good for one message only. WhatsApp only accepts <b>approved letter templates</b>, so the shop registers its templates first and we remember which ones are approved. After the postman delivers, WhatsApp sends little <b>ticks</b> back ("sent", "delivered", "read"), and those come in through the side bay as letters like any other, so the whole story is in the tray.</p>
+    <div class="fig">
+      <svg viewBox="0 0 900 180" width="900" height="180">
+        <rect x="0" y="0" width="900" height="180" rx="12" fill="#e5e9f1"/>
+        <rect x="40" y="50" width="150" height="80" rx="10" fill="#fff" stroke="#e2e6ee"/>
+        <text x="115" y="76" font-size="12" font-weight="700" text-anchor="middle" fill="#1f2a44">the manifest</text>
+        <text x="115" y="96" font-size="10" text-anchor="middle" fill="#4b5568">every message, one row</text>
+        <text x="115" y="112" font-size="10" text-anchor="middle" fill="#4b5568">queued -> sending -> sent</text>
+        <path d="M190,90 H226" stroke="#3a4661" stroke-width="1.5"/><path d="M222,85 l8,5 l-8,5" fill="#3a4661"/>
+        <rect x="230" y="66" width="70" height="46" rx="8" fill="#ffeacb" stroke="#f59e0b"/><text x="265" y="86" font-size="10" text-anchor="middle" fill="#92400e">ticket</text><text x="265" y="100" font-size="9" text-anchor="middle" fill="#92400e">one use only</text>
+        <path d="M300,90 H336" stroke="#3a4661" stroke-width="1.5"/><path d="M332,85 l8,5 l-8,5" fill="#3a4661"/>
+        <circle cx="380" cy="60" r="12" fill="#d8f3e6" stroke="#10b981" stroke-width="2"/><rect x="366" y="76" width="28" height="40" rx="8" fill="#d8f3e6" stroke="#10b981" stroke-width="2"/>
+        <rect x="396" y="86" width="24" height="20" rx="3" fill="#fff" stroke="#10b981"/>
+        <text x="385" y="140" font-size="11" text-anchor="middle" fill="#4b5568">the ONE postman: send()</text>
+        <path d="M430,90 H486" stroke="#3a4661" stroke-width="1.5"/><path d="M482,85 l8,5 l-8,5" fill="#3a4661"/>
+        <rect x="490" y="50" width="150" height="80" rx="10" fill="#fff" stroke="#e2e6ee"/>
+        <text x="565" y="74" font-size="12" font-weight="700" text-anchor="middle" fill="#1f2a44">WhatsApp</text>
+        <text x="565" y="94" font-size="10" text-anchor="middle" fill="#4b5568">approved templates only</text>
+        <text x="565" y="112" font-size="10" text-anchor="middle" fill="#4b5568">blanks filled from the dictionary</text>
+        <path d="M640,72 H700 V40 H760" stroke="#3a4661" stroke-width="1.5" fill="none" stroke-dasharray="5 4"/><path d="M756,35 l8,5 l-8,5" fill="#3a4661"/>
+        <rect x="764" y="26" width="110" height="30" rx="8" fill="#dce7fd" stroke="#2563eb"/><text x="819" y="45" font-size="10" text-anchor="middle" fill="#1d4ed8">ticks come back as letters</text>
+        <text x="819" y="80" font-size="18" text-anchor="middle" fill="#2563eb">&#10003;&#10003;</text>
+        <text x="819" y="110" font-size="10" text-anchor="middle" fill="#4b5568">sent · delivered · read</text>
+        <text x="819" y="150" font-size="10" text-anchor="middle" fill="#8a93a6">back through the side bay</text>
+      </svg>
+      <p class="cap">One send path, one manifest, single-use tokens, approved templates, receipts as letters.</p>
+    </div>
+    <div class="grown"><b>Grown-up words.</b> <code>send(send_token, message_id)</code> is the only provider call (ADR 0015); tokens are Redis GETDEL, 60s. <code>crm_message</code> (T16) is the single delivery authority, nine status words in <code>status.py</code>. Templates live in T23 with a publish-time check on the account the route will send from. Providers are adapters behind the <code>CONNECTORS</code> registry; the WhatsApp adapter renders positional or named parameters, one style per template.</div>
+  </section>
+
+  <!-- 9 THE WINDOW -->
+  <section id="window">
+    <h2><span class="n">9</span>The window: what the shop sees</h2>
+    <p class="kid">The shop looks through a window at the mailroom. It sees each customer's <b>story</b> (every letter about her, in order), the <b>boards</b> and how many tokens are on them, which <b>templates</b> are approved, and, importantly, <b>why a message didn't go</b>, in plain words from the gatekeeper's logbook. The window only shows words from the dictionary, so what you can pick is exactly what the reader can read.</p>
+    <div class="fig">
+      <svg viewBox="0 0 900 170" width="900" height="170">
+        <rect x="0" y="0" width="900" height="170" rx="12" fill="#e5e9f1"/>
+        <rect x="120" y="20" width="660" height="130" rx="10" fill="#fff" stroke="#e2e6ee"/>
+        <rect x="120" y="20" width="660" height="26" rx="10" fill="#dfe3ea"/>
+        <circle cx="138" cy="33" r="5" fill="#ef4444"/><circle cx="154" cy="33" r="5" fill="#f59e0b"/><circle cx="170" cy="33" r="5" fill="#10b981"/>
+        <text x="450" y="37" font-size="10" text-anchor="middle" fill="#4b5568">the console</text>
+        <rect x="140" y="60" width="140" height="74" rx="8" fill="#dce7fd"/><text x="210" y="84" font-size="11" font-weight="700" text-anchor="middle" fill="#1d4ed8">Customers</text><text x="210" y="104" font-size="9" text-anchor="middle" fill="#1d4ed8">her whole story</text>
+        <rect x="296" y="60" width="140" height="74" rx="8" fill="#d8f3e6"/><text x="366" y="84" font-size="11" font-weight="700" text-anchor="middle" fill="#047857">Flows</text><text x="366" y="104" font-size="9" text-anchor="middle" fill="#047857">saw 240 · matched 3</text>
+        <rect x="452" y="60" width="140" height="74" rx="8" fill="#ffeacb"/><text x="522" y="84" font-size="11" font-weight="700" text-anchor="middle" fill="#92400e">Templates</text><text x="522" y="104" font-size="9" text-anchor="middle" fill="#92400e">approved / pending</text>
+        <rect x="608" y="60" width="152" height="74" rx="8" fill="#fde2e2"/><text x="684" y="84" font-size="11" font-weight="700" text-anchor="middle" fill="#991b1b">Why didn't it send</text><text x="684" y="104" font-size="9" text-anchor="middle" fill="#991b1b">"quiet hours", "no consent"</text>
+      </svg>
+      <p class="cap">Journey, flows with seen-versus-matched, templates, and the logbook's reasons.</p>
+    </div>
+    <div class="grown"><b>Grown-up words.</b> The loom console over <code>/customers</code>, <code>/workflows</code>, <code>/connectors</code>, <code>/catalog</code>; no category word on any external path (ADR 0022). The flows editor is next in the U-lane and renders its pickers from <code>GET /catalog</code>.</div>
+  </section>
+
+  <!-- 10 HOW BIG -->
+  <section id="grow">
+    <h2><span class="n">10</span>How big can the mailroom get?</h2>
+    <p class="kid">Today it's a small, tidy room: about <b>one letter a second</b> arrives, and it could handle <b>thirty a second</b> all day without sweating. To grow, you don't redesign the room. You add <b>more workers</b> at the tray, then a <b>bigger tray</b> split into monthly drawers, then a <b>second reading room</b> for looking things up. Only when letters arrive faster than <b>five thousand a second</b>, every second, for hours, do you change how letters travel: a <b>conveyor belt</b> replaces the tray as the queue, and the tray becomes the archive. Everything after the reader stays exactly the same.</p>
+    <div class="fig">
+      <svg viewBox="0 0 900 220" width="900" height="220">
+        <rect x="0" y="0" width="900" height="220" rx="12" fill="#e5e9f1"/>
+        <!-- small -->
+        <rect x="40" y="90" width="120" height="80" rx="8" fill="#fff" stroke="#e2e6ee"/>
+        <rect x="70" y="110" width="60" height="30" rx="4" fill="#d3f0ec" stroke="#0d9488"/>
+        <circle cx="100" cy="98" r="7" fill="#dce7fd" stroke="#2563eb"/>
+        <text x="100" y="190" font-size="12" font-weight="700" text-anchor="middle" fill="#1f2a44">today</text>
+        <text x="100" y="206" font-size="10" text-anchor="middle" fill="#4b5568">1/s now · 30/s safe</text>
+        <!-- medium -->
+        <rect x="220" y="60" width="200" height="110" rx="8" fill="#fff" stroke="#e2e6ee"/>
+        <rect x="240" y="120" width="160" height="30" rx="4" fill="#d3f0ec" stroke="#0d9488"/>
+        <line x1="280" y1="120" x2="280" y2="150" stroke="#0d9488"/><line x1="320" y1="120" x2="320" y2="150" stroke="#0d9488"/><line x1="360" y1="120" x2="360" y2="150" stroke="#0d9488"/>
+        <circle cx="260" cy="100" r="7" fill="#dce7fd" stroke="#2563eb"/><circle cx="290" cy="100" r="7" fill="#dce7fd" stroke="#2563eb"/><circle cx="320" cy="100" r="7" fill="#dce7fd" stroke="#2563eb"/><circle cx="350" cy="100" r="7" fill="#dce7fd" stroke="#2563eb"/><circle cx="380" cy="100" r="7" fill="#dce7fd" stroke="#2563eb"/>
+        <rect x="236" y="70" width="70" height="16" rx="8" fill="#dfe3ea"/><text x="271" y="81" font-size="8" text-anchor="middle" fill="#4b5568">PgBouncer</text>
+        <text x="320" y="190" font-size="12" font-weight="700" text-anchor="middle" fill="#1f2a44">more workers, drawers</text>
+        <text x="320" y="206" font-size="10" text-anchor="middle" fill="#4b5568">up to ~2k–5k/s · same design</text>
+        <!-- big -->
+        <rect x="480" y="30" width="380" height="140" rx="8" fill="#fff" stroke="#e2e6ee"/>
+        <rect x="500" y="70" width="340" height="12" rx="6" fill="#0d9488"/>
+        <circle cx="520" cy="76" r="4" fill="#d3f0ec"/><circle cx="580" cy="76" r="4" fill="#d3f0ec"/><circle cx="640" cy="76" r="4" fill="#d3f0ec"/><circle cx="700" cy="76" r="4" fill="#d3f0ec"/><circle cx="760" cy="76" r="4" fill="#d3f0ec"/><circle cx="820" cy="76" r="4" fill="#d3f0ec"/>
+        <text x="670" y="58" font-size="10" text-anchor="middle" fill="#0f766e">the conveyor belt (a log) is the queue</text>
+        <rect x="510" y="100" width="90" height="40" rx="6" fill="#d3f0ec" stroke="#0d9488"/><text x="555" y="118" font-size="9" text-anchor="middle" fill="#0f766e">archive tray</text><text x="555" y="131" font-size="8" text-anchor="middle" fill="#0f766e">(the sink)</text>
+        <rect x="620" y="100" width="100" height="40" rx="6" fill="#dce7fd" stroke="#2563eb"/><text x="670" y="118" font-size="9" text-anchor="middle" fill="#1d4ed8">reading stream</text><text x="670" y="131" font-size="8" text-anchor="middle" fill="#1d4ed8">200 readers</text>
+        <rect x="740" y="100" width="100" height="40" rx="6" fill="#d8f3e6" stroke="#10b981"/><text x="790" y="118" font-size="9" text-anchor="middle" fill="#047857">rules stream</text><text x="790" y="131" font-size="8" text-anchor="middle" fill="#047857">boards in memory</text>
+        <text x="670" y="190" font-size="12" font-weight="700" text-anchor="middle" fill="#1f2a44">the belt: 50,000 letters a second</text>
+        <text x="670" y="206" font-size="10" text-anchor="middle" fill="#4b5568">gate, postman, boards, window: unchanged</text>
+      </svg>
+      <p class="cap">Three sizes of the same room. Each step has a named trigger; nobody builds the belt before the tray is full.</p>
+    </div>
+    <table>
+      <tr><th>Size</th><th>Letters per second</th><th>What you add</th><th>What stays the same</th></tr>
+      <tr><td>Today</td><td>~1 arriving, ~30 safe, 300–500 at the door</td><td>PgBouncer (the one open P0)</td><td>everything</td></tr>
+      <tr><td>Fleet of shops</td><td>~2k–5k sustained</td><td>worker replicas, monthly drawers, a read replica, a live-plan cache</td><td>the design</td></tr>
+      <tr><td>The belt</td><td>50k and beyond</td><td>a log as the queue, the tray as archive, sharded address books, streams</td><td>reader's dictionary, gate, boards, postman, window</td></tr>
+    </table>
+    <div class="grown"><b>Grown-up words.</b> Estimates from the code, not measurements: the door is one local JWT check and one insert (~1–3 ms); the pass is 6–12 round trips per letter, sequential per replica (40–100/s each). SKIP LOCKED makes replicas near-linear until the connection budget. Past ~5k/s sustained, Postgres-as-queue ends: Kafka/Redpanda in front, <code>crm_event_raw</code> becomes a sink, identity sharded by merchant. A 15-minute load test over the recorded Shopify fixtures is the named step that replaces estimates with numbers.</div>
+  </section>
+
+  <!-- 11 MANY SHOPS -->
+  <section id="many">
+    <h2><span class="n">11</span>Many shops, clicks from browsers, letters from servers</h2>
+    <p class="kid">One mailroom serves <b>many shops</b> at once. Every envelope has the shop's name on it, and there are walls between shops: a letter for the kurti shop can never be read by the shoe shop, and a person who said "stop" to one shop is not bothered by that shop again. There are also <b>two kinds of senders</b>. A shop's <b>server</b> sends important letters: an order, a payment, a cancellation. A shopper's <b>browser</b> sends tiny notes: "looked at a product", "scrolled", "added to cart". Browsers send <b>forty notes a visit</b>. If every note went into the tray, the tray would overflow in an afternoon. So tiny notes go into a <b>notebook</b> next door, cheap and huge, and a helper reads the notebook and writes <b>one</b> real letter when something meaningful happened: "she looked at the blue kurti three times and left". That letter goes in the tray, and the rulebook treats it like any other.</p>
+    <div class="fig">
+      <svg viewBox="0 0 900 230" width="900" height="230">
+        <rect x="0" y="0" width="900" height="230" rx="12" fill="#e5e9f1"/>
+        <!-- shops -->
+        <rect x="30" y="30" width="80" height="60" rx="8" fill="#ffeacb" stroke="#f59e0b"/><text x="70" y="65" font-size="10" text-anchor="middle" fill="#92400e">kurti shop</text>
+        <rect x="30" y="100" width="80" height="60" rx="8" fill="#ffeacb" stroke="#f59e0b"/><text x="70" y="135" font-size="10" text-anchor="middle" fill="#92400e">shoe shop</text>
+        <rect x="30" y="170" width="80" height="40" rx="8" fill="#ffeacb" stroke="#f59e0b"/><text x="70" y="194" font-size="10" text-anchor="middle" fill="#92400e">ride app</text>
+        <line x1="120" y1="20" x2="120" y2="215" stroke="#3a4661" stroke-width="3"/><text x="120" y="226" font-size="8" text-anchor="middle" fill="#4b5568">walls between shops</text>
+        <!-- server -->
+        <rect x="160" y="40" width="130" height="60" rx="8" fill="#fff" stroke="#e2e6ee"/>
+        <rect x="172" y="52" width="30" height="36" rx="3" fill="#dfe3ea"/><circle cx="187" cy="62" r="3" fill="#10b981"/><circle cx="187" cy="74" r="3" fill="#10b981"/>
+        <text x="245" y="66" font-size="10" font-weight="700" text-anchor="middle" fill="#1f2a44">the server</text><text x="245" y="82" font-size="9" text-anchor="middle" fill="#4b5568">orders, payments</text>
+        <path d="M290,70 H340" stroke="#3a4661" stroke-width="1.5"/><path d="M336,65 l8,5 l-8,5" fill="#3a4661"/>
+        <text x="315" y="60" font-size="8" text-anchor="middle" fill="#8a93a6">1 letter</text>
+        <!-- browser -->
+        <rect x="160" y="130" width="130" height="60" rx="8" fill="#fff" stroke="#e2e6ee"/>
+        <rect x="172" y="142" width="44" height="30" rx="3" fill="#dfe3ea"/><rect x="172" y="142" width="44" height="7" rx="3" fill="#8a93a6"/>
+        <text x="250" y="156" font-size="10" font-weight="700" text-anchor="middle" fill="#1f2a44">the browser</text><text x="250" y="172" font-size="9" text-anchor="middle" fill="#4b5568">40 tiny notes a visit</text>
+        <path d="M290,160 H340" stroke="#3a4661" stroke-width="1.5"/><path d="M336,155 l8,5 l-8,5" fill="#3a4661"/>
+        <text x="315" y="150" font-size="8" text-anchor="middle" fill="#8a93a6">40 notes</text>
+        <!-- tray -->
+        <rect x="345" y="40" width="160" height="60" rx="8" fill="#d3f0ec" stroke="#0d9488" stroke-width="2"/>
+        <text x="425" y="66" font-size="11" font-weight="700" text-anchor="middle" fill="#0f766e">the tray</text><text x="425" y="84" font-size="9" text-anchor="middle" fill="#0f766e">letters the rules act on</text>
+        <!-- notebook -->
+        <rect x="345" y="130" width="160" height="60" rx="8" fill="#fff" stroke="#8a93a6" stroke-dasharray="4 3"/>
+        <text x="425" y="152" font-size="11" font-weight="700" text-anchor="middle" fill="#4b5568">the notebook</text><text x="425" y="168" font-size="9" text-anchor="middle" fill="#8a93a6">cheap, huge, every note kept</text>
+        <text x="425" y="182" font-size="8" text-anchor="middle" fill="#8a93a6">(a columnar store)</text>
+        <!-- helper -->
+        <circle cx="560" cy="150" r="10" fill="#dce7fd" stroke="#2563eb" stroke-width="2"/><rect x="548" y="163" width="24" height="30" rx="7" fill="#dce7fd" stroke="#2563eb" stroke-width="2"/>
+        <path d="M505,160 H540" stroke="#3a4661" stroke-width="1.5"/><path d="M536,155 l8,5 l-8,5" fill="#3a4661"/>
+        <path d="M560,136 V90 H520" stroke="#3a4661" stroke-width="1.5" fill="none"/><path d="M524,85 l-8,5 l8,5" fill="#3a4661"/>
+        <text x="600" y="206" font-size="9" text-anchor="middle" fill="#4b5568">the helper reads the notebook and writes ONE letter</text>
+        <text x="600" y="218" font-size="9" text-anchor="middle" fill="#4b5568">"looked at the blue kurti 3 times, then left"</text>
+        <!-- sticker -->
+        <rect x="640" y="40" width="230" height="110" rx="8" fill="#fff" stroke="#e2e6ee"/>
+        <text x="755" y="64" font-size="11" font-weight="700" text-anchor="middle" fill="#1f2a44">the sticker (cookie)</text>
+        <rect x="700" y="76" width="110" height="22" rx="11" fill="#ffeacb" stroke="#f59e0b"/><text x="755" y="91" font-size="9" text-anchor="middle" fill="#92400e">visitor sticker #7</text>
+        <text x="755" y="118" font-size="9" text-anchor="middle" fill="#4b5568">a card with only a sticker,</text>
+        <text x="755" y="132" font-size="9" text-anchor="middle" fill="#4b5568">stapled to her phone card at checkout</text>
+      </svg>
+      <p class="cap">Server letters go to the tray; browser notes go to the notebook; the helper turns notes into moments. Walls between shops always.</p>
+    </div>
+    <ul class="rules">
+      <li>Every table has the shop's name as its first key. A query without it is a bug, not a style issue.</li>
+      <li>Shopify gives us the visitor sticker for free through its pixel. Other stores get a small snippet, or Jitsu as the collector.</li>
+      <li>Segments ("everyone who spent over 5k this month") are a question for the notebook and the tray together; "she just crossed 5k" is a letter from the helper. Two questions, two homes.</li>
+    </ul>
+    <div class="grown"><b>Grown-up words.</b> Tenancy: <code>merchant_id</code> first in every unique index; suppression global on <code>platform_identity</code>, consent per shop. Client events: a collector (Jitsu or ours), a columnar sink (a partitioned Postgres table for the first store, ClickHouse at ~50M/day), a derive job emitting moments as letters keyed by <code>anon_id</code>. Rollups (monthly spend) are the same pattern: sum on hearing, never a stored counter, one derived letter with a deterministic external id. Vendors register their schema at <code>POST /ingest/schemas</code> and need no code from us.</div>
+  </section>
+
+  <!-- 12 IS IT BUILT RIGHT -->
+  <section id="python">
+    <h2><span class="n">12</span>Is Python the right fit, and is it built properly?</h2>
+    <p class="kid">Short answer: <b>yes</b>, and <b>mostly</b>. The mailroom's work is waiting: waiting for the database, waiting for WhatsApp to answer. It is almost never hard arithmetic. Python with async is good at waiting on many things at once, and it is the language the rest of the company's system already speaks, so the mailroom can share the building. When the mailroom is slow, it is because of how many trips it makes to the database, not because of the language. Rewriting in a faster language would make the same trips at the same speed. The belt, when it comes, changes the trips, not the language.</p>
+    <div class="fig">
+      <svg viewBox="0 0 900 150" width="900" height="150">
+        <rect x="0" y="0" width="900" height="150" rx="12" fill="#e5e9f1"/>
+        <rect x="60" y="30" width="360" height="90" rx="10" fill="#fff" stroke="#e2e6ee"/>
+        <text x="240" y="56" font-size="12" font-weight="700" text-anchor="middle" fill="#1f2a44">where the time goes, per letter</text>
+        <rect x="80" y="70" width="300" height="18" rx="9" fill="#dfe3ea"/>
+        <rect x="80" y="70" width="282" height="18" rx="9" fill="#2563eb"/>
+        <text x="220" y="83" font-size="9" text-anchor="middle" fill="#fff">waiting for the database (round trips)</text>
+        <rect x="362" y="70" width="18" height="18" rx="9" fill="#10b981"/>
+        <text x="240" y="108" font-size="10" text-anchor="middle" fill="#4b5568">green = Python actually computing (microseconds)</text>
+        <rect x="480" y="30" width="360" height="90" rx="10" fill="#fff" stroke="#e2e6ee"/>
+        <text x="660" y="56" font-size="12" font-weight="700" text-anchor="middle" fill="#1f2a44">what keeps it honest, every merge</text>
+        <text x="660" y="78" font-size="10" text-anchor="middle" fill="#4b5568">890 tests · boundary checker · migration checker</text>
+        <text x="660" y="94" font-size="10" text-anchor="middle" fill="#4b5568">type checker at zero errors · one commit per PR</text>
+        <text x="660" y="110" font-size="10" text-anchor="middle" fill="#4b5568">tables that defend themselves with triggers</text>
+      </svg>
+      <p class="cap">I/O-bound work in an async language, with the rules enforced by machines, not by memory.</p>
+    </div>
+    <div class="score">
+      <div class="row"><span class="dot g"></span><div class="t"><b>The laws are real, not slogans.</b> Store first, one send path, fail-closed gate, one creator of customer cards, staple never melt, no vocabulary in database checks. Each one has a test or a trigger that fails when it is broken.</div></div>
+      <div class="row"><span class="dot g"></span><div class="t"><b>The shape holds under growth.</b> Registries instead of if-chains for extractors, node types, connectors, ingress, the catalog. A new channel or vendor is one file and one line, and the CI square proves it.</div></div>
+      <div class="row"><span class="dot g"></span><div class="t"><b>Boundaries are enforced by a script.</b> Only the owning module may write its tables; contracts are the only cross-module door; the composition root fills the slots so nothing imports in a circle.</div></div>
+      <div class="row"><span class="dot a"></span><div class="t"><b>Capacity is estimated, not measured.</b> The numbers above come from reading the code. One load test replaces them. PgBouncer, the one infrastructure item, is still owed.</div></div>
+      <div class="row"><span class="dot a"></span><div class="t"><b>The full gate is still a pull request.</b> Sends are gated by the global stop-list today; consent, quiet hours and caps arrive with #1021. Nothing sends a marketing message to strangers until then, by design, but the pilot needs it.</div></div>
+      <div class="row"><span class="dot a"></span><div class="t"><b>The window lags the mailroom.</b> Customers and templates are on screen; the flows editor is designed and not yet built. Until it is, boards are written as files.</div></div>
+      <div class="row"><span class="dot a"></span><div class="t"><b>Three rulings are open.</b> Whether a board names its letter's source as well as its topic; whether the manifest stores the provider's error code or a readable word; whether delivery receipts are attributed to the customer.</div></div>
+    </div>
+    <div class="grown"><b>Grown-up words.</b> FastAPI + asyncpg + Postgres, one image and a <code>CRM_ROLE</code> per pod (event-worker, dispatcher, walker). Pure decide functions between gather and apply, accessors declared by signature, queries return <code>(sql, params)</code>. Gates: black, isort, autoflake, pyrefly, migration numbering against the live base, migrations never edited, boundary checker, tests, one commit. The corpus at buddy-cpaas-docs is the source of truth and every merged PR is integrated back into it the same day.</div>
+  </section>
+
+  <p class="foot">Sources: the sealed corpus (canon T02–T25, ADR 0001–0023, module build guides, design/event-catalog, design/how-it-scales, design/entry-points-and-the-event-spine) and clairvoyance release as of 4 Sep 2026 (#1047 merged). Numbers marked as estimates are estimates. Illustrations follow the corpus visual language: purple edges, blue spine, green sends, teal storage, amber external, red refusals.</p>
+</div>

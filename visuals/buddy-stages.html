@@ -1,0 +1,536 @@
+<title>Buddy Three Stages</title>
+<style>
+:root{
+  --canvas:#eef1f6; --panel:#e5e9f1; --card:#ffffff; --bd:#e2e6ee;
+  --shadow:0 1px 3px rgba(31,42,68,.10),0 6px 20px rgba(31,42,68,.07);
+  --ink:#1f2a44; --soft:#4b5568; --muted:#8a93a6; --line:#3a4661;
+  --purple:#7c3aed; --purple-s:#ede4ff; --purple-i:#5b21b6;
+  --blue:#2563eb;   --blue-s:#dce7fd;   --blue-i:#1d4ed8;
+  --green:#10b981;  --green-s:#d8f3e6;  --green-i:#047857;
+  --teal:#0d9488;   --teal-s:#d3f0ec;   --teal-i:#0f766e;
+  --amber:#f59e0b;  --amber-s:#ffeacb;  --amber-i:#92400e;
+  --red:#ef4444;    --red-s:#fde2e2;    --red-i:#991b1b;
+  --font:"Inter","SF Pro Text",-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--canvas);font-family:var(--font);color:var(--ink);}
+.wrap{max-width:1280px;margin:0 auto;padding:24px 18px 56px;}
+h1{font-size:29px;margin:0 0 4px;letter-spacing:-.015em;}
+.sub{font-size:14px;color:var(--soft);margin:0 0 20px;line-height:1.55;max-width:900px;}
+.sub b{color:var(--ink);}
+
+/* stage rail */
+.rail{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:0 0 14px;}
+.st{position:relative;text-align:left;background:var(--card);border:1.5px solid var(--bd);border-radius:14px;padding:13px 15px;cursor:pointer;transition:.22s;font-family:var(--font);}
+.st:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+.st.on{border-color:var(--ink);background:var(--ink);color:#fff;box-shadow:0 8px 26px rgba(31,42,68,.22);}
+.st .tag{font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:var(--panel);color:var(--soft);}
+.st.on .tag{background:rgba(255,255,255,.18);color:#fff;}
+.st .nm{font-size:16px;font-weight:700;margin:7px 0 2px;letter-spacing:-.01em;}
+.st .ds{font-size:11.5px;color:var(--muted);line-height:1.45;}
+.st.on .ds{color:rgba(255,255,255,.72);}
+.st .cap{font-family:var(--mono);font-size:12.5px;margin-top:8px;color:var(--blue-i);font-weight:600;}
+.st.on .cap{color:#9ec5ff;}
+.st .bar{height:4px;border-radius:2px;background:var(--panel);margin-top:9px;overflow:hidden;}
+.st .bar i{display:block;height:100%;background:var(--green);width:0;transition:width .4s;}
+.st.on .bar{background:rgba(255,255,255,.2);}
+
+/* control deck */
+.deck{background:var(--card);border:1px solid var(--bd);border-radius:14px;box-shadow:var(--shadow);padding:14px 16px;margin:0 0 14px;}
+.deckrow{display:flex;gap:16px;align-items:center;flex-wrap:wrap;}
+.dial{flex:1 1 340px;min-width:280px;}
+.dial label{display:block;font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+input[type=range]{width:100%;accent-color:var(--blue);height:22px;}
+.readout{display:flex;gap:14px;align-items:baseline;margin-top:2px;}
+.readout .big{font-size:26px;font-weight:800;letter-spacing:-.02em;font-family:var(--mono);}
+.readout .small{font-size:12px;color:var(--muted);}
+.chips{display:flex;gap:6px;flex-wrap:wrap;}
+.chip{border:1px solid var(--bd);background:#fff;border-radius:999px;padding:5px 11px;font:600 11.5px var(--font);color:var(--soft);cursor:pointer;transition:.15s;}
+.chip:hover{border-color:var(--blue);color:var(--blue-i);}
+.chip.on{background:var(--blue);border-color:var(--blue);color:#fff;}
+.verdict{flex:0 0 auto;border-radius:12px;padding:10px 14px;font-size:12.5px;line-height:1.45;max-width:330px;}
+.verdict.ok{background:var(--green-s);color:var(--green-i);} .verdict.warn{background:var(--amber-s);color:var(--amber-i);} .verdict.bad{background:var(--red-s);color:var(--red-i);}
+.verdict b{display:block;font-size:13px;margin-bottom:2px;}
+.toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--soft);cursor:pointer;user-select:none;}
+.toggle input{accent-color:var(--purple);width:16px;height:16px;}
+
+/* layout */
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 336px;gap:14px;align-items:start;}
+@media (max-width:1040px){.grid{grid-template-columns:1fr;}}
+.scene{background:var(--card);border:1px solid var(--bd);border-radius:14px;box-shadow:var(--shadow);padding:10px 12px 12px;overflow:hidden;}
+.sbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;}
+.btn{border:1px solid var(--bd);background:#fff;color:var(--ink);font:600 12px var(--font);padding:6px 11px;border-radius:9px;cursor:pointer;transition:.15s;}
+.btn:hover{border-color:var(--blue);color:var(--blue-i);}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff;}
+.btn.primary:hover{background:var(--blue-i);color:#fff;}
+.lgd{margin-left:auto;display:flex;gap:9px;align-items:center;font-size:10.5px;color:var(--soft);}
+.sw{width:10px;height:10px;border-radius:3px;display:inline-block;vertical-align:-1px;margin-right:3px;}
+svg#stage{display:block;width:100%;height:auto;font-family:var(--font);}
+.trace{background:var(--panel);border-radius:11px;padding:9px 13px;font-size:12.5px;line-height:1.5;margin-top:8px;min-height:42px;}
+.trace b{color:var(--blue-i);}
+.trace .stepno{font-family:var(--mono);font-size:11px;color:var(--muted);margin-right:6px;}
+
+.side{display:flex;flex-direction:column;gap:12px;}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:13px;box-shadow:var(--shadow);padding:13px 15px;}
+.card h3{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);}
+.card p{margin:0;font-size:12.5px;line-height:1.55;color:var(--soft);}
+.ledger{width:100%;border-collapse:collapse;font-size:12.5px;}
+.ledger td{padding:5px 0;border-bottom:1px solid #f0f2f6;}
+.ledger td:last-child{text-align:right;font-family:var(--mono);font-weight:700;color:var(--ink);}
+.ledger tr.tot td{border-bottom:none;padding-top:9px;font-weight:800;font-size:13.5px;}
+.ledger tr.sec td{padding-top:11px;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-bottom:none;}
+.ledger td.dim{color:var(--muted);}
+.list{margin:0;padding:0;list-style:none;}
+.list li{font-size:12.5px;line-height:1.5;padding:5px 0 5px 20px;position:relative;color:var(--soft);}
+.list li:before{content:"";position:absolute;left:3px;top:12px;width:9px;height:9px;border-radius:50%;background:#c7cdd8;}
+.list li.add:before{background:var(--green);} .list li.chg:before{background:var(--amber);}
+.list li b{color:var(--ink);}
+.trig{border-left:3px solid var(--red);background:var(--red-s);border-radius:0 11px 11px 0;padding:9px 13px;font-size:12.5px;color:var(--red-i);line-height:1.5;}
+.trig b{display:block;margin-bottom:2px;}
+
+/* detail */
+#detail .k{font-family:var(--mono);font-size:12px;color:var(--blue-i);}
+#detail .st2{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:999px;}
+
+/* reality */
+.reality{margin-top:26px;}
+.reality h2{font-size:21px;margin:0 0 6px;}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:12px;margin-top:12px;}
+table.t{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px;background:var(--card);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);}
+table.t th{background:var(--panel);font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);text-align:left;padding:9px 12px;}
+table.t td{padding:9px 12px;border-top:1px solid #f0f2f6;vertical-align:top;color:var(--soft);}
+table.t td b{color:var(--ink);}
+table.t td.n{font-family:var(--mono);font-weight:700;color:var(--ink);white-space:nowrap;}
+.tip{position:fixed;pointer-events:none;z-index:20;background:var(--ink);color:#fff;font-size:11.5px;line-height:1.5;padding:9px 11px;border-radius:9px;max-width:300px;display:none;box-shadow:0 10px 30px rgba(0,0,0,.3);}
+.tip b{display:block;font-size:12.5px;margin-bottom:3px;}
+.foot{font-size:11px;color:var(--muted);margin-top:26px;line-height:1.65;}
+svg .nd{cursor:pointer;}
+svg .nd rect.bx{fill:#fff;stroke:#e2e6ee;stroke-width:1.2;}
+svg .nd.new rect.bx{stroke:#10b981;stroke-width:2;}
+svg .nd.chg rect.bx{stroke:#f59e0b;stroke-width:2;}
+svg .nd.same rect.bx{stroke:#c9cfda;stroke-dasharray:4 3;}
+svg .nd.sel rect.bx{stroke:#2563eb;stroke-width:2.6;}
+svg .nd .t{font-size:11.5px;font-weight:700;fill:#1f2a44;pointer-events:none;}
+svg .nd .s{font-size:9.5px;fill:#4b5568;pointer-events:none;}
+svg .nd .cnt{font-size:10px;font-weight:800;fill:#1d4ed8;font-family:var(--mono);pointer-events:none;}
+svg .lane{fill:#e5e9f1;}
+svg .lt{font-size:9.5px;font-weight:800;letter-spacing:.09em;fill:#8a93a6;}
+svg .wr{stroke:#b7bfcd;stroke-width:1.4;fill:none;}
+svg .wr.hot{stroke:#3a4661;}
+</style>
+<div class="wrap">
+  <h1>Buddy in three stages</h1>
+  <p class="sub">Not five migrations in a year — <b>three</b>. What runs today, one hardening pass on the same shape, and then the final architecture built once: the log, the columnar store and client-side events all together. Drag the dial to any traffic level and watch where each stage chokes. The pod ledger on the right is computed from that number, not decorated.</p>
+
+  <div class="rail" id="rail"></div>
+
+  <div class="deck">
+    <div class="deckrow">
+      <div class="dial">
+        <label>Letters arriving per second</label>
+        <input type="range" id="rate" min="0" max="1000" value="0">
+        <div class="readout"><span class="big" id="rateTxt">1/s</span><span class="small" id="rateDay">86k a day</span></div>
+        <div class="chips" style="margin-top:9px" id="presets"></div>
+      </div>
+      <div>
+        <label class="toggle" style="margin-bottom:9px"><input type="checkbox" id="cli"> Client-side events on (stage 3 only)</label>
+        <div class="chips"><button class="chip" id="playBtn">Pause flow</button><button class="chip" id="traceBtn">Trace a letter</button></div>
+      </div>
+      <div class="verdict ok" id="verdict"></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="scene">
+        <div class="sbar">
+          <strong id="sceneName" style="font-size:14px"></strong>
+          <span class="lgd">
+            <span><i class="sw" style="background:#10b981"></i>added</span>
+            <span><i class="sw" style="background:#f59e0b"></i>changed</span>
+            <span><i class="sw" style="background:#c9cfda"></i>untouched</span>
+            <span><i class="sw" style="background:#2563eb;border-radius:50%"></i>a letter</span>
+          </span>
+        </div>
+        <svg id="stage" viewBox="0 0 1000 520"></svg>
+        <div class="trace" id="traceBox">Click any component for what it actually is. Press <b>Trace a letter</b> to follow one from the shop to a WhatsApp message and back.</div>
+      </div>
+      <div class="reality" id="reality"></div>
+    </div>
+    <div class="side">
+      <div class="card"><h3>Pod ledger at this rate</h3><table class="ledger" id="ledger"></table></div>
+      <div class="card" id="detail"><h3>Component</h3><p>Click a box in the diagram.</p></div>
+      <div class="card"><h3>What this stage changes</h3><ul class="list" id="changes"></ul></div>
+      <div class="trig" id="trigger"></div>
+    </div>
+  </div>
+
+  <p class="foot" id="foot"></p>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+(function(){
+const $ = s => document.querySelector(s);
+const NS = 'http://www.w3.org/2000/svg';
+const el = (n, a) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
+const fmt = n => n >= 1000000 ? (n/1000000).toFixed(n>=10000000?0:1)+'M' : n >= 1000 ? (n/1000).toFixed(n>=10000?0:1)+'k' : Math.round(n);
+
+/* ---------------- stage definitions ---------------- */
+const L = (x,w,t) => ({x,w,t});
+const STAGES = [
+{
+  id:'s0', tag:'live today', name:'Stage 1 · What runs now',
+  ds:'One Postgres, one image with three worker roles, WhatsApp out. Release 2a00ef44.',
+  cap:300, safe:30, capTxt:'safe ~30/s · ceiling ~300/s',
+  lanes:[L(14,196,'PRODUCERS'),L(222,208,'API POD'),L(442,224,'POSTGRES · ONE PRIMARY'),L(678,308,'WORKERS · CRM_ROLE · EDGES')],
+  nodes:[
+    {id:'relay',l:0,y:56,h:52,st:'same',t:'nautilus relay',s:['Shopify hooks, unopened'],tip:'The relay is a pipe: Shopify webhooks (orders/create, orders/paid, orders/cancelled, checkouts/create, checkouts/update) forwarded body-intact to POST /ingest/events with a wildcard RBAC JWT. One event per call — Shopify decides that, not us.'},
+    {id:'meta',l:0,y:120,h:52,st:'same',t:'Meta webhooks',s:['statuses · inbound · templates'],tip:'WhatsApp Cloud API callbacks. Meta BATCHES: one POST carries entry[] → changes[] → value with statuses[] or messages[] arrays. The bay narrows each array to one item per letter, which is why the WhatsApp catalog spec is all derive().'},
+    {id:'s2s',l:0,y:184,h:52,st:'same',t:'s2s vendors',s:['their events, their schema'],tip:'Push vendors hold an s2s token and register their schema at POST /ingest/schemas (T24). No code from us: the catalog merges their registered layer with our code layer and the editor is layer-blind.'},
+    {id:'buddy',l:0,y:248,h:52,st:'same',t:'buddy mirrors',s:['lead-api · telephony'],tip:'Voice mirror events from the legacy lead machine (lead.pushed, call.attempted, call.completed, call.inbound) — the flat shape, customer_id passed through rather than re-resolved (ADR 0010).'},
+    {id:'door',l:1,y:56,h:58,st:'same',t:'POST /ingest/events',s:['verify · stamp · insert · 200'],tip:'The envelope door. verify_s2s_caller decodes the JWT locally (no DB for a relay token) → 1 MiB streaming cap → INSERT … ON CONFLICT (merchant, source, external_id) DO NOTHING → 200. It never parses the payload: store first, understand later.'},
+    {id:'bays',l:1,y:126,h:58,st:'same',t:'webhook bays',s:['INGRESS registry · Meta bay'],tip:'GET|POST /ingest/webhooks/{provider}, dispatched through record\'s INGRESS registry (Meta registered at the composition root). 404 unknown bay before a byte is read, 403 bad signature, 413 over cap, 503 if the store fails — never a silent 200.'},
+    {id:'api',l:1,y:196,h:62,st:'same',t:'console + catalog API',s:['/customers /workflows','/connectors /catalog /schemas'],tip:'34 routes across four modules. /connectors carries merchant_scope as a declared dependency plus one route class that translates exceptions to status codes; the catalog serves an ETag so a repeat load is a 304.'},
+    {id:'rt',l:1,y:272,h:56,st:'same',t:'FastAPI · uvicorn',s:['1 process/pod · asyncpg 5+10','no pooler yet'],tip:'One uvicorn process per pod, asyncpg pool of 5 with 10 overflow straight to Postgres. That direct connection budget — not CPU — is what caps stage 1 at three or four worker processes.'},
+    {id:'raw',l:2,y:56,h:60,st:'same',t:'crm_event_raw',s:['the spine AND the queue','SKIP LOCKED · immutable'],tip:'T13. The letter stored raw and immutable by trigger, deduped by UNIQUE (merchant, source, external_id), with a partial index WHERE processed_at IS NULL that IS the work queue, drained FOR UPDATE SKIP LOCKED. attempts spends on claim; five then quarantine.'},
+    {id:'ident',l:2,y:128,h:56,st:'same',t:'crm_customer · platform_identity',s:['handles · staple · suppression'],tip:'T05 and T02. resolve() is the only creator of customer rows: phone → email → igsid → shopify id → external ref against partial uniques, no fuzzy matching ever. A collision is staple evidence: the younger card is merged away, never melted.'},
+    {id:'flows',l:2,y:196,h:56,st:'same',t:'workflow · version · enrollment',s:['plans · pinned versions · runs'],tip:'T19, T25, T20. A run executes the version it entered under (ADR 0023); the walker claims by wake_at lease and writes compare-and-set; every consumer write names the run it is about.'},
+    {id:'msg',l:2,y:264,h:56,st:'same',t:'message · bindings · templates',s:['the manifest T16 · T11 T12 T23'],tip:'crm_message is the single delivery authority: nine status words, one reason column, provider_message_id unique on its own because a wamid is globally unique, binding_id set-once by trigger.'},
+    {id:'redis',l:2,y:332,h:46,st:'same',t:'Redis',s:['send tokens · GETDEL · 60s'],tip:'Single-use send tokens only, bound to customer + channel + purpose. No token, no send (ADR 0015). A gate verdict is never cached here — a cached yes outlives a withdrawal.'},
+    {id:'pass',l:3,y:56,h:64,st:'same',t:'event-worker · the pass',s:['claim 100 → decode → resolve','→ consumers → stamp'],tip:'One row at a time inside its own savepoint: discovery nudge, decode by cached spec, resolve(), assert_facts, the outreach consumer, then the stamp. 6–12 DB round trips per letter, sequential — this is the ceiling of stage 1, not the door.'},
+    {id:'walk',l:3,y:132,h:52,st:'same',t:'walker',s:['leases on wake_at · pinned version'],tip:'Claims due runs by lease, executes the pinned document through the NODE_TYPES registry (wait, send, call, wait_event), parks on a refusal rather than failing, retries with jitter.'},
+    {id:'disp',l:3,y:196,h:52,st:'same',t:'dispatcher',s:['gate → send() → apply_outcome'],tip:'Claims a batch of 20 under a lease that must outlast the batch, asks the gate, calls send(), then writes the outcome once. A sweep requeues stale claims so a dead pod cannot strand a message.'},
+    {id:'wapi',l:3,y:260,h:48,st:'same',t:'Meta Graph API',s:['send() · approved templates only'],tip:'The one provider call in the system. The adapter renders positional or named parameters (one style per template) and classifies every error code as terminal, credential or retryable.'},
+    {id:'loom',l:3,y:320,h:48,st:'same',t:'loom console',s:['customers · templates · flows next'],tip:'SvelteKit, reads only through the API. Customers and templates are live; the flows editor renders its pickers from GET /catalog and is the next build.'},
+  ],
+  wires:[['relay','door'],['s2s','door'],['buddy','door'],['meta','bays'],['door','raw'],['bays','raw'],['raw','pass'],['pass','ident'],['pass','flows'],['walk','flows'],['disp','msg'],['disp','wapi'],['redis','disp']],
+  changes:[['same','<b>Nothing is added.</b> This is the shape on release today.'],['same','<b>18 crm tables + platform_identity</b>, 69 migrations, invariants in triggers'],['same','<b>Five registries</b> extractors, node types, connectors, ingress, catalog'],['same','<b>890+ tests</b> plus a boundary checker and a migration checker in CI']],
+  trig:'<b>Leave when</b> the queue-lag line fires more than once a day, or you need a second event-worker. Both need the pooler first — that is the whole of stage 2.'
+},
+{
+  id:'s1', tag:'next · weeks', name:'Stage 2 · Same shape, hardened',
+  ds:'No new architecture. Pooler, replicas, partitions, the gate finished, the editor shipped.',
+  cap:5000, safe:5000, capTxt:'to ~5k/s · the Postgres ceiling',
+  lanes:[L(14,176,'PRODUCERS'),L(200,176,'API PODS ×N'),L(388,120,'POOLER'),L(520,206,'POSTGRES'),L(738,248,'WORKERS ×N')],
+  nodes:[
+    {id:'prod',l:0,y:70,h:56,st:'same',t:'relay · Meta · s2s',s:['unchanged producers'],tip:'Unchanged. Nothing a producer does differs between stage 1 and stage 2.'},
+    {id:'buddy2',l:0,y:150,h:52,st:'same',t:'buddy mirrors',s:['unchanged'],tip:'Unchanged.'},
+    {id:'apis',l:1,y:70,h:56,st:'chg',t:'api pods ×N',s:['same code, more pods'],tip:'The API is stateless, so this is purely a replica count behind the load balancer. The only change in the code is that its pool now points at the pooler instead of the primary.'},
+    {id:'gate2',l:1,y:150,h:60,st:'add',t:'may_contact() live',s:['consent · quiet hours · caps','decision_log every verdict'],tip:'PR #1021 lands the full gate: the consent ledger and resolved state written in one transaction, quiet hours, frequency caps, and a decision_log row for every verdict including the refusals. Until then sends are gated by the global stop-list alone.'},
+    {id:'edit',l:1,y:234,h:56,st:'add',t:'flows editor',s:['pickers from GET /catalog'],tip:'The U-lane build: trigger picker, condition builder, goal picker and template variable menus all rendered from the catalog, so a merchant can never type a field name that the decoder does not read.'},
+    {id:'pgb',l:2,y:110,h:66,st:'add',t:'PgBouncer',s:['transaction pooling','the standing P0'],tip:'The one piece of infrastructure stage 2 adds. api_pool + Σ(worker replicas × 5) must stay under the server pool, checked before every replica bump. PR #1018 makes the asyncpg pool safe behind it.'},
+    {id:'raw1',l:3,y:60,h:60,st:'chg',t:'crm_event_raw',s:['monthly RANGE partitions','retention = partition drop'],tip:'Partitioning by month keeps the pending partial index small and turns retention into a partition drop instead of a delete storm. The table is still the queue.'},
+    {id:'rest1',l:3,y:136,h:52,st:'same',t:'identity · outreach · manifest',s:['unchanged tables'],tip:'Unchanged. crm_message gains RANGE partitions on created_at, which is a migration, not a redesign.'},
+    {id:'repl',l:3,y:204,h:62,st:'add',t:'read replica',s:['counts · catalog · journey','never the queue'],tip:'A streaming replica takes the reads that are not the queue: the seven-day GROUP BY behind seen-versus-matched, the catalog counts, the journey, run summaries. The primary keeps writes and claims.'},
+    {id:'lt',l:3,y:282,h:56,st:'add',t:'load test + alerts',s:['queue lag · pool saturation'],tip:'Fifteen minutes over the recorded Shopify fixtures against staging. It replaces every estimate on this page with a measurement, and the queue-lag alert threshold comes out of it.'},
+    {id:'ew1',l:4,y:60,h:66,st:'chg',t:'event-worker ×N',s:['+ live-plan cache','SKIP LOCKED → near-linear'],tip:'Same pass, more replicas, plus the live-plan cache so the entry consumer stops re-reading crm_workflow for every letter. That one cache is the difference between 70 and 100+ letters a second per replica.'},
+    {id:'wk1',l:4,y:142,h:50,st:'same',t:'walker ×N',s:['leases make replicas safe'],tip:'Unchanged. The wake_at lease and compare-and-set writes already make horizontal replicas correct.'},
+    {id:'dp1',l:4,y:208,h:58,st:'chg',t:'dispatcher ×N',s:['+ fairness lanes'],tip:'Claim ordering by purpose so a ten-thousand-recipient broadcast cannot starve a cash-on-delivery confirmation. Lands with the first broadcast PR.'},
+    {id:'edge1',l:4,y:282,h:50,st:'same',t:'Meta · buddy · loom',s:['unchanged'],tip:'Unchanged.'},
+  ],
+  wires:[['prod','apis'],['buddy2','apis'],['apis','pgb'],['pgb','raw1'],['pgb','rest1'],['raw1','ew1'],['ew1','rest1'],['gate2','pgb'],['dp1','rest1'],['repl','edit'],['lt','ew1']],
+  changes:[['add','<b>PgBouncer</b> — the standing P0, before any replica bump'],['add','<b>Read replica</b> — counts, catalog, journey, summaries'],['add','<b>may_contact()</b> — consent, quiet hours, caps, decision log (#1021)'],['add','<b>Flows editor</b> — the console builds on GET /catalog'],['add','<b>Load test + alerts</b> — estimates become measurements'],['chg','<b>Partitions</b> on crm_event_raw and crm_message'],['chg','<b>event-worker</b> replicas + the live-plan cache'],['chg','<b>dispatcher</b> fairness lanes'],['same','<b>Zero new architecture.</b> Same tables, same contracts, same code shape.']],
+  trig:'<b>Leave when</b> letters pass ~5k/s sustained, or the day you decide to track storefront clicks. Either one means stage 3 — and you build it once, whole.'
+},
+{
+  id:'s2', tag:'final · build once', name:'Stage 3 · The last architecture',
+  ds:'Log, columnar store, client events, cell-ready — all in one build. Nothing after this is a migration.',
+  cap:200000, safe:200000, capTxt:'50k/s and beyond · add cells',
+  lanes:[L(14,186,'EDGES + DOORS'),L(210,168,'THE LOG'),L(388,214,'STREAMS'),L(614,182,'STORES'),L(806,180,'UNCHANGED')],
+  nodes:[
+    {id:'pix',l:0,y:52,h:56,st:'add',t:'pixel + SDK',s:['Shopify pixel · Jitsu SDK','anon_id cookie · batched'],tip:'Shopify\'s Web Pixel gives us clientId and the shopper\'s consent flags inside Shopify\'s own sandbox; other stores get a snippet or the Jitsu SDK setting a first-party cookie. Both send BATCHES — 20 to 100 events per beacon — which is why the door count stays small.'},
+    {id:'coll',l:0,y:120,h:56,st:'add',t:'collector',s:['Jitsu or ours','validates consent, produces'],tip:'Accepts arrays of client events, checks the consent flags, and produces straight to the log. Stateless. Jitsu ships this plus the SDK and a Shopify pixel; ours would be about a week of work and one fewer component to run.'},
+    {id:'doors2',l:0,y:188,h:60,st:'chg',t:'the doors',s:['same routes, same refusals','PRODUCE, not insert'],tip:'One changed line at the end of each door: after verify and stamp, produce to the log instead of inserting. Every refusal — 401, 403, 413, 400 — still happens before anything is produced.'},
+    {id:'srv',l:0,y:260,h:52,st:'same',t:'servers · webhooks',s:['unchanged producers'],tip:'Unchanged. Meta already batches its callbacks; the relay and s2s vendors can batch arrays per call, which is what turns 50k letters a second into a few hundred requests a second.'},
+    {id:'topic',l:1,y:52,h:70,st:'add',t:'topic: letters',s:['256 partitions by merchant','key = the dedupe key · 7d'],tip:'Kafka or Redpanda. Partitioned by merchant hash so ordering per merchant is preserved (which is the only ordering we ever promised), keyed by (merchant, source, external_id) so dedupe stays exactly once, retained seven days — that retention IS the replay window.'},
+    {id:'attr',l:1,y:134,h:56,st:'add',t:'topic: attributed',s:['after decode + identity'],tip:'The decode stream\'s output: the same letter with customer_id and handles attached, ready for the entry-rules stream. Splitting the pass in two is what lets each half scale on its own bottleneck.'},
+    {id:'feed',l:1,y:202,h:56,st:'add',t:'change feed: plans',s:['crm_workflow → memory'],tip:'A publish flows here so the entry-rules stream refreshes its in-memory plans without polling the database on every letter.'},
+    {id:'dlq',l:1,y:270,h:52,st:'add',t:'dead-letter',s:['quarantine · replay'],tip:'Quarantine at scale: a letter no spec can decode goes here with its reason, and replay means re-producing it. Same law as the look-again shelf, different mechanism.'},
+    {id:'sink',l:2,y:52,h:56,st:'add',t:'sink consumers',s:['COPY 5k/batch → raw table'],tip:'Batched COPY into the raw table, ON CONFLICT dropping duplicates. The raw table stops being the queue and becomes what it always should have been at this size: the archive that answers audit, replay and journey.'},
+    {id:'dec',l:2,y:120,h:70,st:'add',t:'decode + identity',s:['same engine, same catalog','handle cache → resolve()'],tip:'The pass\'s first half as a consumer group. The same decode engine and the same catalog specs, but with a handle cache in front of resolve() — most letters are for a customer we already know, so the probe usually costs nothing. That cache is worth roughly ten times the throughput per process.'},
+    {id:'ent',l:2,y:202,h:70,st:'add',t:'entry-rules stream',s:['plans in memory · typed where','only matches touch the DB'],tip:'The pass\'s second half. Evaluating a typed where against a payload is pure CPU; only a letter that actually matches a door writes anything. Seen-versus-matched is about a hundred to one, so the write rate here is a fraction of the letter rate.'},
+    {id:'der',l:2,y:284,h:70,st:'add',t:'derive job',s:['sessionise clicks → moments','rollups: spend.monthly'],tip:'Reads the clickstream and emits ONE letter per meaningful moment — browse.abandoned, product.interest, price.watched — plus the rollups like spend.monthly carrying amount and previous. Forty clicks become one letter, and a flow reacts to it exactly like an order.'},
+    {id:'wd',l:2,y:366,h:52,st:'same',t:'walker · dispatcher',s:['unchanged, more replicas'],tip:'Unchanged code. They still read runs and messages from Postgres behind the pooler.'},
+    {id:'ch',l:3,y:52,h:66,st:'add',t:'ClickHouse',s:['every click, 10–20× compressed','90 days hot, Parquet after'],tip:'The columnar store for raw clickstream and product analytics. A billion events a day is 50 to 100 GB here versus 1.5 TB in Postgres with indexes — that ratio is the entire reason this component exists.'},
+    {id:'rawsink',l:3,y:130,h:60,st:'chg',t:'crm_event_raw — sink',s:['RANGE × merchant HASH','4–8 primaries'],tip:'Same table, same laws, now sharded by merchant hash and no longer carrying the work queue. Retention is still a partition drop.'},
+    {id:'idsh',l:3,y:202,h:60,st:'chg',t:'identity shards',s:['by merchant hash','probe order unchanged'],tip:'crm_customer and platform_identity sharded by merchant. The probe order, the no-fuzzy rule and the staple are untouched — sharding is a placement decision, not a semantic one.'},
+    {id:'anon',l:3,y:274,h:60,st:'add',t:'anon_id handle',s:['visitor card · staple at checkout'],tip:'One merchant-scoped handle column, last in the probe order, following the igsid precedent. A visitor is a customer row holding only that handle; the first letter carrying both anon_id and a phone staples the two cards. No new identity rule is needed.'},
+    {id:'seg',l:3,y:346,h:56,st:'add',t:'segments',s:['predicate → SQL over both'],tip:'T15 and T21. The same where-grammar the flow editor already speaks, compiled to SQL across the clickstream and the spine. "Everyone above 5k this month" is a segment; "she just crossed 5k" is a derived letter.'},
+    {id:'eng',l:4,y:52,h:76,st:'same',t:'catalog · gate · send()',s:['every contract holds:','resolve · gate · send · enrol'],tip:'Untouched by all of it. The catalog stays cold, the gate stays fail-closed and uncached, send() stays the one way out. None of them can tell where the queue lives.'},
+    {id:'cons',l:4,y:142,h:60,st:'same',t:'console',s:['flows · customers · analytics'],tip:'Unchanged, plus a session view that queries ClickHouse on demand for the raw clicks behind a moment.'},
+    {id:'cell',l:4,y:216,h:76,st:'add',t:'cell-ready',s:['a merchant lives in one cell','add cells, never redesign'],tip:'The last shape. Each cell is this entire stack for a slice of merchants, with a router at the edge; the only thing that stays global is suppression, because a person who said stop is stopped everywhere. You reach it by deploying a second copy, not by rebuilding.'},
+  ],
+  wires:[['pix','coll'],['srv','doors2'],['coll','topic'],['doors2','topic'],['topic','sink'],['topic','dec'],['dec','attr'],['attr','ent'],['feed','ent'],['sink','rawsink'],['dec','idsh'],['ent','rawsink'],['coll','ch'],['ch','der'],['der','topic'],['anon','idsh'],['ch','seg'],['ent','eng'],['wd','eng'],['seg','cons']],
+  changes:[['add','<b>Kafka or Redpanda</b> — letters, attributed, plans feed, dead-letter'],['add','<b>ClickHouse</b> — every client event, compressed, queryable'],['add','<b>Collector + pixel/SDK</b> — Shopify and D2C, batched, consent-aware'],['add','<b>Three streams</b> — sink, decode+identity, entry rules'],['add','<b>Derive job</b> — clicks and sums become moments'],['add','<b>anon_id + segments</b> — visitor cards, audiences'],['chg','<b>Doors produce</b> instead of insert — one line each'],['chg','<b>Raw table and identity</b> sharded by merchant'],['same','<b>Catalog, gate, walker, dispatcher, send(), console</b> — and every contract']],
+  trig:'<b>Nothing follows this.</b> More traffic is more cells; a new region is another cell. The product never learns the word.'
+}];
+
+/* ---------------- pod math ---------------- */
+function planFor(stage, rate, clientOn){
+  const S = stage.id, out = {rows:[], total:0, infra:[], note:''};
+  const c = (n) => Math.max(1, Math.ceil(n));
+  let doors, pass, walker, disp, extra = [];
+  if (S === 's0'){
+    doors = Math.max(2, c(rate/400));
+    pass  = Math.min(4, Math.max(1, c(rate/70)));
+    walker = 1; disp = 1;
+    out.rows = [['API pods (door + console)', doors],['event-worker', pass],['walker', walker],['dispatcher', disp]];
+    out.note = 'Without a pooler the whole system is capped near four worker processes: each holds up to 15 direct connections.';
+    out.infra = [['Postgres primary', 1],['Redis', 1]];
+  } else if (S === 's1'){
+    doors = Math.max(2, c(rate/400));
+    pass  = Math.max(2, c(rate/100));
+    walker = Math.max(2, c(rate/4000));
+    disp  = Math.max(2, c(Math.min(rate*0.02, 1500)/60));
+    out.rows = [['API pods', doors],['event-worker', pass],['walker', walker],['dispatcher', disp]];
+    out.note = 'The pass is still one row at a time, 6–12 round trips each, so the worker count climbs fastest here.';
+    out.infra = [['Postgres primary', 1],['Read replica', 1],['PgBouncer', 2],['Redis', 2]];
+  } else {
+    const batched = 8000;
+    doors = Math.max(3, c(rate/batched));
+    const decode = Math.max(3, Math.min(256, c(rate/2000)));
+    const entry  = Math.max(3, Math.min(256, c(rate/2500)));
+    const sink   = Math.max(2, c(rate/6000));
+    walker = Math.max(2, c(rate/8000));
+    disp   = Math.max(2, c(Math.min(rate*0.02, 2000)/80));
+    out.rows = [['Door pods', doors],['decode + identity', decode],['entry rules', entry],['sink consumers', sink],['walker', walker],['dispatcher', disp]];
+    if (clientOn){ out.rows.push(['collector', Math.max(2, c(rate/8000))], ['derive job', Math.max(2, c(rate/10000))]); }
+    out.note = 'Producers batch — a beacon or a Meta callback carries dozens of letters — so 50k letters a second is only hundreds of HTTP calls a second. That is why the doors stay in single digits while the streams do not.';
+    out.infra = [['Kafka brokers', Math.max(3, c(rate/20000)*3)],['Postgres primaries', Math.max(2, Math.min(8, c(rate/12000)))],['Read replicas', Math.max(2, Math.min(8, c(rate/12000)))],['PgBouncer', 3],['Redis', 3]];
+    if (clientOn) out.infra.push(['ClickHouse nodes', Math.max(3, c(rate/20000))]);
+  }
+  out.total = out.rows.reduce((a,[,n]) => a+n, 0);
+  out.infraTotal = out.infra.reduce((a,[,n]) => a+n, 0);
+  return out;
+}
+
+/* ---------------- state ---------------- */
+let cur = 0, rate = 1, clientOn = false, playing = true, selected = null;
+const PRESETS = [['Pilot today', 1],['A busy store', 60],['Fleet of shops', 2000],['Fleet + tracking', 20000],['Everything', 50000]];
+const sliderToRate = v => Math.round(Math.pow(10, (v/1000) * 5)); // 1 → 100000
+const rateToSlider = r => Math.round(Math.log10(Math.max(1,r)) / 5 * 1000);
+
+/* ---------------- rail ---------------- */
+const rail = $('#rail');
+STAGES.forEach((s, i) => {
+  const b = document.createElement('button');
+  b.className = 'st' + (i === 0 ? ' on' : '');
+  b.innerHTML = `<span class="tag">${s.tag}</span><div class="nm">${s.name}</div><div class="ds">${s.ds}</div><div class="cap">${s.capTxt}</div><div class="bar"><i></i></div>`;
+  b.addEventListener('click', () => { cur = i; draw(); });
+  rail.appendChild(b);
+});
+const presets = $('#presets');
+PRESETS.forEach(([n, r]) => {
+  const c = document.createElement('button');
+  c.className = 'chip'; c.textContent = n;
+  c.addEventListener('click', () => { rate = r; $('#rate').value = rateToSlider(r); draw(); });
+  presets.appendChild(c);
+});
+$('#rate').value = rateToSlider(1);
+$('#rate').addEventListener('input', e => { rate = sliderToRate(+e.target.value); draw(); });
+$('#cli').addEventListener('change', e => { clientOn = e.target.checked; if (clientOn && cur < 2) { cur = 2; } draw(); });
+$('#playBtn').addEventListener('click', () => { playing = !playing; $('#playBtn').textContent = playing ? 'Pause flow' : 'Resume flow'; });
+
+/* ---------------- svg render ---------------- */
+const svg = $('#stage'), tip = $('#tip');
+let boxes = {}, wirePaths = [], particles = [];
+
+function draw(){
+  const S = STAGES[cur];
+  document.querySelectorAll('.st').forEach((b, i) => b.classList.toggle('on', i === cur));
+  $('#sceneName').textContent = S.name;
+  svg.innerHTML = ''; boxes = {}; wirePaths = []; particles = []; selected = null;
+  const lanesG = el('g'), wiresG = el('g'), nodesG = el('g'), dotsG = el('g', {id:'dots'});
+  svg.appendChild(lanesG); svg.appendChild(wiresG); svg.appendChild(dotsG); svg.appendChild(nodesG);
+  const bottom = Math.max(...S.nodes.map(n => n.y + n.h)) + 22;
+  svg.setAttribute('viewBox', '0 0 1000 ' + (bottom + 14));
+  S.lanes.forEach(L => {
+    lanesG.appendChild(el('rect', {x:L.x, y:14, width:L.w, height:bottom - 14, rx:12, class:'lane'}));
+    const t = el('text', {x:L.x+13, y:33, class:'lt'}); t.textContent = L.t; lanesG.appendChild(t);
+  });
+  S.nodes.forEach(n => {
+    const L = S.lanes[n.l], x = L.x + 10, w = L.w - 20;
+    boxes[n.id] = {x, y:n.y, w, h:n.h, n};
+    const g = el('g', {class:'nd ' + (n.st === 'add' ? 'new' : n.st === 'chg' ? 'chg' : 'same')});
+    g.appendChild(el('rect', {x, y:n.y, width:w, height:n.h, rx:9, class:'bx'}));
+    const t = el('text', {x:x+11, y:n.y+21, class:'t'}); t.textContent = n.t; g.appendChild(t);
+    (n.s||[]).forEach((line, i) => { const s = el('text', {x:x+11, y:n.y+37+i*13, class:'s'}); s.textContent = line; g.appendChild(s); });
+    const cnt = el('text', {x:x+w-9, y:n.y+21, class:'cnt', 'text-anchor':'end', id:'c_'+n.id}); g.appendChild(cnt);
+    g.addEventListener('mousemove', e => { tip.innerHTML = '<b>'+n.t+'</b>'+n.tip; tip.style.display='block'; tip.style.left = Math.min(e.clientX+16, innerWidth-316)+'px'; tip.style.top = Math.min(e.clientY+16, innerHeight-160)+'px'; });
+    g.addEventListener('mouseleave', () => tip.style.display = 'none');
+    g.addEventListener('click', () => { selected = n.id; document.querySelectorAll('.nd').forEach(x2 => x2.classList.remove('sel')); g.classList.add('sel');
+      const badge = n.st === 'add' ? '<span class="st2" style="background:var(--green-s);color:var(--green-i)">added</span>' : n.st === 'chg' ? '<span class="st2" style="background:var(--amber-s);color:var(--amber-i)">changed</span>' : '<span class="st2" style="background:var(--panel);color:var(--soft)">untouched</span>';
+      $('#detail').innerHTML = '<h3>Component ' + badge + '</h3><p class="k" style="margin-bottom:5px">'+n.t+'</p><p>'+n.tip+'</p>'; });
+    nodesG.appendChild(g);
+  });
+  S.wires.forEach(([a,b]) => {
+    const A = boxes[a], B = boxes[b]; if (!A || !B) return;
+    let d;
+    if (B.x > A.x + A.w - 4){
+      const x1 = A.x + A.w, y1 = A.y + A.h/2, x2 = B.x, y2 = B.y + B.h/2, mx = (x1+x2)/2;
+      d = `M${x1},${y1} H${mx} V${y2} H${x2}`;
+    } else {
+      const x1 = A.x, y1 = A.y + A.h/2, x2 = B.x + B.w, y2 = B.y + B.h/2, mx = (x1+x2)/2;
+      d = `M${x1},${y1} H${mx} V${y2} H${x2}`;
+    }
+    const p = el('path', {d, class:'wr hot'}); wiresG.appendChild(p);
+    wirePaths.push({el:p, len:p.getTotalLength()});
+  });
+  updatePanels();
+}
+
+/* ---------------- panels ---------------- */
+function updatePanels(){
+  const S = STAGES[cur], P = planFor(S, rate, clientOn);
+  $('#rateTxt').textContent = fmt(rate) + '/s';
+  $('#rateDay').textContent = fmt(rate*86400) + ' a day';
+  document.querySelectorAll('.chip').forEach(c => { const m = PRESETS.find(p => p[0] === c.textContent); if (m) c.classList.toggle('on', m[1] === rate); });
+  // rail capacity bars
+  document.querySelectorAll('.st .bar i').forEach((b, i) => {
+    const pct = Math.min(100, rate / STAGES[i].cap * 100);
+    b.style.width = pct + '%';
+    b.style.background = pct > 99 ? 'var(--red)' : pct > 70 ? 'var(--amber)' : 'var(--green)';
+  });
+  // verdict
+  const fits = STAGES.findIndex(s => rate <= s.cap);
+  const v = $('#verdict');
+  if (rate > S.cap){
+    v.className = 'verdict bad';
+    v.innerHTML = '<b>This stage cannot.</b> ' + fmt(rate) + '/s is past its ' + fmt(S.cap) + '/s ceiling: the backlog grows and never drains. You need ' + (fits < 0 ? 'more cells' : STAGES[fits].name.split('\u00b7')[0].trim()) + '.';
+  } else if (clientOn && cur < 2){
+    v.className = 'verdict warn';
+    v.innerHTML = '<b>Client events need stage 3.</b> Storefront tracking arrives with the columnar store, not before — that is the whole point of building once.';
+  } else {
+    v.className = 'verdict ok';
+    v.innerHTML = '<b>This stage handles it.</b> ' + fmt(rate) + '/s sits inside its ceiling of ' + fmt(S.cap) + '/s, with ' + P.total + ' application pods.';
+  }
+  // ledger
+  let h = '';
+  P.rows.forEach(([n, c]) => h += `<tr><td>${n}</td><td>${c}</td></tr>`);
+  h += `<tr class="tot"><td>Application pods</td><td>${P.total}</td></tr>`;
+  h += `<tr class="sec"><td colspan="2">Stateful nodes</td></tr>`;
+  P.infra.forEach(([n, c]) => h += `<tr><td class="dim">${n}</td><td>${c}</td></tr>`);
+  h += `<tr class="tot"><td>Total nodes</td><td>${P.total + P.infraTotal}</td></tr>`;
+  $('#ledger').innerHTML = h;
+  $('#changes').innerHTML = S.changes.map(([k, t]) => `<li class="${k === 'add' ? 'add' : k === 'chg' ? 'chg' : ''}">${t}</li>`).join('');
+  $('#trigger').innerHTML = S.trig;
+  $('#detail').dataset.note = P.note;
+  if (!selected) $('#detail').innerHTML = '<h3>Sizing note</h3><p>' + P.note + '</p>';
+}
+
+/* ---------------- particles ---------------- */
+const dotColor = ['#7c3aed','#2563eb','#10b981','#f59e0b'];
+let backlog = 0, last = performance.now(), acc = 0;
+function frame(now){
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  const S = STAGES[cur];
+  if (playing && wirePaths.length){
+    const visual = 1.5 + 11 * (Math.log10(Math.max(1, rate)) / 5);
+    acc += visual * dt;
+    while (acc >= 1 && particles.length < 150){
+      acc -= 1;
+      const wi = Math.floor(Math.random() * wirePaths.length);
+      particles.push({w:wi, d:0, v:70 + Math.random()*50, c:dotColor[Math.floor(Math.random()*dotColor.length)]});
+    }
+    particles.forEach(p => p.d += p.v * dt);
+    particles = particles.filter(p => p.d < wirePaths[p.w].len);
+    const over = rate - S.cap;
+    backlog = over > 0 ? backlog + over * dt : Math.max(0, backlog - S.cap * dt * 0.4);
+    const g = svg.querySelector('#dots');
+    if (g){
+      g.innerHTML = '';
+      particles.forEach(p => {
+        const pt = wirePaths[p.w].el.getPointAtLength(p.d);
+        g.appendChild(el('circle', {cx:pt.x, cy:pt.y, r:3.4, fill:p.c, opacity:.95}));
+      });
+      if (backlog > 1){
+        const chokeId = S.id === 's0' ? 'raw' : S.id === 's1' ? 'raw1' : 'topic';
+        const b = boxes[chokeId];
+        if (b){
+          const bars = Math.min(14, Math.ceil(Math.log10(backlog+1) * 4));
+          for (let i = 0; i < bars; i++)
+            g.appendChild(el('rect', {x:b.x + b.w - 8, y:b.y + b.h + 6 + i*5, width:7, height:3.4, rx:1.5, fill:'#ef4444', opacity:(1 - i/bars*0.55)}));
+          const t = el('text', {x:b.x + b.w - 12, y:b.y + b.h + 18, 'text-anchor':'end', 'font-size':'10.5', 'font-weight':'800', fill:'#991b1b'});
+          t.textContent = fmt(backlog) + ' queued';
+          g.appendChild(t);
+        }
+      }
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---------------- trace ---------------- */
+const TRACES = {
+ s0:[['relay','A shopper abandons a cash-on-delivery checkout. Shopify posts to the relay, which forwards the body unopened.'],
+     ['door','The door verifies the token locally, stamps the envelope, inserts with ON CONFLICT and answers 200. It never reads the payload.'],
+     ['raw','The row lands in crm_event_raw with processed_at NULL — it is now in the work queue.'],
+     ['pass','event-worker claims it, decodes it with the Shopify spec (the phone is in customer.default_address), resolves the person and runs the consumers.'],
+     ['ident','resolve() probes phone then email against the partial uniques. A hit is Priya; a miss would create her card.'],
+     ['flows','The cart board\'s door matches on topic plus the typed where, and a run is created pinned to that board\'s version.'],
+     ['walk','Fifteen minutes later the walker claims the run by lease and reaches the send node, mapping the template blank to her name.'],
+     ['disp','The dispatcher asks the gate. Suppression, and soon consent, quiet hours and caps. Not sure means no, and the verdict is logged.'],
+     ['redis','A single-use token is minted, bound to this customer, channel and purpose, alive for sixty seconds.'],
+     ['wapi','send() posts the approved template to Meta. The outcome is written once: status, provider id, and the pipe it left on.'],
+     ['bays','Meta posts "delivered" back to the bay. Signature verified, array narrowed, filed as a letter — and it starts again at the tray.']],
+ s1:[['prod','Same producers, same letters. Nothing about stage 2 is visible from outside.'],
+     ['apis','More API pods behind the balancer, but the code is identical. Their pools now point at the pooler.'],
+     ['pgb','PgBouncer multiplexes hundreds of pod connections onto a small server pool. Without it the replica count is capped near four.'],
+     ['raw1','The letter lands in the right monthly partition, so the pending index stays small and retention is a drop, not a delete.'],
+     ['ew1','One of many event-workers claims it. The live-plan cache means the entry consumer no longer re-reads the plans for every letter.'],
+     ['gate2','The full gate is live now: consent, quiet hours, frequency caps, and a decision row for every verdict including the refusals.'],
+     ['repl','Meanwhile the console reads counts and journeys from the replica, so a dashboard load never competes with the queue.'],
+     ['lt','And the numbers on this page stop being estimates: the load test measures them.']],
+ s2:[['pix','A shopper views three products. The pixel batches those clicks and sends them once, with her consent flags and her anon_id.'],
+     ['coll','The collector checks the flags and produces the batch to the log. Nothing about clicks touches the spine.'],
+     ['ch','Every click lands in ClickHouse, compressed ten to twenty times, queryable for ninety days and archived after.'],
+     ['der','The derive job sessionises them and emits ONE letter: browse abandoned, three views of the blue kurti. Forty clicks became one moment.'],
+     ['topic','That letter joins the same topic as orders and receipts, keyed and partitioned by merchant.'],
+     ['dec','The decode stream reads it with the same engine and the same catalog, and the handle cache resolves her without touching the database.'],
+     ['anon','Her visitor card carries only an anon_id — until a checkout letter carries both that and her phone, and the two cards are stapled.'],
+     ['ent','The entry-rules stream evaluates the typed where against plans held in memory. Only a match writes anything.'],
+     ['eng','From here nothing has changed: the gate, the walker, send(), the console. They cannot tell the queue moved.'],
+     ['cell','And when one cluster is more blast radius than you accept, this whole picture becomes a cell and you deploy a second one.']]
+};
+let tracing = false, tIdx = 0, tTimer = null;
+$('#traceBtn').addEventListener('click', () => {
+  if (tracing){ tracing = false; clearTimeout(tTimer); $('#traceBtn').textContent = 'Trace a letter'; document.querySelectorAll('.nd').forEach(n => n.classList.remove('sel')); return; }
+  tracing = true; tIdx = 0; $('#traceBtn').textContent = 'Stop trace';
+  const step = () => {
+    if (!tracing) return;
+    const seq = TRACES[STAGES[cur].id];
+    const [id, text] = seq[tIdx % seq.length];
+    document.querySelectorAll('.nd').forEach(n => n.classList.remove('sel'));
+    const nodes = [...document.querySelectorAll('.nd')];
+    const idx = STAGES[cur].nodes.findIndex(n => n.id === id);
+    if (idx >= 0 && nodes[idx]) nodes[idx].classList.add('sel');
+    $('#traceBox').innerHTML = '<span class="stepno">' + String(tIdx % seq.length + 1).padStart(2,'0') + '/' + seq.length + '</span>' + text;
+    tIdx++; tTimer = setTimeout(step, 3600);
+  };
+  step();
+});
+
+/* ---------------- reality section ---------------- */
+$('#reality').innerHTML = `
+<h2>Is that really how big systems run?</h2>
+<p class="sub" style="margin-bottom:0">Yes and no, and the honest version matters. <b>I revised my own numbers to build this page.</b> An earlier sketch put a hundred door pods and two hundred decoders at 50k/s. That costed unbatched requests and one-row-at-a-time work. Producers batch, and a stream consumer with a handle cache does five to ten times what the current pass does per process — so the real figure is under a hundred application pods.</p>
+<table class="t">
+  <tr><th>Shape</th><th>Typical pods</th><th>What actually sets the number</th></tr>
+  <tr><td><b>One stateless API service</b></td><td class="n">3 – 20</td><td>Redundancy and burst headroom, almost never raw throughput. Two is the floor for anything you page about.</td></tr>
+  <tr><td><b>One stream consumer group</b></td><td class="n">10 – 60</td><td>Hard-capped by partition count: a 257th consumer on 256 partitions does nothing at all. Tens is the normal shape.</td></tr>
+  <tr><td><b>A large company, all services</b></td><td class="n">thousands</td><td>Hundreds of services times three to ten replicas each. It is service count, not one pipeline with a thousand workers.</td></tr>
+  <tr><td><b>One pipeline needing 300+</b></td><td class="n">a smell</td><td>Almost always cheaper to fix the per-message cost — a cache, a batch, a dropped round trip — than to run the pods.</td></tr>
+</table>
+<div class="rgrid">
+  <div class="card"><h3>The rule of thumb</h3><p>Before adding the hundredth pod to one stage, find the round trip you can delete. Our own numbers prove it: the handle cache in front of resolve() is worth more than a hundred extra processes.</p></div>
+  <div class="card"><h3>What actually costs money</h3><p>Ninety application pods at roughly a core each is a small bill. The brokers, the Postgres primaries and ClickHouse cost several times more. Pod count is the number people quote; the data tier is the number finance sees.</p></div>
+  <div class="card"><h3>Pods versus processes</h3><p>A pod with four cores runs four uvicorn workers, so pod count can be a quarter of process count. Every number in the ledger is a pod at roughly one core, which is the conservative way to read it.</p></div>
+</div>`;
+$('#foot').innerHTML = 'Sources: canon T02–T25, ADR 0001–0023, design/how-it-scales, design/worker-runtime, design/event-catalog, modules/00–05; clairvoyance release <span style="font-family:var(--mono)">2a00ef44</span> (4 Sep 2026). Stage 1 figures are estimates read from the code until the load test runs. Stages 2 and 3 are proposals with named triggers, not sealed canon — the rulings each needs are on its panel. Pod counts come from the model in this page: doors at 400/s unbatched and 8,000/s batched, the current pass at 70–100 letters/s, a stream consumer at 2,000–2,500/s, sink COPY at 6,000/s, sends capped by provider throughput.';
+
+draw();
+requestAnimationFrame(frame);
+})();
+</script>

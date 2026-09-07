@@ -1,0 +1,569 @@
+<title>Buddy Scale Phases</title>
+<style>
+:root{
+  --canvas:#eef1f6; --panel:#e5e9f1; --card:#ffffff; --card-border:#e2e6ee;
+  --shadow:0 1px 3px rgba(31,42,68,.10),0 4px 14px rgba(31,42,68,.06);
+  --ink:#1f2a44; --ink-soft:#4b5568; --muted:#8a93a6; --line:#3a4661;
+  --purple:#7c3aed; --purple-soft:#ede4ff; --purple-ink:#5b21b6;
+  --blue:#2563eb;   --blue-soft:#dce7fd;   --blue-ink:#1d4ed8;
+  --green:#10b981;  --green-soft:#d8f3e6;  --green-ink:#047857;
+  --teal:#0d9488;   --teal-soft:#d3f0ec;   --teal-ink:#0f766e;
+  --amber:#f59e0b;  --amber-soft:#ffeacb;  --amber-ink:#92400e;
+  --red:#ef4444;    --red-soft:#fde2e2;    --red-ink:#991b1b;
+  --font:"Inter","SF Pro Text",-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:"SF Mono",Menlo,Consolas,monospace;
+}
+body{margin:0;background:var(--canvas);font-family:var(--font);color:var(--ink);}
+.wrap{max-width:1240px;margin:0 auto;padding:26px 18px 50px;}
+h1{font-size:28px;margin:0 0 4px;letter-spacing:-.01em;}
+.sub{font-size:14px;color:var(--ink-soft);margin:0 0 16px;line-height:1.5;}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;}
+.tab{border:1px solid var(--card-border);background:var(--card);color:var(--ink-soft);font:600 12px var(--font);padding:8px 12px;border-radius:999px;cursor:pointer;}
+.tab.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+.tab .k{display:inline-block;min-width:16px;height:16px;line-height:16px;border-radius:50%;background:#dfe3ea;color:#4b5568;font-size:10px;text-align:center;margin-right:6px;}
+.tab.on .k{background:#fff;color:var(--ink);}
+.panel{display:none;}
+.panel.on{display:block;}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:start;}
+@media (max-width:980px){.grid{grid-template-columns:1fr;}}
+.scene{background:var(--card);border:1px solid var(--card-border);border-radius:14px;box-shadow:var(--shadow);padding:12px;overflow-x:auto;}
+.scene svg{display:block;width:100%;height:auto;font-family:var(--font);}
+.scene .bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 8px;font-size:12px;color:var(--ink-soft);}
+.btn{border:1px solid var(--card-border);background:#fff;color:var(--ink);font:600 12px var(--font);padding:6px 10px;border-radius:8px;cursor:pointer;}
+.btn.primary{background:var(--blue);color:#fff;border-color:var(--blue);}
+.side{display:flex;flex-direction:column;gap:12px;}
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:12px;box-shadow:var(--shadow);padding:12px 14px;}
+.card h3{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.card p{margin:0;font-size:12.5px;line-height:1.5;color:var(--ink-soft);}
+.pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;vertical-align:middle;}
+.p-purple{background:var(--purple-soft);color:var(--purple-ink);} .p-blue{background:var(--blue-soft);color:var(--blue-ink);}
+.p-green{background:var(--green-soft);color:var(--green-ink);} .p-teal{background:var(--teal-soft);color:var(--teal-ink);}
+.p-amber{background:var(--amber-soft);color:var(--amber-ink);} .p-red{background:var(--red-soft);color:var(--red-ink);} .p-ph{background:#dfe3ea;color:#4b5568;}
+.list{margin:6px 0 0;padding:0;list-style:none;}
+.list li{font-size:12.5px;line-height:1.45;padding:4px 0 4px 20px;position:relative;color:var(--ink-soft);}
+.list li:before{content:"";position:absolute;left:4px;top:11px;width:9px;height:9px;border-radius:50%;background:#c7cdd8;}
+.list li.add:before{background:var(--green);} .list li.chg:before{background:var(--amber);} .list li.same:before{background:#c7cdd8;}
+.list li b{color:var(--ink);}
+.nums{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;}
+.num{background:var(--panel);border-radius:10px;padding:8px 10px;}
+.num b{display:block;font-size:18px;color:var(--ink);letter-spacing:-.01em;}
+.num span{font-size:10.5px;color:var(--muted);}
+.trig{border-left:3px solid var(--red);background:var(--red-soft);border-radius:0 10px 10px 0;padding:8px 12px;font-size:12.5px;color:var(--red-ink);line-height:1.5;}
+.legend{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:11px;color:var(--ink-soft);margin:6px 0 0;}
+.legend .ln{width:22px;height:0;border-top:1.5px solid var(--line);display:inline-block;} .legend .ln.dash{border-top-style:dashed;}
+.caption{min-height:44px;background:var(--panel);border-radius:10px;padding:8px 12px;font-size:12.5px;line-height:1.5;color:var(--ink);margin-top:8px;}
+.caption b{color:var(--blue-ink);}
+.tip{position:fixed;pointer-events:none;z-index:9;background:var(--ink);color:#fff;font-size:11px;line-height:1.45;padding:8px 10px;border-radius:8px;max-width:280px;display:none;box-shadow:0 6px 20px rgba(0,0,0,.25);}
+.tip b{display:block;font-size:12px;margin-bottom:2px;}
+svg .node{cursor:pointer;}
+svg .node rect.box{fill:#fff;stroke:#e2e6ee;stroke-width:1;filter:drop-shadow(0 1px 2px rgba(31,42,68,.12));}
+svg .node.new rect.box{stroke:#10b981;stroke-width:2;}
+svg .node.chg rect.box{stroke:#f59e0b;stroke-width:2;}
+svg .node.same rect.box{stroke:#c7cdd8;stroke-dasharray:4 3;}
+svg .node text.t{font-size:11.5px;font-weight:700;fill:#1f2a44;}
+svg .node text.s{font-size:9.5px;fill:#4b5568;}
+svg .lane{fill:#e5e9f1;}
+svg .lanet{font-size:10px;font-weight:700;letter-spacing:.08em;fill:#8a93a6;}
+svg .wire{stroke:#3a4661;stroke-width:1.5;fill:none;}
+svg .wire.dash{stroke-dasharray:5 4;}
+svg .dot{fill:#2563eb;} svg .dot.amber{fill:#f59e0b;} svg .dot.green{fill:#10b981;} svg .dot.purple{fill:#7c3aed;}
+svg .badge{font-size:9px;font-weight:700;fill:#fff;}
+svg .tbl rect{fill:#fff;stroke:#0d9488;stroke-width:1.2;cursor:pointer;}
+svg .tbl.designed rect{stroke-dasharray:5 3;stroke:#8a93a6;}
+svg .tbl text.n{font-size:10.5px;font-weight:700;fill:#1f2a44;font-family:var(--mono);}
+svg .tbl text.k{font-size:9px;fill:#4b5568;}
+svg .tbl.sel rect{stroke:#2563eb;stroke-width:2.5;}
+svg .fk{stroke:#3a4661;stroke-width:1.2;fill:none;}
+.cols{font-family:var(--mono);font-size:11px;line-height:1.55;color:var(--ink-soft);margin:6px 0 0;white-space:pre-wrap;overflow-wrap:anywhere;}
+.foot{font-size:11px;color:var(--muted);margin-top:22px;line-height:1.6;}
+</style>
+<div class="wrap">
+  <h1>Buddy, phase by phase</h1>
+  <p class="sub">Where the system is today in real components, and each phase after it up to any scale. Green outline = added in that phase, amber = changed, dashed grey = untouched. Dots are letters moving. Hover a component for the exact tech; click a table in the data model for its columns. Everything traces to the corpus and the release tip of 4 Sep 2026.</p>
+  <div class="tabs" id="tabs">
+    <button class="tab on" data-p="p0"><span class="k">0</span>Where we are</button>
+    <button class="tab" data-p="p1"><span class="k">1</span>Fleet on Postgres</button>
+    <button class="tab" data-p="p2"><span class="k">2</span>Browsers and rollups</button>
+    <button class="tab" data-p="p3"><span class="k">3</span>The log</button>
+    <button class="tab" data-p="p4"><span class="k">4</span>Cells, any scale</button>
+    <button class="tab" data-p="db"><span class="k">DB</span>Data model</button>
+  </div>
+
+  <!-- ================= PHASE 0 ================= -->
+  <div class="panel on" id="p0">
+    <div class="grid">
+      <div class="scene">
+        <div class="bar"><button class="btn primary" id="traceBtn">Trace one letter</button><button class="btn" data-anim="p0">Pause letters</button><span class="legend"><span class="ln"></span>facts <span class="ln dash"></span>commands / reads</span></div>
+        <svg id="svg-p0" viewBox="0 0 900 560" width="900" height="560">
+          <defs><marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#3a4661"/></marker></defs>
+          <rect class="lane" x="10" y="10" width="190" height="540" rx="12"/><text class="lanet" x="24" y="30">PRODUCERS</text>
+          <rect class="lane" x="210" y="10" width="200" height="540" rx="12"/><text class="lanet" x="224" y="30">API POD  (FASTAPI)</text>
+          <rect class="lane" x="420" y="10" width="220" height="540" rx="12"/><text class="lanet" x="434" y="30">POSTGRES  (ONE PRIMARY)</text>
+          <rect class="lane" x="650" y="10" width="240" height="540" rx="12"/><text class="lanet" x="664" y="30">WORKERS  (CRM_ROLE PODS)  +  EDGES</text>
+          <!-- wires (ids for animation) -->
+          <path id="w0a" class="wire" d="M180,90 H205 V118 H226" marker-end="url(#ah)"/>
+          <path id="w0b" class="wire" d="M180,170 H200 V200 H226" marker-end="url(#ah)"/>
+          <path id="w0c" class="wire" d="M180,250 H196 V126 H226" marker-end="url(#ah)"/>
+          <path id="w0d" class="wire" d="M180,330 H192 V134 H226" marker-end="url(#ah)"/>
+          <path id="w0e" class="wire" d="M390,118 H412 V96 H436" marker-end="url(#ah)"/>
+          <path id="w0f" class="wire" d="M390,200 H412 V104 H436" marker-end="url(#ah)"/>
+          <path id="w0g" class="wire" d="M620,96 H640 V96 H666" marker-end="url(#ah)"/>
+          <path id="w0h" class="wire dash" d="M666,130 H640 V180 H620" marker-end="url(#ah)"/>
+          <path id="w0i" class="wire dash" d="M666,260 H640 V300 H620" marker-end="url(#ah)"/>
+          <path id="w0j" class="wire dash" d="M666,380 H640 V400 H620" marker-end="url(#ah)"/>
+          <path id="w0k" class="wire" d="M770,420 V440" marker-end="url(#ah)"/>
+          <path id="w0l" class="wire" d="M770,480 V500" marker-end="url(#ah)"/>
+          <path id="w0m" class="wire dash" d="M690,520 H400 V200 H390" marker-end="url(#ah)"/>
+          <path id="w0n" class="wire dash" d="M770,60 H400 V300 H390" marker-end="url(#ah)"/>
+          <!-- producers -->
+          <g class="node" data-tip="nautilus relay|Shopify webhooks (orders/create, orders/paid, orders/cancelled, checkouts/create, checkouts/update) forwarded unopened to POST /ingest/events with a wildcard RBAC JWT."><rect class="box" x="24" y="66" width="156" height="48" rx="8"/><text class="t" x="34" y="86">nautilus relay</text><text class="s" x="34" y="102">Shopify webhooks, unopened</text><rect x="130" y="58" width="44" height="14" rx="7" fill="#ffeacb"/><text class="badge" x="152" y="68" text-anchor="middle" fill="#92400e" style="fill:#92400e">EXT</text></g>
+          <g class="node" data-tip="Meta webhooks|WhatsApp Cloud API callbacks: message statuses, inbound messages, template status/category/quality, account updates. Verified by X-Hub-Signature-256; GET hub.challenge handshake."><rect class="box" x="24" y="146" width="156" height="48" rx="8"/><text class="t" x="34" y="166">Meta webhooks</text><text class="s" x="34" y="182">statuses · inbound · templates</text></g>
+          <g class="node" data-tip="s2s vendors|Push vendors (ride apps, lenders) send their own events with an s2s token; their schema is registered at POST /ingest/schemas (T24)."><rect class="box" x="24" y="226" width="156" height="48" rx="8"/><text class="t" x="34" y="246">s2s vendors</text><text class="s" x="34" y="262">their events, their schema</text></g>
+          <g class="node" data-tip="buddy mirrors|Voice mirrors from the legacy lead machine: lead.pushed, call.attempted, call.completed, call.inbound — the flat shape, customer_id passed through (ADR 0010)."><rect class="box" x="24" y="306" width="156" height="48" rx="8"/><text class="t" x="34" y="326">buddy mirrors</text><text class="s" x="34" y="342">lead-api · telephony</text></g>
+          <!-- api pod -->
+          <g class="node" data-tip="POST /ingest/events|The envelope door. verify_s2s_caller (local JWT decode, no DB for relay tokens) → within_size_limit (1 MiB) → INSERT ... ON CONFLICT (merchant, source, external_id) DO NOTHING → 200. Never parses the payload."><rect class="box" x="226" y="96" width="164" height="44" rx="8"/><text class="t" x="236" y="114">POST /ingest/events</text><text class="s" x="236" y="130">verify · stamp · insert · 200</text></g>
+          <g class="node" data-tip="GET|POST /ingest/webhooks/{provider}|The provider bays, dispatched through record's INGRESS registry (Meta registered at app/crm/api.py). 404 unknown bay, 413 streaming cap, 403 bad signature, 400, ingest_event + 503 on store failure."><rect class="box" x="226" y="178" width="164" height="44" rx="8"/><text class="t" x="236" y="196">webhooks/{provider} bays</text><text class="s" x="236" y="212">INGRESS registry · Meta bay</text></g>
+          <g class="node" data-tip="Console routes|/customers (journey), /workflows (CRUD, publish, versions, migrate, runs, summary), /connectors (onboard, installations, templates; merchant_scope door + TranslatingRoute), /catalog and /schemas (admin), POST /ingest/schemas (s2s). 34 routes."><rect class="box" x="226" y="278" width="164" height="60" rx="8"/><text class="t" x="236" y="296">console + catalog routes</text><text class="s" x="236" y="312">/customers · /workflows</text><text class="s" x="236" y="326">/connectors · /catalog · /schemas</text></g>
+          <g class="node" data-tip="Auth|RBAC bearer JWT (get_current_user_with_rbac); crm_admin_user for admin routes; merchant_scope(operation, component) as a declared dependency on /connectors; s2s tokens on the ingest doors (verified_caller, verified_merchant_caller)."><rect class="box" x="226" y="370" width="164" height="40" rx="8"/><text class="t" x="236" y="388">auth</text><text class="s" x="236" y="402">RBAC JWT · s2s · merchant_scope</text></g>
+          <g class="node" data-tip="Runtime|FastAPI on uvicorn, one process per pod, asyncpg pool 5 + 10 overflow straight to Postgres (no PgBouncer yet — the open P0). Gates on every PR: black, isort, autoflake, pyrefly, migration numbering vs the live base, boundary checker, 890+ tests, one commit."><rect class="box" x="226" y="440" width="164" height="60" rx="8"/><text class="t" x="236" y="458">FastAPI · uvicorn · asyncpg</text><text class="s" x="236" y="474">1 process / pod · pool 5+10</text><text class="s" x="236" y="488">python 3.11 · pydantic v2</text></g>
+          <!-- postgres -->
+          <g class="node" data-tip="crm_event_raw (T13)|THE tray and THE queue: raw letter, immutable by trigger, UNIQUE (merchant, source, external_id), partial index WHERE processed_at IS NULL drained with FOR UPDATE SKIP LOCKED, attempts column, quarantine_reason, customer_id stamp (ADR 0020). Monthly RANGE partitions designed."><rect class="box" x="436" y="76" width="184" height="52" rx="8"/><text class="t" x="446" y="94">crm_event_raw</text><text class="s" x="446" y="110">the spine + the work queue</text><text class="s" x="446" y="122">SKIP LOCKED · immutable</text></g>
+          <g class="node" data-tip="identity tables|crm_customer (T05: phone, email, igsid, shopify_customer_id, external_ref handle columns, partial uniques, merged_into_id staple) + platform_identity (T02: global phone/email/device with suppression state)."><rect class="box" x="436" y="146" width="184" height="52" rx="8"/><text class="t" x="446" y="164">customer · platform_identity</text><text class="s" x="446" y="180">handles · staple · suppression</text><text class="s" x="446" y="192">resolve() is the only creator</text></g>
+          <g class="node" data-tip="outreach tables|crm_workflow (T19 definition + draft + version), crm_workflow_version (T25, immutable, never deleted), crm_workflow_enrollment (T20: runs with wake_at leases, context, enrollment_key, exit_reason)."><rect class="box" x="436" y="216" width="184" height="52" rx="8"/><text class="t" x="446" y="234">workflow · version · enrollment</text><text class="s" x="446" y="250">plans · pinned versions · runs</text><text class="s" x="446" y="262">leases on wake_at · CAS writes</text></g>
+          <g class="node" data-tip="connectivity tables|crm_connector_installation (T11), crm_channel_binding (T12, is_primary partial-unique), crm_channel_template (T23, approved rows), crm_message (T16: the manifest — queued/sending/accepted/sent/delivered/read/failed/dead, reason, binding_id set-once)."><rect class="box" x="436" y="286" width="184" height="52" rx="8"/><text class="t" x="446" y="304">message · bindings · templates</text><text class="s" x="446" y="320">the manifest (T16) · T11 T12 T23</text><text class="s" x="446" y="332">one delivery authority</text></g>
+          <g class="node" data-tip="crm_event_schema (T24)|Registered vendor schemas: one row per (merchant, source, topic), fields jsonb document, status detected|registered, version. Cold by design: written by discovery once per topic ever, registration, the console wizard; the flow runtime never reads it."><rect class="box" x="436" y="356" width="184" height="52" rx="8"/><text class="t" x="446" y="374">crm_event_schema</text><text class="s" x="446" y="390">the registered catalog layer</text><text class="s" x="446" y="402">cold · TTL cache in workers</text></g>
+          <g class="node" data-tip="Redis|Single-use send tokens: GETDEL, 60s TTL, bound to customer + channel + purpose. No token, no send (ADR 0015). Never a gate verdict cache."><rect class="box" x="436" y="440" width="184" height="40" rx="8"/><text class="t" x="446" y="458">Redis</text><text class="s" x="446" y="472">send tokens · GETDEL · 60s</text></g>
+          <!-- workers + edges -->
+          <g class="node" data-tip="event-worker|run_pass: claim 100 rows (SKIP LOCKED) → per row in a savepoint: discovery nudge → decode by spec (engine + catalog, cached) → resolve() → assert_facts() → consumers (outreach entry rules) → stamp. 40–100 letters/s per replica; poll 1s; 5 attempts then quarantine."><rect class="box" x="666" y="66" width="204" height="70" rx="8"/><text class="t" x="676" y="84">event-worker (the pass)</text><text class="s" x="676" y="100">claim · decode · resolve · consume · stamp</text><text class="s" x="676" y="114">batch 100 · 1s poll · savepoint per row</text><text class="s" x="676" y="128">40–100 letters/s per replica</text></g>
+          <g class="node" data-tip="walker|claim_due_runs by wake_at lease → walk_run: executes the run's PINNED version (T25), NODE_TYPES registry (wait, send, call, wait_event), CAS on the leased wake_at, parks on refusals, retries with jitter."><rect class="box" x="666" y="176" width="204" height="60" rx="8"/><text class="t" x="676" y="194">walker</text><text class="s" x="676" y="210">leases on wake_at · pinned version</text><text class="s" x="676" y="224">wait · send · call · wait_event</text></g>
+          <g class="node" data-tip="dispatcher|claim_sends (batch 20, lease) → _gate (suppression probe; may_contact() lands with #1021) → send(token, message) → apply_outcome (one write: status, reason, provider id, binding). Sweep requeues stale claims."><rect class="box" x="666" y="256" width="204" height="60" rx="8"/><text class="t" x="676" y="274">dispatcher</text><text class="s" x="676" y="290">gate → send() → apply_outcome</text><text class="s" x="676" y="304">batch 20 · stale-claim sweep</text></g>
+          <g class="node" data-tip="loom console|SvelteKit console on /customers (live), templates manager; the flows editor is designed (U-lane) and renders pickers from GET /catalog. Reads only through the API."><rect class="box" x="666" y="340" width="204" height="40" rx="8"/><text class="t" x="676" y="358">loom console (SvelteKit)</text><text class="s" x="676" y="372">customers · templates · flows (next)</text></g>
+          <g class="node" data-tip="send() → Meta Graph API|The one provider call. CONNECTORS registry → WhatsApp adapter: approved template on the route's account, positional or named parameters, error codes classified (terminal / credential / retryable)."><rect class="box" x="666" y="440" width="204" height="40" rx="8"/><text class="t" x="676" y="458">Meta Graph API (WhatsApp)</text><text class="s" x="676" y="472">send() · approved templates only</text></g>
+          <g class="node" data-tip="buddy lead machine|The call node creates a lead through the legacy accessors (the one sanctioned enqueue, ADR 0010); outcomes return as mirror letters (call.completed with enrollment_id)."><rect class="box" x="666" y="500" width="204" height="40" rx="8"/><text class="t" x="676" y="518">buddy lead machine (calls)</text><text class="s" x="676" y="532">one enqueue · outcomes mirror back</text></g>
+          <!-- animated letters -->
+          <circle class="dot amber" r="4"><animateMotion dur="3.2s" repeatCount="indefinite"><mpath href="#w0a"/></animateMotion></circle>
+          <circle class="dot amber" r="4"><animateMotion dur="3.6s" begin="1s" repeatCount="indefinite"><mpath href="#w0b"/></animateMotion></circle>
+          <circle class="dot purple" r="4"><animateMotion dur="4s" begin="2s" repeatCount="indefinite"><mpath href="#w0c"/></animateMotion></circle>
+          <circle class="dot" r="4"><animateMotion dur="2.4s" begin=".6s" repeatCount="indefinite"><mpath href="#w0e"/></animateMotion></circle>
+          <circle class="dot" r="4"><animateMotion dur="2.4s" begin="1.8s" repeatCount="indefinite"><mpath href="#w0f"/></animateMotion></circle>
+          <circle class="dot" r="4"><animateMotion dur="2s" begin=".2s" repeatCount="indefinite"><mpath href="#w0g"/></animateMotion></circle>
+          <circle class="dot green" r="4"><animateMotion dur="2.6s" begin="1.2s" repeatCount="indefinite"><mpath href="#w0k"/></animateMotion></circle>
+          <circle class="dot amber" r="4"><animateMotion dur="5s" begin="2.2s" repeatCount="indefinite"><mpath href="#w0m"/></animateMotion></circle>
+          <!-- trace marker -->
+          <circle id="tracer" r="7" fill="#ef4444" stroke="#fff" stroke-width="2" opacity="0"/>
+        </svg>
+        <div class="caption" id="traceCap">Press <b>Trace one letter</b> to follow a Shopify order from the relay to a WhatsApp message and its receipt, one step at a time.</div>
+      </div>
+      <div class="side">
+        <div class="card"><h3>Numbers, as built</h3><div class="nums">
+          <div class="num"><b>~1/s</b><span>arriving today (pilot)</span></div><div class="num"><b>~30/s</b><span>safe sustained, one replica</span></div>
+          <div class="num"><b>300–500/s</b><span>the door, per API pod</span></div><div class="num"><b>40–100/s</b><span>the pass, per worker replica</span></div>
+          <div class="num"><b>34</b><span>routes across 4 modules</span></div><div class="num"><b>18 + 1</b><span>crm tables + platform_identity</span></div>
+        </div></div>
+        <div class="card"><h3>Components in play</h3><ul class="list">
+          <li class="same"><b>API pod</b> FastAPI, uvicorn, one process, asyncpg pool 5+10</li>
+          <li class="same"><b>Postgres</b> one primary, 69 migrations, tables that self-defend with triggers</li>
+          <li class="same"><b>Workers</b> one image, CRM_ROLE picks the loop: event-worker, dispatcher, walker</li>
+          <li class="same"><b>Redis</b> send tokens only</li>
+          <li class="same"><b>Meta Graph API</b> WhatsApp Cloud, the one provider behind send()</li>
+          <li class="same"><b>loom</b> SvelteKit console, reads through the API</li>
+        </ul></div>
+        <div class="card"><h3>What is still owed in this phase</h3><ul class="list">
+          <li class="chg"><b>PgBouncer</b> the standing P0 before any replica bump</li>
+          <li class="chg"><b>may_contact()</b> consent, quiet hours, caps: PR #1021</li>
+          <li class="chg"><b>Load test</b> replaces the estimates above</li>
+          <li class="chg"><b>Flows editor</b> the U-lane build on GET /catalog</li>
+        </ul></div>
+        <div class="trig"><b>Leave this phase when</b> the queue-lag log line fires more than once a day, or a second worker replica is needed. Both need PgBouncer first.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PHASE 1 ================= -->
+  <div class="panel" id="p1">
+    <div class="grid">
+      <div class="scene">
+        <div class="bar"><button class="btn" data-anim="p1">Pause letters</button><span class="legend"><span class="pill p-green">added</span><span class="pill p-amber">changed</span><span class="pill p-ph">untouched</span></span></div>
+        <svg id="svg-p1" viewBox="0 0 900 520" width="900" height="520">
+          <rect class="lane" x="10" y="10" width="170" height="500" rx="12"/><text class="lanet" x="24" y="30">PRODUCERS</text>
+          <rect class="lane" x="190" y="10" width="170" height="500" rx="12"/><text class="lanet" x="204" y="30">API PODS  ×N</text>
+          <rect class="lane" x="370" y="10" width="120" height="500" rx="12"/><text class="lanet" x="384" y="30">POOLER</text>
+          <rect class="lane" x="500" y="10" width="200" height="500" rx="12"/><text class="lanet" x="514" y="30">POSTGRES</text>
+          <rect class="lane" x="710" y="10" width="180" height="500" rx="12"/><text class="lanet" x="724" y="30">WORKERS  ×N</text>
+          <path id="w1a" class="wire" d="M164,100 H186 V110 H206" marker-end="url(#ah)"/>
+          <path id="w1b" class="wire" d="M164,180 H186 V120 H206" marker-end="url(#ah)"/>
+          <path id="w1c" class="wire" d="M344,115 H366 V150 H386" marker-end="url(#ah)"/>
+          <path id="w1d" class="wire" d="M474,150 H496 V110 H516" marker-end="url(#ah)"/>
+          <path id="w1e" class="wire" d="M684,110 H704 V90 H726" marker-end="url(#ah)"/>
+          <path id="w1f" class="wire dash" d="M726,300 H704 V150 H474" marker-end="url(#ah)"/>
+          <path id="w1g" class="wire dash" d="M344,300 H366 V160 H386" marker-end="url(#ah)"/>
+          <path id="w1h" class="wire dash" d="M516,330 H500 V220 H516" marker-end="url(#ah)"/>
+          <g class="node same" data-tip="Producers|Unchanged: nautilus relay, Meta webhooks, s2s vendors, buddy mirrors."><rect class="box" x="24" y="76" width="140" height="48" rx="8"/><text class="t" x="34" y="96">relay · Meta · s2s</text><text class="s" x="34" y="112">unchanged</text></g>
+          <g class="node same" data-tip="Buddy mirrors|Unchanged."><rect class="box" x="24" y="156" width="140" height="48" rx="8"/><text class="t" x="34" y="176">buddy mirrors</text><text class="s" x="34" y="192">unchanged</text></g>
+          <g class="node chg" data-tip="API pods ×N|Same code, more pods behind the load balancer. Stateless, so this is a replica count. Each pod's pool now goes through PgBouncer."><rect class="box" x="206" y="90" width="138" height="50" rx="8"/><text class="t" x="216" y="110">api pod ×N</text><text class="s" x="216" y="126">same code, more pods</text></g>
+          <g class="node same" data-tip="Console routes|Unchanged."><rect class="box" x="206" y="270" width="138" height="60" rx="8"/><text class="t" x="216" y="290">console + catalog</text><text class="s" x="216" y="306">reads move to the replica</text><text class="s" x="216" y="320">GET /catalog ETag → 304</text></g>
+          <g class="node new" data-tip="PgBouncer|Transaction pooling in front of the primary. api_pool + Σ(worker_replicas × 5) < server pool, checked before every replica bump (design/worker-runtime). #1018 makes the asyncpg pool safe behind it (prepared statements off)."><rect class="box" x="386" y="130" width="90" height="60" rx="8"/><text class="t" x="396" y="152">PgBouncer</text><text class="s" x="396" y="168">txn pooling</text><text class="s" x="396" y="182">the P0</text></g>
+          <g class="node chg" data-tip="crm_event_raw partitioned|Monthly RANGE partitions on received_at (designed in canon), retention = partition drop. The pending partial index stays small because it is per partition."><rect class="box" x="516" y="80" width="168" height="60" rx="8"/><text class="t" x="526" y="100">crm_event_raw</text><text class="s" x="526" y="116">monthly RANGE partitions</text><text class="s" x="526" y="130">retention = partition drop</text></g>
+          <g class="node same" data-tip="Other tables|identity, outreach, connectivity, schema tables unchanged."><rect class="box" x="516" y="170" width="168" height="40" rx="8"/><text class="t" x="526" y="188">identity · outreach · manifest</text><text class="s" x="526" y="202">unchanged</text></g>
+          <g class="node new" data-tip="Read replica|Streaming replica for the reads that are not the queue: the seven-day GROUP BY on the flows list, GET /catalog counts, the journey, run summaries. The primary keeps the writes and the claims."><rect class="box" x="516" y="300" width="168" height="60" rx="8"/><text class="t" x="526" y="320">read replica</text><text class="s" x="526" y="336">counts · catalog · journey</text><text class="s" x="526" y="350">never the queue</text></g>
+          <g class="node new" data-tip="crm_message partitions|RANGE on created_at (canon); decision_log monthly when #1021 lands."><rect class="box" x="516" y="390" width="168" height="40" rx="8"/><text class="t" x="526" y="408">crm_message partitions</text><text class="s" x="526" y="422">RANGE on created_at</text></g>
+          <g class="node chg" data-tip="event-worker ×N|Same pass, more replicas. SKIP LOCKED makes them near-linear. Adds the live-plan cache for the entries read (pressure point 1) so the consumer stops re-reading crm_workflow per letter."><rect class="box" x="726" y="66" width="150" height="70" rx="8"/><text class="t" x="736" y="86">event-worker ×N</text><text class="s" x="736" y="102">+ live-plan cache</text><text class="s" x="736" y="116">SKIP LOCKED, near-linear</text><text class="s" x="736" y="130">~40–100/s each</text></g>
+          <g class="node same" data-tip="walker ×N|Unchanged: leases make replicas safe."><rect class="box" x="726" y="160" width="150" height="44" rx="8"/><text class="t" x="736" y="178">walker ×N</text><text class="s" x="736" y="194">unchanged, leases</text></g>
+          <g class="node chg" data-tip="dispatcher ×N + fairness lanes|Claim ordering by purpose so a 10k-recipient broadcast never starves a COD confirmation (pressure point 2, lands with the W8 broadcast PR)."><rect class="box" x="726" y="228" width="150" height="60" rx="8"/><text class="t" x="736" y="248">dispatcher ×N</text><text class="s" x="736" y="264">+ fairness lanes</text><text class="s" x="736" y="278">broadcast vs transactional</text></g>
+          <g class="node same" data-tip="Meta · buddy · loom|Unchanged."><rect class="box" x="726" y="320" width="150" height="44" rx="8"/><text class="t" x="736" y="338">Meta · buddy · loom</text><text class="s" x="736" y="354">unchanged</text></g>
+          <g class="node new" data-tip="Load test|15 minutes over the recorded Shopify fixtures against staging: replaces every estimate with a measurement; the queue-lag alert threshold comes from it."><rect class="box" x="726" y="400" width="150" height="44" rx="8"/><text class="t" x="736" y="418">load test + alerts</text><text class="s" x="736" y="434">queue lag · pool saturation</text></g>
+          <circle class="dot amber" r="4"><animateMotion dur="2.6s" repeatCount="indefinite"><mpath href="#w1a"/></animateMotion></circle>
+          <circle class="dot" r="4"><animateMotion dur="2s" begin=".4s" repeatCount="indefinite"><mpath href="#w1c"/></animateMotion></circle>
+          <circle class="dot" r="4"><animateMotion dur="1.8s" begin=".9s" repeatCount="indefinite"><mpath href="#w1d"/></animateMotion></circle>
+          <circle class="dot" r="4"><animateMotion dur="1.6s" begin="1.3s" repeatCount="indefinite"><mpath href="#w1e"/></animateMotion></circle>
+          <circle class="dot" r="4"><animateMotion dur="1.6s" begin="2.1s" repeatCount="indefinite"><mpath href="#w1e"/></animateMotion></circle>
+        </svg>
+      </div>
+      <div class="side">
+        <div class="card"><h3>Numbers this phase reaches</h3><div class="nums">
+          <div class="num"><b>2k–5k/s</b><span>sustained, fleet of shops</span></div><div class="num"><b>170M–430M</b><span>letters a day</span></div>
+          <div class="num"><b>30–60</b><span>worker replicas at the top end</span></div><div class="num"><b>1</b><span>primary, still</span></div>
+        </div></div>
+        <div class="card"><h3>Components</h3><ul class="list">
+          <li class="add"><b>PgBouncer</b> transaction pooling; #1018 makes asyncpg safe behind it</li>
+          <li class="add"><b>Read replica</b> counts, catalog, journey, summaries</li>
+          <li class="add"><b>Load test + alerts</b> queue lag, pool saturation</li>
+          <li class="chg"><b>crm_event_raw</b> monthly partitions; <b>crm_message</b> RANGE partitions</li>
+          <li class="chg"><b>event-worker</b> replicas + the live-plan cache</li>
+          <li class="chg"><b>dispatcher</b> fairness lanes with the first broadcast</li>
+          <li class="same"><b>Everything else</b> identity, outreach, gate, send path, console, the design</li>
+        </ul></div>
+        <div class="trig"><b>Leave this phase when</b> letters exceed ~5k/s sustained for hours, or the primary's write rate becomes the ceiling. A second primary is never the answer; the log is.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PHASE 2 ================= -->
+  <div class="panel" id="p2">
+    <div class="grid">
+      <div class="scene">
+        <div class="bar"><button class="btn" data-anim="p2">Pause letters</button><span class="legend"><span class="pill p-green">added</span><span class="pill p-amber">changed</span><span class="pill p-ph">untouched</span></span></div>
+        <svg id="svg-p2" viewBox="0 0 900 560" width="900" height="560">
+          <rect class="lane" x="10" y="10" width="180" height="540" rx="12"/><text class="lanet" x="24" y="30">CLIENTS  +  SERVERS</text>
+          <rect class="lane" x="200" y="10" width="200" height="540" rx="12"/><text class="lanet" x="214" y="30">COLLECT  +  DOORS</text>
+          <rect class="lane" x="410" y="10" width="220" height="540" rx="12"/><text class="lanet" x="424" y="30">STORES</text>
+          <rect class="lane" x="640" y="10" width="250" height="540" rx="12"/><text class="lanet" x="654" y="30">DERIVE  +  THE MAILROOM</text>
+          <path id="w2a" class="wire" d="M174,86 H196 V96 H216" marker-end="url(#ah)"/>
+          <path id="w2b" class="wire" d="M174,166 H196 V106 H216" marker-end="url(#ah)"/>
+          <path id="w2c" class="wire" d="M174,300 H196 V300 H216" marker-end="url(#ah)"/>
+          <path id="w2d" class="wire" d="M384,100 H406 V100 H426" marker-end="url(#ah)"/>
+          <path id="w2e" class="wire" d="M384,300 H406 V300 H426" marker-end="url(#ah)"/>
+          <path id="w2f" class="wire dash" d="M614,100 H636 V100 H656" marker-end="url(#ah)"/>
+          <path id="w2g" class="wire" d="M656,140 H630 V60 H384 V300 H380" marker-end="url(#ah)"/>
+          <path id="w2h" class="wire dash" d="M614,300 H636 V320 H656" marker-end="url(#ah)"/>
+          <path id="w2i" class="wire dash" d="M614,420 H636 V440 H656" marker-end="url(#ah)"/>
+          <path id="w2j" class="wire dash" d="M426,190 H414 V300 H426" marker-end="url(#ah)"/>
+          <g class="node new" data-tip="Shopify web pixel|Shopify's Web Pixels app extension in Shopify's sandbox: standard events (page_viewed, product_viewed, product_added_to_cart, checkout_started…), clientId as the visitor id, customer when known, Customer Privacy consent flags. No cookie of ours needed."><rect class="box" x="24" y="62" width="150" height="48" rx="8"/><text class="t" x="34" y="82">Shopify web pixel</text><text class="s" x="34" y="98">clientId · consent flags</text></g>
+          <g class="node new" data-tip="D2C snippet / Jitsu SDK|A first-party cookie sets anon_id, the same house events, batched beacons (~100 events per call). Jitsu's SDK or ours."><rect class="box" x="24" y="142" width="150" height="48" rx="8"/><text class="t" x="34" y="162">D2C snippet / Jitsu SDK</text><text class="s" x="34" y="178">first-party cookie · batches</text></g>
+          <g class="node same" data-tip="Servers|Unchanged producers: nautilus relay, Meta webhooks, s2s vendors, buddy mirrors → the doors."><rect class="box" x="24" y="276" width="150" height="48" rx="8"/><text class="t" x="34" y="296">servers (orders, hooks)</text><text class="s" x="34" y="312">unchanged producers</text></g>
+          <g class="node new" data-tip="Collector|Jitsu (self-hosted or Cloud) or a small batch endpoint of ours. Accepts arrays of client events, validates consent flags, writes batches straight into the sink. Stateless, scales by pods."><rect class="box" x="216" y="76" width="168" height="50" rx="8"/><text class="t" x="226" y="96">collector (Jitsu or ours)</text><text class="s" x="226" y="112">batch in · consent-aware</text></g>
+          <g class="node same" data-tip="The doors|Unchanged: /ingest/events, /ingest/webhooks/{provider}, /ingest/schemas."><rect class="box" x="216" y="276" width="168" height="50" rx="8"/><text class="t" x="226" y="296">the doors (record)</text><text class="s" x="226" y="312">unchanged</text></g>
+          <g class="node new" data-tip="Clickstream sink|Stage A: a separate partitioned Postgres table, no secondary indexes, a time BRIN, 30-day retention (holds one large store). Stage B at ~50M events/day or five stores: ClickHouse (self-hosted or Cloud) or Parquet on object storage, partitioned by day, 10–20× compressed, 90 days hot."><rect class="box" x="426" y="72" width="188" height="60" rx="8"/><text class="t" x="436" y="92">clickstream sink</text><text class="s" x="436" y="108">Postgres table first (one store)</text><text class="s" x="436" y="122">ClickHouse at ~50M/day</text></g>
+          <g class="node chg" data-tip="identity + anon_id|crm_customer gains a merchant-scoped anon_id handle column (the igsid precedent), last in the probe order. A visitor is a customer row with only that handle; a letter carrying anon_id + phone staples the two rows. Tracking consent: a ruling on the ledger's shape."><rect class="box" x="426" y="160" width="188" height="60" rx="8"/><text class="t" x="436" y="180">crm_customer + anon_id</text><text class="s" x="436" y="196">visitor card · staple at checkout</text><text class="s" x="436" y="210">resolve() unchanged otherwise</text></g>
+          <g class="node same" data-tip="The spine|crm_event_raw unchanged: it receives moments, not clicks."><rect class="box" x="426" y="276" width="188" height="50" rx="8"/><text class="t" x="436" y="296">crm_event_raw (moments)</text><text class="s" x="436" y="312">unchanged · business rate</text></g>
+          <g class="node new" data-tip="Segments (P2)|crm_segment / crm_segment_member (T15/T21): a predicate in the same where-grammar compiled to SQL over the sink and the spine, evaluated on read or materialised on a schedule. Broadcasts (T17/T18) target them through the same gate."><rect class="box" x="426" y="396" width="188" height="50" rx="8"/><text class="t" x="436" y="416">segments (T15 / T21)</text><text class="s" x="436" y="432">predicate → SQL over sink + spine</text></g>
+          <g class="node new" data-tip="Derive job|Sessionises the clickstream and emits ONE letter per moment to the ingest door: browse.abandoned, product.interest (N views), price.watched, session.identified — keyed by anon_id, deterministic external_id. Also the rollups: monthly spend summed on hearing, one spend.monthly letter per paid order with previous and current amounts."><rect class="box" x="656" y="72" width="220" height="80" rx="8"/><text class="t" x="666" y="92">derive job (stream or cron)</text><text class="s" x="666" y="108">sessionise → ONE letter per moment</text><text class="s" x="666" y="122">browse.abandoned · product.interest</text><text class="s" x="666" y="136">rollups: spend.monthly {amount, previous}</text></g>
+          <g class="node new" data-tip="Catalog entries for derived topics|Code-layer entries for source `derived` (and `web`), so the trigger picker shows 'Monthly spend updated' and 'Browse abandoned' with typed operators. Flows filter e.g. amount >= 5000 AND previous < 5000."><rect class="box" x="656" y="180" width="220" height="50" rx="8"/><text class="t" x="666" y="200">catalog: derived + web topics</text><text class="s" x="666" y="216">typed where over moments</text></g>
+          <g class="node same" data-tip="The mailroom|event-worker, walker, dispatcher, gate, send(), console: unchanged. Flows react to moments exactly like orders."><rect class="box" x="656" y="290" width="220" height="60" rx="8"/><text class="t" x="666" y="310">pass · walker · gate · send()</text><text class="s" x="666" y="326">unchanged</text><text class="s" x="666" y="340">a moment is a letter like any other</text></g>
+          <g class="node same" data-tip="Console|Your events, the flows editor, product analytics read the sink on demand for a session's raw clicks."><rect class="box" x="656" y="410" width="220" height="50" rx="8"/><text class="t" x="666" y="430">console + analytics</text><text class="s" x="666" y="446">raw clicks on demand, from the sink</text></g>
+          <circle class="dot purple" r="4"><animateMotion dur="1.4s" repeatCount="indefinite"><mpath href="#w2a"/></animateMotion></circle>
+          <circle class="dot purple" r="4"><animateMotion dur="1.4s" begin=".3s" repeatCount="indefinite"><mpath href="#w2b"/></animateMotion></circle>
+          <circle class="dot purple" r="4"><animateMotion dur="1.4s" begin=".7s" repeatCount="indefinite"><mpath href="#w2a"/></animateMotion></circle>
+          <circle class="dot purple" r="4"><animateMotion dur="1.2s" begin=".2s" repeatCount="indefinite"><mpath href="#w2d"/></animateMotion></circle>
+          <circle class="dot purple" r="4"><animateMotion dur="1.2s" begin=".8s" repeatCount="indefinite"><mpath href="#w2d"/></animateMotion></circle>
+          <circle class="dot amber" r="4"><animateMotion dur="3s" begin=".5s" repeatCount="indefinite"><mpath href="#w2c"/></animateMotion></circle>
+          <circle class="dot amber" r="4"><animateMotion dur="2.5s" begin="1.5s" repeatCount="indefinite"><mpath href="#w2e"/></animateMotion></circle>
+          <circle class="dot green" r="4"><animateMotion dur="6s" begin="1s" repeatCount="indefinite"><mpath href="#w2g"/></animateMotion></circle>
+        </svg>
+      </div>
+      <div class="side">
+        <div class="card"><h3>Numbers this phase handles</h3><div class="nums">
+          <div class="num"><b>40</b><span>client events per visit</span></div><div class="num"><b>1–25M/day</b><span>one store, small to large</span></div>
+          <div class="num"><b>~1/session</b><span>letters reaching the spine</span></div><div class="num"><b>10–20×</b><span>columnar compression</span></div>
+        </div></div>
+        <div class="card"><h3>Components</h3><ul class="list">
+          <li class="add"><b>Shopify web pixel</b> and a D2C snippet or Jitsu SDK</li>
+          <li class="add"><b>Collector</b> Jitsu or a batch endpoint of ours</li>
+          <li class="add"><b>Clickstream sink</b> a partitioned Postgres table first, ClickHouse at ~50M/day</li>
+          <li class="add"><b>Derive job</b> moments and rollups as letters</li>
+          <li class="add"><b>Segments</b> T15/T21, predicates compiled to SQL</li>
+          <li class="chg"><b>identity</b> anon_id handle, tracking consent shape</li>
+          <li class="chg"><b>catalog</b> derived and web topics in the code layer</li>
+          <li class="same"><b>The mailroom</b> pass, walker, gate, send, console</li>
+        </ul></div>
+        <div class="trig"><b>Rulings before it starts:</b> anon_id and its consent shape, the sink, Jitsu versus our collector, and whether this is a new lane. <b>Leave this phase when</b> the spine itself passes ~5k/s, which one large tracked fleet will do.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PHASE 3 ================= -->
+  <div class="panel" id="p3">
+    <div class="grid">
+      <div class="scene">
+        <div class="bar"><button class="btn" data-anim="p3">Pause letters</button><span class="legend"><span class="pill p-green">added</span><span class="pill p-amber">changed</span><span class="pill p-ph">untouched</span></span></div>
+        <svg id="svg-p3" viewBox="0 0 900 560" width="900" height="560">
+          <rect class="lane" x="10" y="10" width="150" height="540" rx="12"/><text class="lanet" x="24" y="30">DOORS  ×100</text>
+          <rect class="lane" x="170" y="10" width="190" height="540" rx="12"/><text class="lanet" x="184" y="30">THE LOG</text>
+          <rect class="lane" x="370" y="10" width="230" height="540" rx="12"/><text class="lanet" x="384" y="30">STREAMS</text>
+          <rect class="lane" x="610" y="10" width="280" height="540" rx="12"/><text class="lanet" x="624" y="30">STORES  +  UNCHANGED ENGINES</text>
+          <path id="w3a" class="wire" d="M144,100 H166 V100 H186" marker-end="url(#ah)"/>
+          <path id="w3b" class="wire" d="M144,180 H166 V110 H186" marker-end="url(#ah)"/>
+          <path id="w3c" class="wire" d="M344,100 H366 V90 H386" marker-end="url(#ah)"/>
+          <path id="w3d" class="wire" d="M344,110 H360 V210 H386" marker-end="url(#ah)"/>
+          <path id="w3e" class="wire" d="M480,250 V270" marker-end="url(#ah)"/>
+          <path id="w3f" class="wire dash" d="M344,320 H366 V330 H386" marker-end="url(#ah)"/>
+          <path id="w3g" class="wire" d="M584,90 H606 V90 H626" marker-end="url(#ah)"/>
+          <path id="w3h" class="wire" d="M584,210 H606 V180 H626" marker-end="url(#ah)"/>
+          <path id="w3i" class="wire" d="M584,330 H606 V290 H626" marker-end="url(#ah)"/>
+          <path id="w3j" class="wire dash" d="M626,420 H606 V450 H626" marker-end="url(#ah)"/>
+          <g class="node chg" data-tip="Doors produce|Same routes, same verify and refusals. The one changed line: after the stamp, PRODUCE to the log instead of INSERT. Batched producers; the dedupe key is the message key. ~100 pods at ~500/s."><rect class="box" x="24" y="76" width="120" height="50" rx="8"/><text class="t" x="34" y="96">envelope door</text><text class="s" x="34" y="112">produce, not insert</text></g>
+          <g class="node chg" data-tip="Provider bays produce|Same bays, same INGRESS registry, then produce."><rect class="box" x="24" y="156" width="120" height="50" rx="8"/><text class="t" x="34" y="176">provider bays</text><text class="s" x="34" y="192">produce, not insert</text></g>
+          <g class="node same" data-tip="Schema door|Unchanged, cold, writes T24."><rect class="box" x="24" y="236" width="120" height="44" rx="8"/><text class="t" x="34" y="254">schema door</text><text class="s" x="34" y="270">unchanged</text></g>
+          <g class="node new" data-tip="Topic: letters|Kafka or Redpanda. Partitioned by merchant hash (256), key = (merchant, source, external_id), idempotent producers, retention 7 days = the replay window. Ordering per merchant partition only, which is the promise we already make."><rect class="box" x="186" y="66" width="158" height="70" rx="8"/><text class="t" x="196" y="86">topic: letters</text><text class="s" x="196" y="102">merchant-hash partitions (256)</text><text class="s" x="196" y="116">key = dedupe key · 7d retention</text><text class="s" x="196" y="130">Kafka / Redpanda</text></g>
+          <g class="node new" data-tip="Topic: attributed|The decode stream's output: the same key, with customer_id and handles riding the message. The entry-rules stream reads this."><rect class="box" x="186" y="176" width="158" height="50" rx="8"/><text class="t" x="196" y="196">topic: attributed</text><text class="s" x="196" y="212">after decode + identity</text></g>
+          <g class="node new" data-tip="Change feed: plans|Publishes on crm_workflow flow here (logical decoding or an outbox), so the entry stream refreshes its in-memory plans without polling."><rect class="box" x="186" y="296" width="158" height="50" rx="8"/><text class="t" x="196" y="316">change feed: plans</text><text class="s" x="196" y="332">crm_workflow → memory</text></g>
+          <g class="node new" data-tip="Dead-letter topic|Quarantine at scale: a letter the streams cannot decode goes to a dead-letter topic plus the row's reason in the sink; replay = re-produce."><rect class="box" x="186" y="396" width="158" height="44" rx="8"/><text class="t" x="196" y="414">dead-letter topic</text><text class="s" x="196" y="430">quarantine · replay = re-produce</text></g>
+          <g class="node new" data-tip="Sink consumers|COPY 5k letters per batch into the raw table (ON CONFLICT drops duplicates). The raw table becomes a SINK: audit, replay, journey."><rect class="box" x="386" y="66" width="198" height="50" rx="8"/><text class="t" x="396" y="86">sink consumers</text><text class="s" x="396" y="102">COPY 5k / batch → raw table</text></g>
+          <g class="node new" data-tip="Decode + identity stream|~200 consumers: engine.extract by cached spec (same engine, same catalog) → resolve() on the merchant's identity shard behind a handle cache → produce attributed. ~250/s each with no per-row transaction."><rect class="box" x="386" y="180" width="198" height="70" rx="8"/><text class="t" x="396" y="200">decode + identity stream</text><text class="s" x="396" y="216">same engine, same catalog</text><text class="s" x="396" y="230">resolve() on the merchant's shard</text><text class="s" x="396" y="244">~200 consumers · ~250/s each</text></g>
+          <g class="node new" data-tip="Entry-rules stream|Live plans per merchant held in memory from the change feed; typed where over the payload; keyed admission; enrol writes T20; goal, reply and repeat commands each name their run. The pass minus the transaction."><rect class="box" x="386" y="270" width="198" height="80" rx="8"/><text class="t" x="396" y="290">entry-rules stream</text><text class="s" x="396" y="306">plans in memory · typed where</text><text class="s" x="396" y="320">enrol → T20 · goal / reply / repeat</text><text class="s" x="396" y="334">every write names its run</text></g>
+          <g class="node same" data-tip="Walker + dispatcher|Unchanged: they read T20 and T16 exactly as today, behind PgBouncer, with replicas."><rect class="box" x="386" y="390" width="198" height="50" rx="8"/><text class="t" x="396" y="410">walker · dispatcher ×N</text><text class="s" x="396" y="426">unchanged</text></g>
+          <g class="node chg" data-tip="crm_event_raw as sink|Partitioned monthly RANGE × merchant HASH across 4–8 primaries by merchant hash. Retention = partition drop. No longer the queue."><rect class="box" x="626" y="66" width="250" height="50" rx="8"/><text class="t" x="636" y="86">crm_event_raw — the sink</text><text class="s" x="636" y="102">RANGE × merchant HASH · 4–8 primaries</text></g>
+          <g class="node chg" data-tip="Identity shards|crm_customer and platform_identity sharded by merchant hash; probe order unchanged; the global suppression table stays global (a small service in phase 4)."><rect class="box" x="626" y="156" width="250" height="50" rx="8"/><text class="t" x="636" y="176">identity shards (by merchant)</text><text class="s" x="636" y="192">probe order unchanged · no fuzzy, ever</text></g>
+          <g class="node same" data-tip="Outreach + manifest tables|T19/T20/T25 and T16 unchanged, one Postgres behind PgBouncer with replicas; leases and CAS as today."><rect class="box" x="626" y="266" width="250" height="50" rx="8"/><text class="t" x="636" y="286">outreach + manifest (Postgres)</text><text class="s" x="636" y="302">T19 T20 T25 T16 · unchanged</text></g>
+          <g class="node same" data-tip="Engines|Catalog (cold), permission gate (fail closed, never cached), send() and the providers, console and catalog API: untouched. They do not care where the queue lives."><rect class="box" x="626" y="356" width="250" height="60" rx="8"/><text class="t" x="636" y="376">catalog · gate · send() · console</text><text class="s" x="636" y="392">unchanged — contracts hold:</text><text class="s" x="636" y="406">resolve() · may_contact() · send() · enrol()</text></g>
+          <g class="node new" data-tip="Object storage|Cold letters beyond 90 days as Parquet; the clickstream sink's cold tier too."><rect class="box" x="626" y="446" width="250" height="44" rx="8"/><text class="t" x="636" y="464">object storage (cold tier)</text><text class="s" x="636" y="480">Parquet beyond 90 days</text></g>
+          <circle class="dot amber" r="4"><animateMotion dur="1.2s" repeatCount="indefinite"><mpath href="#w3a"/></animateMotion></circle>
+          <circle class="dot amber" r="4"><animateMotion dur="1.2s" begin=".4s" repeatCount="indefinite"><mpath href="#w3a"/></animateMotion></circle>
+          <circle class="dot amber" r="4"><animateMotion dur="1.2s" begin=".8s" repeatCount="indefinite"><mpath href="#w3b"/></animateMotion></circle>
+          <circle class="dot" r="4"><animateMotion dur="1s" begin=".1s" repeatCount="indefinite"><mpath href="#w3c"/></animateMotion></circle>
+          <circle class="dot" r="4"><animateMotion dur="1.4s" begin=".3s" repeatCount="indefinite"><mpath href="#w3d"/></animateMotion></circle>
+          <circle class="dot" r="4"><animateMotion dur="1.4s" begin=".9s" repeatCount="indefinite"><mpath href="#w3d"/></animateMotion></circle>
+          <circle class="dot green" r="4"><animateMotion dur="1s" begin=".5s" repeatCount="indefinite"><mpath href="#w3e"/></animateMotion></circle>
+          <circle class="dot" r="4"><animateMotion dur="1s" begin=".2s" repeatCount="indefinite"><mpath href="#w3g"/></animateMotion></circle>
+          <circle class="dot" r="4"><animateMotion dur="1.2s" begin=".6s" repeatCount="indefinite"><mpath href="#w3h"/></animateMotion></circle>
+          <circle class="dot green" r="4"><animateMotion dur="1.2s" begin=".9s" repeatCount="indefinite"><mpath href="#w3i"/></animateMotion></circle>
+        </svg>
+      </div>
+      <div class="side">
+        <div class="card"><h3>Numbers this phase reaches</h3><div class="nums">
+          <div class="num"><b>50k/s</b><span>letters, sustained</span></div><div class="num"><b>4.3B</b><span>letters a day</span></div>
+          <div class="num"><b>256</b><span>partitions</span></div><div class="num"><b>~200</b><span>decode consumers</span></div>
+          <div class="num"><b>4–8</b><span>Postgres primaries by merchant hash</span></div><div class="num"><b>0</b><span>changes to gate, boards, postman</span></div>
+        </div></div>
+        <div class="card"><h3>Components</h3><ul class="list">
+          <li class="add"><b>Kafka or Redpanda</b> topics letters, attributed, plans change feed, dead-letter</li>
+          <li class="add"><b>Sink consumers</b> COPY batches into the raw table</li>
+          <li class="add"><b>Decode + identity stream</b> the pass's first half as a consumer group</li>
+          <li class="add"><b>Entry-rules stream</b> the pass's second half, plans in memory</li>
+          <li class="add"><b>Object storage</b> cold Parquet tier</li>
+          <li class="chg"><b>Doors</b> produce instead of insert; <b>raw table</b> becomes a sharded sink; <b>identity</b> sharded by merchant</li>
+          <li class="same"><b>Catalog, gate, walker, dispatcher, send(), console</b> and every contract</li>
+        </ul></div>
+        <div class="trig"><b>Leave this phase when</b> one region or one cluster is the blast radius you cannot accept, or a merchant needs data residency. Then the whole stack becomes a cell.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PHASE 4 ================= -->
+  <div class="panel" id="p4">
+    <div class="grid">
+      <div class="scene">
+        <div class="bar"><button class="btn" data-anim="p4">Pause letters</button><span class="legend"><span class="pill p-green">added</span><span class="pill p-ph">a cell = phase 3, whole</span></span></div>
+        <svg id="svg-p4" viewBox="0 0 900 520" width="900" height="520">
+          <rect class="lane" x="10" y="10" width="880" height="500" rx="12"/><text class="lanet" x="24" y="30">CELLS — EACH ONE IS THE WHOLE PHASE-3 STACK FOR A SLICE OF MERCHANTS</text>
+          <g class="node new" data-tip="Global router|Routes a merchant's producers, console and API calls to its cell by merchant id (a small directory, cached at the edge). Merchants never span cells; moving one is a replay of its log into the new cell."><rect class="box" x="330" y="50" width="240" height="50" rx="8"/><text class="t" x="340" y="70">global router (by merchant)</text><text class="s" x="340" y="86">directory · edge cache · moves = replay</text></g>
+          <g class="node new" data-tip="Global suppression service|platform_identity's suppression state must stay global (a person who said stop is stopped everywhere), so it becomes one small replicated service every cell's gate probes, fail closed."><rect class="box" x="330" y="440" width="240" height="50" rx="8"/><text class="t" x="340" y="460">global suppression (platform_identity)</text><text class="s" x="340" y="476">replicated · every gate probes it · fail closed</text></g>
+          <g class="node new" data-tip="Global catalog + console|The code catalog ships with every cell; registered schemas live in the merchant's cell; the console is one app talking to the router."><rect class="box" x="40" y="440" width="240" height="50" rx="8"/><text class="t" x="50" y="460">console + code catalog</text><text class="s" x="50" y="476">one app · cell-aware through the router</text></g>
+          <g class="node new" data-tip="Cross-region replication|Each cell's log mirrors to a second region for disaster recovery; object storage is the shared cold tier."><rect class="box" x="620" y="440" width="240" height="50" rx="8"/><text class="t" x="630" y="460">log mirroring + cold tier</text><text class="s" x="630" y="476">DR per cell · Parquet shared</text></g>
+          <g id="cells"></g>
+          <path id="w4a" class="wire" d="M450,100 V150" marker-end="url(#ah)"/>
+          <path id="w4b" class="wire" d="M450,100 H160 V150" marker-end="url(#ah)"/>
+          <path id="w4c" class="wire" d="M450,100 H740 V150" marker-end="url(#ah)"/>
+          <path id="w4d" class="wire dash" d="M160,390 V420 H330" marker-end="url(#ah)"/>
+          <path id="w4e" class="wire dash" d="M450,390 V440" marker-end="url(#ah)"/>
+          <path id="w4f" class="wire dash" d="M740,390 V420 H570" marker-end="url(#ah)"/>
+          <circle class="dot amber" r="4"><animateMotion dur="1.6s" repeatCount="indefinite"><mpath href="#w4a"/></animateMotion></circle>
+          <circle class="dot amber" r="4"><animateMotion dur="2s" begin=".4s" repeatCount="indefinite"><mpath href="#w4b"/></animateMotion></circle>
+          <circle class="dot amber" r="4"><animateMotion dur="2s" begin=".9s" repeatCount="indefinite"><mpath href="#w4c"/></animateMotion></circle>
+        </svg>
+      </div>
+      <div class="side">
+        <div class="card"><h3>Numbers</h3><div class="nums">
+          <div class="num"><b>N × 50k/s</b><span>one cell each, add cells</span></div><div class="num"><b>1 cell</b><span>the blast radius</span></div>
+          <div class="num"><b>0</b><span>cross-cell queries</span></div><div class="num"><b>1</b><span>global thing: suppression</span></div>
+        </div></div>
+        <div class="card"><h3>Components</h3><ul class="list">
+          <li class="add"><b>Global router</b> merchant → cell directory at the edge</li>
+          <li class="add"><b>Global suppression service</b> the one thing that must stay global</li>
+          <li class="add"><b>Cells</b> each a complete phase-3 stack: doors, log, streams, sharded Postgres, workers</li>
+          <li class="add"><b>Log mirroring</b> per cell for DR; shared cold tier</li>
+          <li class="same"><b>Every module's code</b> unchanged; a cell is a deployment unit, not a design</li>
+        </ul></div>
+        <div class="trig"><b>This is the last shape.</b> Beyond it you add cells, never redesign. The product never learns the word cell: a merchant lives in exactly one.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= DATA MODEL ================= -->
+  <div class="panel" id="db">
+    <div class="grid">
+      <div class="scene">
+        <div class="bar"><span class="legend"><span class="pill p-teal">built</span><span class="pill p-ph">designed (P2)</span><span class="ln"></span>foreign key / stamp</span><span style="margin-left:auto;font-size:11.5px;color:var(--muted)">click a table</span></div>
+        <svg id="svg-db" viewBox="0 0 900 600" width="900" height="600"></svg>
+      </div>
+      <div class="side">
+        <div class="card" id="dbcard"><h3>Table</h3><p>Click a table to see its owner, its columns as sealed in canon, and the laws that guard it.</p></div>
+        <div class="card"><h3>Laws every table obeys</h3><ul class="list">
+          <li class="same"><b>merchant_id</b> first in every unique index on crm_* tables; platform_* tables never have one</li>
+          <li class="same"><b>SQL only in the owner's db/</b> other modules go through contracts; a boundary checker enforces it in CI</li>
+          <li class="same"><b>Invariants in tables</b> append-only logs, immutable rows, set-once columns by trigger, not by discipline</li>
+          <li class="same"><b>No vocabulary CHECKs</b> channels, connectors, topics live in code; only closed status ladders are CHECKed</li>
+          <li class="same"><b>No stored derived state</b> a predicate can answer: expiry, in-window, monthly spend</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="foot">Sources: canon T02–T25, ADR 0001–0023, design/how-it-scales, design/worker-runtime, design/event-catalog, design/entry-points-and-the-event-spine, modules/00–05; clairvoyance release `2a00ef44` (4 Sep 2026). Phase 0 numbers are estimates from the code until the load test. Phases 2–4 are proposals with named triggers, not sealed; the rulings each needs are listed on its panel.</p>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+(function(){
+  // ---- tabs
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach(t => t.addEventListener('click', () => {
+    tabs.forEach(x => x.classList.toggle('on', x === t));
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.id === t.dataset.p));
+  }));
+  // ---- tooltips
+  const tip = document.getElementById('tip');
+  document.querySelectorAll('svg .node').forEach(n => {
+    n.addEventListener('mousemove', e => {
+      const d = (n.dataset.tip || '').split('|');
+      tip.innerHTML = '<b>' + d[0] + '</b>' + (d[1] || '');
+      tip.style.display = 'block';
+      const x = Math.min(e.clientX + 14, window.innerWidth - 300);
+      tip.style.left = x + 'px'; tip.style.top = (e.clientY + 14) + 'px';
+    });
+    n.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+  });
+  // ---- pause/resume SMIL per scene
+  document.querySelectorAll('[data-anim]').forEach(b => {
+    b.addEventListener('click', () => {
+      const svg = document.getElementById('svg-' + b.dataset.anim);
+      const paused = b.dataset.paused === '1';
+      if (paused) { svg.unpauseAnimations(); b.textContent = 'Pause letters'; b.dataset.paused = '0'; }
+      else { svg.pauseAnimations(); b.textContent = 'Resume letters'; b.dataset.paused = '1'; }
+    });
+  });
+  // ---- phase 4 cells
+  const cells = document.getElementById('cells');
+  [[40,'cell A'],[330,'cell B'],[620,'cell C']].forEach(([x, name], i) => {
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('class','node new');
+    g.dataset.tip = name + '|A complete phase-3 stack for one slice of merchants: 100 doors, a log, streams, 4–8 Postgres primaries, workers, Redis, its own read replicas. Nothing crosses to another cell.';
+    g.innerHTML = '<rect class="box" x="'+x+'" y="150" width="240" height="240" rx="12"/>'
+      + '<text class="t" x="'+(x+12)+'" y="172">'+name+' — merchants '+['0–33%','34–66%','67–100%'][i]+'</text>'
+      + '<rect x="'+(x+12)+'" y="186" width="216" height="30" rx="6" fill="#dce7fd"/><text class="s" x="'+(x+22)+'" y="205" style="fill:#1d4ed8">doors ×100 · produce</text>'
+      + '<rect x="'+(x+12)+'" y="222" width="216" height="30" rx="6" fill="#d3f0ec"/><text class="s" x="'+(x+22)+'" y="241" style="fill:#0f766e">the log · 256 partitions</text>'
+      + '<rect x="'+(x+12)+'" y="258" width="216" height="30" rx="6" fill="#d8f3e6"/><text class="s" x="'+(x+22)+'" y="277" style="fill:#047857">streams · decode · entry rules</text>'
+      + '<rect x="'+(x+12)+'" y="294" width="216" height="30" rx="6" fill="#d3f0ec"/><text class="s" x="'+(x+22)+'" y="313" style="fill:#0f766e">Postgres ×4–8 · identity shards · manifest</text>'
+      + '<rect x="'+(x+12)+'" y="330" width="216" height="30" rx="6" fill="#dce7fd"/><text class="s" x="'+(x+22)+'" y="349" style="fill:#1d4ed8">walker · dispatcher · gate · send()</text>'
+      + '<text class="s" x="'+(x+12)+'" y="380" style="fill:#8a93a6">the whole mailroom, once per cell</text>';
+    cells.appendChild(g);
+    g.addEventListener('mousemove', e => { const d = g.dataset.tip.split('|'); tip.innerHTML = '<b>'+d[0]+'</b>'+d[1]; tip.style.display='block'; tip.style.left=Math.min(e.clientX+14, window.innerWidth-300)+'px'; tip.style.top=(e.clientY+14)+'px'; });
+    g.addEventListener('mouseleave', () => tip.style.display='none');
+  });
+  // ---- trace one letter (phase 0)
+  const steps = [
+    [102,90,'<b>1 · Shopify</b> A shopper leaves a cash-on-delivery checkout. Shopify posts checkouts/update to nautilus; the relay forwards the body unopened.'],
+    [308,118,'<b>2 · The door</b> POST /ingest/events: the relay token is verified locally, the envelope is stamped, the letter is INSERTed with ON CONFLICT on (merchant, source, external_id), 200. No parsing.'],
+    [528,102,'<b>3 · The tray</b> The row sits in crm_event_raw with processed_at NULL: it is now in the work queue.'],
+    [768,101,'<b>4 · The pass</b> event-worker claims it with SKIP LOCKED. Discovery: shopify/checkouts/update is a code-layer topic, no nudge. Decode: the Shopify spec finds the phone in customer.default_address.phone and the fill-ins (total, items).'],
+    [528,172,'<b>5 · Identity</b> resolve() probes phone then email on the partial unique indexes; hit = Priya\'s card; miss would create one. assert_facts appends her name only if it changed.'],
+    [528,242,'<b>6 · Entry rules</b> The outreach consumer matches the cart board\'s door (topic + typed where: gateway is COD), admits by the customer key, and INSERTs a run into crm_workflow_enrollment pinned to the board\'s version. The row is stamped processed.'],
+    [768,206,'<b>7 · The walker</b> At wake_at the walker claims the run by lease, executes the pinned version: wait 15 min, then the send node maps {"1": customer_name} and queues a crm_message row.'],
+    [768,286,'<b>8 · The gate</b> The dispatcher claims the message; the gate probes suppression (and, with #1021, consent, quiet hours, caps). Not sure means no. The verdict is logged.'],
+    [528,460,'<b>9 · The token</b> A single-use send token is minted in Redis (GETDEL, 60s), bound to customer + channel + purpose.'],
+    [768,460,'<b>10 · send()</b> The one provider call: the approved template on the route\'s account, parameters rendered, posted to the Meta Graph API. apply_outcome writes status, provider message id and the pipe it left on, once.'],
+    [308,200,'<b>11 · The receipt</b> Meta posts "delivered" to /ingest/webhooks/meta: signature verified, the value narrowed to one status item, filed as a message.status letter. Back to step 3, as a letter like any other.'],
+  ];
+  const tracer = document.getElementById('tracer'), cap = document.getElementById('traceCap');
+  let tracing = false, timer = null;
+  document.getElementById('traceBtn').addEventListener('click', () => {
+    if (tracing) { tracing = false; clearTimeout(timer); tracer.setAttribute('opacity', 0); cap.innerHTML = 'Trace stopped.'; return; }
+    tracing = true; let i = 0;
+    const go = () => {
+      if (!tracing) return;
+      const [x, y, text] = steps[i];
+      tracer.setAttribute('cx', x); tracer.setAttribute('cy', y); tracer.setAttribute('opacity', 1);
+      cap.innerHTML = text;
+      i = (i + 1) % steps.length;
+      timer = setTimeout(go, 3400);
+    };
+    go();
+  });
+  // ---- data model
+  const T = [
+    // [id, x, y, name, canon, owner, built, cols]
+    ['pi',20,60,'platform_identity','T02','platform',true,'id uuid PK\nkind text CK  phone|email|device\nvalue text UQ (kind,value)  E.164 / lowercase\nis_suppressed bool  (trigger-recomputed)\nsuppressed_at, reason\ncreated_at, updated_at'],
+    ['cu',20,170,'crm_customer','T05','identity',true,'id uuid PK\nmerchant_id text NN  (first in every UQ)\nphone, email, igsid, shopify_customer_id, external_ref  (partial UQ WHERE status=active)\nstatus  active|merged_away|erased\nmerged_into_id uuid FK (merchant_id,id) + CHECK <> id\nattributes jsonb + history by trigger\nfirst_seen_at, last_seen_at, created_at, updated_at\n(proposed: anon_id, merchant-scoped)'],
+    ['er',250,60,'crm_event_raw','T13','record',true,'id uuid PK\nmerchant_id, source, topic, external_id  UQ(merchant,source,external_id)\npayload jsonb (verbatim, immutable)\nschema_version, occurred_at, received_at\nprocessed_at, quarantine_reason\ncustomer_id uuid (stamp, ADR 0020)\nattempts int (claim spends it)\nindexes: pending partial · (merchant,customer,occurred) · (merchant,topic,received)'],
+    ['es',250,200,'crm_event_schema','T24','record',true,'id uuid PK\nmerchant_id, source, topic  UQ\nlabel text\nfields jsonb  [{path,type,label,keyable,variable,values,identity,deprecated}]\nstatus  detected|registered (CK)\nversion int, registered_by\nfirst_seen_at, created_at, updated_at'],
+    ['cm',250,350,'crm_customer_memory','T09','record',true,'id, merchant_id, customer_id FK\nsummary ≤200, body ≤4000\nagent-only contract'],
+    ['ce',480,60,'crm_consent_event','T07','permission',false,'append-only by trigger\nmerchant_id, customer_id, address (mandatory), purpose, action, evidence, source\nPR #1021'],
+    ['cs',480,150,'crm_consent_state','T08','permission',false,'resolved state, rewritten in the same txn as the ledger\nexpiry is a predicate, never a stored status\nPR #1021'],
+    ['dl',480,240,'crm_decision_log','T14','permission',false,'every may_contact() verdict, allow AND refuse\nreason, purpose, message_id\nmonthly partitions'],
+    ['ci',690,60,'crm_connector_installation','T11','connectivity',true,'id, merchant_id, connector_key, external_account_id (WABA)\ncredential_id (vault pointer, never a secret)\nstatus  healthy|degraded|revoked  + health jsonb'],
+    ['cb',690,150,'crm_channel_binding','T12','connectivity',true,'id, merchant_id, channel, installation_id FK\naddress (phone_number_id / sender id)\nis_primary  partial-UQ per (merchant, channel)\nstatus  active|paused|retired (never deleted)'],
+    ['ct',690,240,'crm_channel_template','T23','connectivity',true,'id, merchant_id, channel, provider_account_ref, name, language  (5-col natural key)\nstatus  draft|pending|approved|rejected|paused|deleted\nprovider_template_id, category, quality, components\nretire guarded by advisory lock (ADR 0023 §6)'],
+    ['mg',690,350,'crm_message','T16','connectivity',true,'id, merchant_id, customer_id, channel, sent_to_address\nsource_kind, source_id (run), purpose_key, template_id, variables (what was posted)\nstatus  queued|sending|blocked|accepted|sent|delivered|read|failed|dead\nreason (blocked: gate word · failed/dead: provider code)\nprovider_message_id UQ alone (wamid is global)\nbinding_id set-once · claim generation · attempts\nRANGE partitions on created_at'],
+    ['wf',480,350,'crm_workflow','T19','outreach',true,'id, merchant_id, name, status  draft|live|paused|archived\ndefinition jsonb (LATEST doc), draft jsonb, version int\non_publish  pin|migrate (CK)\nentry: doors {topic, where:[{field,op,value}], key, reenter, cooldown, on_repeat}\nnodes: wait · send{template, variables{blank:fact}} · call · wait_event{topics,key,match}'],
+    ['wv',480,430,'crm_workflow_version','T25','outreach',true,'merchant_id, workflow_id, version  UQ\ndefinition jsonb (immutable by trigger)\non_publish, published_by, published_at\nnever deleted (067 guard) — a run executes the version it entered under'],
+    ['we',250,430,'crm_workflow_enrollment','T20','outreach',true,'id, merchant_id, workflow_id, workflow_version (execution pin)\ncustomer_id, enrollment_key  partial-UQ (merchant,workflow,key) WHERE status<>exited\nstatus, current_node, wake_at (lease), attempts\ncontext jsonb (pointers + small facts; bookkeeping keys)\nentered_at, entered_event_at, exit_reason  goal_met|timed_out|withdrawn|ejected|completed|converted_elsewhere'],
+    ['sg',20,350,'crm_segment','T15','outreach',false,'predicate in the where-grammar\ncompiled to SQL; evaluated on read or materialised\nP2'],
+    ['sm',20,430,'crm_segment_member','T21','outreach',false,'materialised membership (segment_id, customer_id)\nrebuildable projection · P2'],
+    ['br',20,510,'crm_broadcast / _recipient','T17 / T18','outreach',false,'a scheduled send to a segment through the same gate\nfairness lanes in the dispatcher · W8'],
+    ['ca',250,510,'crm_campaign','T22','outreach',false,'groups broadcasts and flows for reporting · P2'],
+  ];
+  const FK = [ ['er','cu'],['es','er'],['cm','cu'],['ce','cu'],['cs','cu'],['dl','mg'],['cb','ci'],['mg','cb'],['mg','ct'],['mg','cu'],['wf','wv'],['we','wf'],['we','wv'],['we','cu'],['sm','sg'],['br','sg'],['ca','br'],['cu','pi'] ];
+  const svg = document.getElementById('svg-db'), NS = 'http://www.w3.org/2000/svg';
+  const W = 200, H = 46, pos = {};
+  // module bands
+  [['identity',10,20,220,'#d3f0ec'],['record',240,20,220,'#dce7fd'],['permission',470,20,220,'#fde2e2'],['connectivity',680,20,210,'#d8f3e6']].forEach(([n,x,y,w,c]) => {
+    const r = document.createElementNS(NS,'rect'); r.setAttribute('x',x); r.setAttribute('y',y); r.setAttribute('width',w); r.setAttribute('height',290); r.setAttribute('rx',10); r.setAttribute('fill',c); r.setAttribute('opacity','.45'); svg.appendChild(r);
+    const t = document.createElementNS(NS,'text'); t.setAttribute('x',x+10); t.setAttribute('y',y+16); t.setAttribute('class','lanet'); t.textContent = n.toUpperCase(); svg.appendChild(t);
+  });
+  const ob = document.createElementNS(NS,'rect'); ob.setAttribute('x',10); ob.setAttribute('y',318); ob.setAttribute('width',880); ob.setAttribute('height',272); ob.setAttribute('rx',10); ob.setAttribute('fill','#ede4ff'); ob.setAttribute('opacity','.45'); svg.appendChild(ob);
+  const ot = document.createElementNS(NS,'text'); ot.setAttribute('x',20); ot.setAttribute('y',334); ot.setAttribute('class','lanet'); ot.textContent = 'OUTREACH  (+ record\'s memory table)'; svg.appendChild(ot);
+  T.forEach(([id,x,y,name,canon,owner,built]) => { pos[id] = {x, y}; });
+  const fkLayer = document.createElementNS(NS,'g'); svg.appendChild(fkLayer);
+  FK.forEach(([a,b]) => {
+    const A = pos[a], B = pos[b]; if (!A || !B) return;
+    const ax = A.x + W/2, ay = A.y + H/2, bx = B.x + W/2, by = B.y + H/2;
+    const p = document.createElementNS(NS,'path'); p.setAttribute('class','fk');
+    const mx = (ax + bx) / 2;
+    p.setAttribute('d', 'M'+ax+','+ay+' C'+mx+','+ay+' '+mx+','+by+' '+bx+','+by); p.setAttribute('opacity','.35'); fkLayer.appendChild(p);
+  });
+  const card = document.getElementById('dbcard');
+  T.forEach(([id,x,y,name,canon,owner,built,cols]) => {
+    const g = document.createElementNS(NS,'g'); g.setAttribute('class','tbl' + (built ? '' : ' designed')); g.dataset.id = id;
+    g.innerHTML = '<rect x="'+x+'" y="'+y+'" width="'+W+'" height="'+H+'" rx="7"/>'
+      + '<text class="n" x="'+(x+10)+'" y="'+(y+19)+'">'+name+'</text>'
+      + '<text class="k" x="'+(x+10)+'" y="'+(y+35)+'">'+canon+' · '+owner+(built ? '' : ' · designed')+'</text>';
+    g.addEventListener('click', () => {
+      document.querySelectorAll('#svg-db .tbl').forEach(t => t.classList.toggle('sel', t === g));
+      fkLayer.querySelectorAll('path').forEach((p, i) => { const [a,b] = FK[i]; p.setAttribute('opacity', (a === id || b === id) ? '1' : '.12'); p.setAttribute('stroke-width', (a === id || b === id) ? '2' : '1.2'); });
+      card.innerHTML = '<h3>' + canon + ' · ' + owner + (built ? ' · <span class="pill p-teal">built</span>' : ' · <span class="pill p-ph">designed</span>') + '</h3>'
+        + '<p><b style="font-family:var(--mono)">' + name + '</b></p><div class="cols">' + cols.replace(/</g,'&lt;') + '</div>';
+    });
+    svg.appendChild(g);
+  });
+})();
+</script>

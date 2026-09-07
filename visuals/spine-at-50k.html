@@ -1,0 +1,189 @@
+<title>Spine at 50k</title>
+<style>
+:root{
+  --canvas:#eef1f6; --panel:#e5e9f1; --card:#ffffff; --card-border:#e2e6ee;
+  --shadow:0 1px 3px rgba(31,42,68,.10),0 4px 14px rgba(31,42,68,.06);
+  --ink:#1f2a44; --ink-soft:#4b5568; --muted:#8a93a6; --line:#3a4661;
+  --purple:#7c3aed; --purple-soft:#ede4ff; --purple-ink:#5b21b6;
+  --blue:#2563eb;   --blue-soft:#dce7fd;   --blue-ink:#1d4ed8;
+  --green:#10b981;  --green-soft:#d8f3e6;  --green-ink:#047857;
+  --teal:#0d9488;   --teal-soft:#d3f0ec;   --teal-ink:#0f766e;
+  --amber:#f59e0b;  --amber-soft:#ffeacb;  --amber-ink:#92400e;
+  --font:"Inter","SF Pro Text",-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+body{margin:0;background:var(--canvas);font-family:var(--font);color:var(--ink);}
+.scroll{overflow-x:auto;background:var(--canvas);}
+.page{position:relative;width:1810px;height:1000px;}
+.hdr{position:absolute;top:0;left:0;right:0;padding:22px 32px 0;}
+.hdr h1{margin:0;font-size:22px;}
+.hdr p{margin:4px 0 0;font-size:13px;color:var(--muted);}
+.legend{position:absolute;top:26px;right:32px;display:flex;gap:8px;align-items:center;
+  font-size:10px;color:var(--ink-soft);}
+.legend .ln{width:24px;height:0;border-top:1.5px solid var(--line);}
+.legend .ln.dash{border-top-style:dashed;}
+.pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2px 8px;border-radius:999px;}
+.p-purple{background:var(--purple-soft);color:var(--purple-ink);}
+.p-blue{background:var(--blue-soft);color:var(--blue-ink);}
+.p-green{background:var(--green-soft);color:var(--green-ink);}
+.p-teal{background:var(--teal-soft);color:var(--teal-ink);}
+.p-amber{background:var(--amber-soft);color:var(--amber-ink);}
+.p-ph{background:#dfe3ea;color:#4b5568;}
+.lane{position:absolute;top:120px;height:770px;width:230px;background:var(--panel);border-radius:14px;}
+.lane h2{position:absolute;top:12px;left:16px;margin:0;font-size:11px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.lane.same{outline:1.5px dashed #b9c1d1;outline-offset:-1.5px;}
+.card{position:absolute;background:var(--card);border:1px solid var(--card-border);
+  border-radius:10px;box-shadow:var(--shadow);padding:9px 12px;width:198px;box-sizing:border-box;}
+.card h3{margin:0 0 3px;font-size:12.5px;color:var(--ink);}
+.card p{margin:0;font-size:10.5px;line-height:1.4;color:var(--ink-soft);}
+.card .pill{position:absolute;top:-9px;right:10px;}
+.card .ph{position:absolute;top:-9px;left:10px;}
+.card.note{border:1.5px dashed var(--muted);box-shadow:none;background:transparent;}
+.card.note p{color:var(--muted);}
+svg.wires{position:absolute;inset:0;pointer-events:none;}
+svg.wires path{stroke:var(--line);stroke-width:1.5;fill:none;}
+svg.wires path.dash{stroke-dasharray:5 4;}
+.wlbl{position:absolute;background:var(--ink);color:#fff;font-size:9.5px;font-weight:600;
+  padding:2px 8px;border-radius:999px;transform:translate(-50%,-50%);white-space:nowrap;}
+.ftr{position:absolute;left:32px;bottom:12px;font-size:10px;color:var(--muted);}
+</style>
+<div class="scroll"><div class="page">
+  <div class="hdr">
+    <h1>The spine at 50k letters per second &mdash; the transport changes, the product does not</h1>
+    <p>Doors produce to a log instead of inserting; the raw table becomes a sink; the pass becomes three streams; identity shards by merchant. Catalog, gate, walker, manifest and console keep their contracts.</p>
+  </div>
+  <div class="legend">
+    <span class="pill p-amber">external</span><span class="pill p-purple">edge</span><span class="pill p-blue">spine</span>
+    <span class="pill p-teal">store</span><span class="pill p-green">engine</span><span class="pill p-ph">unchanged</span>
+    <span class="ln"></span>facts<span class="ln dash"></span>commands / reads
+  </div>
+
+  <div class="lane" style="left:24px;"><h2>1 &middot; Touchpoints &mdash; 50k/s peak</h2></div>
+  <div class="lane" style="left:278px;"><h2>2 &middot; Doors &mdash; stateless</h2></div>
+  <div class="lane" style="left:532px;"><h2>3 &middot; The log &mdash; the queue</h2></div>
+  <div class="lane" style="left:786px;"><h2>4 &middot; Streams &mdash; the pass, split</h2></div>
+  <div class="lane" style="left:1040px;"><h2>5 &middot; Stores &mdash; sharded, sunk</h2></div>
+  <div class="lane same" style="left:1294px;"><h2>6 &middot; Engines &mdash; unchanged</h2></div>
+  <div class="lane same" style="left:1548px;"><h2>7 &middot; Surfaces &mdash; unchanged</h2></div>
+
+  <svg class="wires" width="1810" height="1000">
+    <defs>
+      <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L8,4 L0,8 z" fill="#3a4661"/>
+      </marker>
+    </defs>
+    <!-- touchpoints -> doors -->
+    <path d="M238,205 H266 V224 H294" marker-end="url(#ah)"/>
+    <path d="M238,295 H286 V344 H294" marker-end="url(#ah)"/>
+    <path d="M238,385 H270 V232 H294" marker-end="url(#ah)"/>
+    <path d="M238,475 H274 V240 H294" marker-end="url(#ah)"/>
+    <!-- doors -> the log -->
+    <path d="M492,224 H520 V227 H548" marker-end="url(#ah)"/>
+    <path d="M492,344 H520 V240 H548" marker-end="url(#ah)"/>
+    <!-- the log -> streams -->
+    <path d="M746,227 H774 V221 H802" marker-end="url(#ah)"/>
+    <path d="M746,250 H778 V355 H802" marker-end="url(#ah)"/>
+    <path class="dash" d="M746,380 H790 V501 H802" marker-end="url(#ah)"/>
+    <!-- decode -> entry (inside lane 4) -->
+    <path d="M901,420 V436" marker-end="url(#ah)"/>
+    <!-- streams -> stores -->
+    <path d="M1000,221 H1056" marker-end="url(#ah)"/>
+    <path d="M1000,355 H1028 V333 H1056" marker-end="url(#ah)"/>
+    <path d="M1000,501 H1032 V454 H1056" marker-end="url(#ah)"/>
+    <!-- stores -> engines (commands, unchanged) -->
+    <path class="dash" d="M1254,454 H1282 V391 H1310" marker-end="url(#ah)"/>
+    <!-- engines -> surfaces -->
+    <path class="dash" d="M1508,205 H1564" marker-end="url(#ah)"/>
+    <path class="dash" d="M1508,215 H1536 V391 H1564" marker-end="url(#ah)"/>
+  </svg>
+
+  <!-- L1 TOUCHPOINTS -->
+  <div class="card" style="left:40px;top:168px;height:74px;"><span class="pill p-amber">external</span>
+    <h3>Shopify relay (nautilus)</h3><p>orders &middot; checkouts &middot; paid &middot; cancelled &mdash; unopened bodies</p></div>
+  <div class="card" style="left:40px;top:258px;height:74px;"><span class="pill p-amber">external</span>
+    <h3>Meta webhooks</h3><p>message statuses &middot; inbound &middot; template and account events</p></div>
+  <div class="card" style="left:40px;top:348px;height:74px;"><span class="pill p-purple">edge</span>
+    <h3>Push vendors (s2s)</h3><p>their events, their registered schema (T24)</p></div>
+  <div class="card" style="left:40px;top:438px;height:74px;"><span class="pill p-amber">external</span>
+    <h3>Payments firehose</h3><p>the 50k/s case: Juspay's own transaction events</p></div>
+  <div class="card note" style="left:40px;top:540px;height:76px;">
+    <p>Producers batch: an array of letters per call. The dedupe key rides with each letter.</p></div>
+  <div class="card note" style="left:40px;top:640px;height:136px;">
+    <p><b>The arithmetic</b><br>50k/s in &middot; ~100 door pods at ~500/s &middot; 256 partitions &middot; ~200 decode consumers at ~250/s &middot; sink at 10 batches/s of 5k rows &middot; 4&ndash;8 primaries by merchant hash</p></div>
+
+  <!-- L2 DOORS -->
+  <div class="card" style="left:294px;top:168px;height:112px;"><span class="pill p-blue">spine</span>
+    <h3>Envelope door</h3><p>POST /ingest/events &mdash; verify (local JWT) &middot; stamp the envelope &middot; PRODUCE &middot; 200. The door no longer INSERTs.</p></div>
+  <div class="card" style="left:294px;top:296px;height:96px;"><span class="pill p-blue">spine</span>
+    <h3>Provider bays</h3><p>GET|POST /ingest/webhooks/{provider} &mdash; the bay's verify, then the same produce</p></div>
+  <div class="card" style="left:294px;top:408px;height:80px;"><span class="pill p-blue">spine</span><span class="pill ph p-ph">unchanged</span>
+    <h3>Schema door</h3><p>POST /ingest/schemas &mdash; cold, writes T24 directly</p></div>
+  <div class="card note" style="left:294px;top:504px;height:76px;">
+    <p>Stateless: scale by pod count. ~100 pods carry 50k/s; each pod is one uvicorn process.</p></div>
+  <div class="card note" style="left:294px;top:596px;height:70px;">
+    <p>Refusals unchanged and BEFORE anything is produced: 401 &middot; 403 &middot; 413 &middot; 400</p></div>
+
+  <!-- L3 THE LOG -->
+  <div class="card" style="left:548px;top:168px;height:118px;"><span class="pill p-teal">store</span>
+    <h3>Topic: letters</h3><p>partitioned by merchant hash (256) &middot; key = (merchant, source, external_id) &middot; idempotent producer &middot; retention 7 days = the replay window</p></div>
+  <div class="card" style="left:548px;top:302px;height:96px;"><span class="pill p-teal">store</span>
+    <h3>Change feed: plans</h3><p>a publish on crm_workflow flows here; the entry stream refreshes its in-memory plans</p></div>
+  <div class="card note" style="left:548px;top:414px;height:76px;">
+    <p>Ordering per merchant partition only. The standing promise, no cross-event order, is unchanged.</p></div>
+  <div class="card note" style="left:548px;top:506px;height:60px;">
+    <p>Dedupe once, by the key. Consumers never dedupe (law kept).</p></div>
+  <div class="card note" style="left:548px;top:582px;height:84px;">
+    <p>Quarantine = a dead-letter topic plus the row's reason in the sink. Replay = re-produce the letter.</p></div>
+
+  <!-- L4 STREAMS -->
+  <div class="card" style="left:802px;top:168px;height:106px;"><span class="pill p-blue">spine</span>
+    <h3>Sink consumers</h3><p>COPY 5k letters per batch into crm_event_raw &middot; ON CONFLICT drops the duplicate &middot; the raw table is a SINK now: audit, replay, journey</p></div>
+  <div class="card" style="left:802px;top:290px;height:130px;"><span class="pill p-green">engine</span>
+    <h3>Decode + identity stream</h3><p>engine.extract by its cached spec (code catalog or T24) &middot; resolve() on the merchant's identity shard, a handle cache in front &middot; emits the attributed letter</p></div>
+  <div class="card" style="left:802px;top:436px;height:130px;"><span class="pill p-green">engine</span>
+    <h3>Entry-rules stream</h3><p>live plans per merchant held in memory &middot; typed where over the payload &middot; keyed admission &middot; enrol writes T20 &middot; goal, reply and repeat commands each name their run</p></div>
+  <div class="card note" style="left:802px;top:582px;height:60px;">
+    <p>Consumers stay cheap (pressure point 3). SKIP LOCKED leaves the hot path.</p></div>
+  <div class="card note" style="left:802px;top:658px;height:70px;">
+    <p>One engine, two spec sources, still. The stream is the pass with the transaction taken out.</p></div>
+
+  <!-- L5 STORES -->
+  <div class="card" style="left:1056px;top:168px;height:106px;"><span class="pill p-teal">store</span>
+    <h3>crm_event_raw &mdash; the sink</h3><p>partitioned monthly RANGE &times; merchant HASH &middot; retention = partition drop &middot; 4&ndash;8 primaries by merchant hash</p></div>
+  <div class="card" style="left:1056px;top:290px;height:106px;"><span class="pill p-teal">store</span>
+    <h3>Identity shards</h3><p>crm_customer and platform_identity by merchant hash &middot; probe order unchanged &middot; no fuzzy matching, ever</p></div>
+  <div class="card" style="left:1056px;top:412px;height:84px;"><span class="pill p-teal">store</span><span class="pill ph p-ph">unchanged</span>
+    <h3>Outreach tables</h3><p>T19 / T20 / T25 &middot; walker leases on wake_at &middot; CAS writes</p></div>
+  <div class="card" style="left:1056px;top:512px;height:96px;"><span class="pill p-teal">store</span>
+    <h3>PgBouncer + read replica</h3><p>every pool through PgBouncer &middot; counts, catalog and journey read from the replica</p></div>
+  <div class="card note" style="left:1056px;top:624px;height:76px;">
+    <p>A second primary is never the answer. The log is. That sentence is the trigger.</p></div>
+
+  <!-- L6 ENGINES -->
+  <div class="card" style="left:1310px;top:168px;height:74px;"><span class="pill p-green">engine</span><span class="pill ph p-ph">unchanged</span>
+    <h3>Catalog</h3><p>T24 + code specs &mdash; cold; specs cached; never on the hot path</p></div>
+  <div class="card" style="left:1310px;top:258px;height:80px;"><span class="pill p-green">engine</span><span class="pill ph p-ph">unchanged</span>
+    <h3>Permission gate</h3><p>may_contact() &mdash; fail closed, never cached, every verdict logged</p></div>
+  <div class="card" style="left:1310px;top:354px;height:74px;"><span class="pill p-green">engine</span><span class="pill ph p-ph">unchanged</span>
+    <h3>Walker</h3><p>leases on wake_at, CAS, pinned versions (ADR 0023)</p></div>
+  <div class="card" style="left:1310px;top:444px;height:80px;"><span class="pill p-green">engine</span><span class="pill ph p-ph">unchanged</span>
+    <h3>Dispatcher + manifest</h3><p>crm_message (T16) &middot; send() the one path &middot; the providers</p></div>
+  <div class="card note" style="left:1310px;top:540px;height:60px;">
+    <p>Does not care where the queue lives.</p></div>
+
+  <!-- L7 SURFACES -->
+  <div class="card" style="left:1564px;top:168px;height:80px;"><span class="pill p-green">view</span><span class="pill ph p-ph">unchanged</span>
+    <h3>Console</h3><p>flows editor from GET /catalog &middot; Your events &middot; seen vs matched</p></div>
+  <div class="card" style="left:1564px;top:264px;height:74px;"><span class="pill p-green">view</span><span class="pill ph p-ph">unchanged</span>
+    <h3>Journey</h3><p>reads the sink through the customer_id stamp (ADR 0020)</p></div>
+  <div class="card" style="left:1564px;top:354px;height:74px;"><span class="pill p-green">view</span><span class="pill ph p-ph">unchanged</span>
+    <h3>Catalog API</h3><p>ETag &middot; layer-blind &middot; served from the replica</p></div>
+  <div class="card note" style="left:1564px;top:444px;height:76px;">
+    <p>Contracts unchanged: resolve() &middot; may_contact() &middot; send() &middot; enrol()</p></div>
+
+  <span class="wlbl" style="left:520px;top:150px;">produce, not insert</span>
+  <span class="wlbl" style="left:856px;top:428px;">attributed</span>
+
+  <div class="ftr">PROPOSAL, not sealed &mdash; trigger: past ~5k letters/s sustained, Postgres-as-queue ends (modules/01 &sect;capacity; design/how-it-scales &sect;pressure points 1, 3, 4). Everything right of the log keeps its contracts. ADR to be written on Swaroop's ruling.</div>
+</div></div>

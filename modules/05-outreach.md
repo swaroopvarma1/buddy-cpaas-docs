@@ -264,6 +264,10 @@ family.
   (`context.py`: bookkeeping keys, `run_facts`, placeholders), and `NODE_TYPES` ASSEMBLED in
   the package `__init__` from the word modules (the `SPEC_MODULES` precedent: the assembly
   point is the package's `__init__`, not a re-export hub). Trigger fired by #1057: the file
-  crossed ~500 lines (431 → 596) as the fifth word landed. The Literal pin test is unchanged.
+  crossed ~500 lines (431 → 596) as the fifth word landed. The Literal pin test is unchanged. **As built (#1057 merged 7 Sep; #1101 trims the hub)**: `nodes/` = `__init__` (the
+  registry: `NODE_TYPES` · `NodeSpec` · `is_wait` — and NOTHING else, pinned) · `spec.py`
+  (`NodeSpec`, `NodeParked`) · `context.py` (`run_facts`, `send_variables`, `lead_request_id`,
+  `reply_key`, `without_reply`, `is_bookkeeping`) · one file per word with its `validate` +
+  `execute`. Importers name the file they mean.
 
 Refs: 05-audiences.md + 06-outreach.md (corpus) · ADR 0004 / 0010 / 0016.

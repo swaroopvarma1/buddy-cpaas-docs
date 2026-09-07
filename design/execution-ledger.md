@@ -427,14 +427,14 @@ from port, root and faces — `installation is None` refuses, `_door` reads `ext
 only; `test_config_bounds.py` pins action-timeout < walker-lease AND send-timeout < dispatch-stale;
 `NoTemplates` deleted, `ConnectorSpec.templates` Optional with guards in lifecycle + events; empty
 signing secret refuses locally; boundary transport tests parametrized; `.env.example` documented;
-no test anchors a walk on `nodes.__file__`. **Verdict: MERGEABLE codewise.** One MINOR left:
+no test anchors a walk on `nodes.__file__`. **Verdict: MERGEABLE codewise — MERGED by Swaroop 7 Sep 11:37Z as `f98b7ae1` (squash).** The one MINOR left was raised as its own PR on his ask — **#1101 (`refactor/crm-nodes-init-registry-only`, one commit `5c76eb06` on `f98b7ae1`)**: `nodes/__init__` exports `NODE_TYPES` · `NodeSpec` · `is_wait` only, pinned by a test proven red with an injected re-export; `context.is_bookkeeping(key)` is the one definition entry.py and run_facts share; ten importers moved to full paths; docs say so; 1005 tests. Was:
 `nodes/__init__.py` re-exports 21 names (three of them private `_BOOKKEEPING_*`/`_REQUEST_ID_KEYS`)
 so the twelve importers stay unchanged — the sanctioned assembly `__init__` exports the REGISTRY
 (`NODE_TYPES`, `NodeSpec`, `is_wait`, `NodeParked`), everything else by full path (rules/01: an
 `__init__` exports nothing; the 132-line re-export-hub scar). A sed, before or right after merge.
 NIT: the PR body is STILL CodeRabbit's summary of a different PR (fourth ask). nautilus follow-up
 (400/404/422 on lookup failures) still owed on the other repo. Release moved under it again:
-Bhumika's #? `071_credentials_merchant_id.sql` took 071 → next free migration = **072**.** Right shape in
+Bhumika's `071_credentials_merchant_id.sql` took 071 → next free migration = **072**.** Right shape in
 connectivity (root → registry → face → confined transport; args as contract; two failure
 classes; sign-the-bytes; usable-door policy bound as a parameter; NULL credential as the
 migration switch). Three MAJORs: (1) the Shopify face reads OUTREACH's run context
@@ -466,7 +466,9 @@ grows again. Delivered since the last list: #1040 (Meta bay in record), #1079 (c
 #1080 (structure PR 2), #1082 (template_status on the sending account), **#1047 (the event
 catalog: T24 068 + where→conditions 069 — merged 4 Sep 12:15Z as `2a00ef44`)**, **#1085 (the WhatsApp code spec, all six
 topics — merged 7 Sep 06:39Z as `ff0aaf81`)**, **#1084 (the template webhook consumer +
-`connectivity/templates/` package — merged 7 Sep 09:13Z as `a55a9f53`)**. Owed from #1084's own
+`connectivity/templates/` package — merged 7 Sep 09:13Z as `a55a9f53`)**, **#1057 (the `action` square + the Shopify
+connector's action face via nautilus + the `outreach/nodes/` package — merged 7 Sep 11:37Z as
+`f98b7ae1`)**. Owed from #1084's own
 backlog: the tombstone dead end (partial unique or reopen), the provider-clock column (the
 principled form of the skew), the `db/queries/template.py` split at its next builder. Next free migration = **072** (071 = `071_credentials_merchant_id.sql`, Bhumika, 7 Sep) — buddy's chameleon run (#1090–#1095, merged 7 Sep 09:35–10:27Z,
 release `4cfc0515`) took 070 as `070_create_ui_component.sql`; #1021 renumbers to 071+. Route inventory 34 (record 9 · outreach 12 · connectivity 11 · identity 2).

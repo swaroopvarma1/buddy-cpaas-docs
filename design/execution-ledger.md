@@ -461,7 +461,16 @@ meta bay is no longer in the diff (#1085 derives `reply`).
 cart phrasings, `fulfillment_state`, `orders/updated`; context ceiling to live config) — Manas
 REQUEST CHANGES 8 Sep (G4 unruled; dark door) → APPROVE 9 Sep at `d9abf502`. MY REVIEW 9 Sep at
 the same head (one commit, clean on `ce556ce9`; gates on the merged tree: 1044 tests · pyrefly 0 ·
-boundaries · 72 migrations · black · isort): APPROVE WITH NITS — mergeable; POSTED 9 Sep on Swaroop's go as issuecomment-5599259612.**
+boundaries · 72 migrations · black · isort): APPROVE WITH NITS — mergeable; POSTED 9 Sep on Swaroop's go as issuecomment-5599259612.** **RE-VERIFIED 9 Sep at head `437e3ae5`** (silent amend, one commit, clean on release
+`46e7e17b`; merged tree: 1050 tests · pyrefly 0 · boundaries · 72 migrations · black · isort): both MINORs
+closed IN THE DIFF and proven by running the getter — a stored 100 is CLAMPED to 256 with a warning,
+a stored 0 the same, 500 consecutive reads cost 0 Redis GETs (60 s process-local window, cold-cache
+fixture in `test_context_ceiling.py`; the floor is DUPLICATED in `app/core` because core may not
+import crm, and a test pins the two equal); the `order_currency` docstring now argues for the key the
+code prefers. Unasked scope trim: the `items_full` phrasing is gone (three cart phrasings; `line_total`
+still attached per line for vendor formats). Nits left as nits: G4 backlog row, PR body,
+`orders/updated` dependency line. **MERGEABLE.** Release moved under it: Batman's assist refactors +
+`072_crm_customer_attributes_gin.sql` → next free migration = **073**.
 Laws hold: decode at processing time over the verbatim letter; `list` has zero ops (pinned to the
 predicate families) so the matcher never sees an array; `item_format` stored only where it means
 something (old T24 rows byte-identical); config through the resolver; registration refuses the
@@ -495,5 +504,5 @@ topics — merged 7 Sep 06:39Z as `ff0aaf81`)**, **#1084 (the template webhook c
 connector's action face via nautilus + the `outreach/nodes/` package — merged 7 Sep 11:37Z as
 `f98b7ae1`)**. Owed from #1084's own
 backlog: the tombstone dead end (partial unique or reopen), the provider-clock column (the
-principled form of the skew), the `db/queries/template.py` split at its next builder. Next free migration = **072** (071 = `071_credentials_merchant_id.sql`, Bhumika, 7 Sep) — buddy's chameleon run (#1090–#1095, merged 7 Sep 09:35–10:27Z,
+principled form of the skew), the `db/queries/template.py` split at its next builder. Next free migration = **073** (072 = `072_crm_customer_attributes_gin.sql`, 9 Sep)
 release `4cfc0515`) took 070 as `070_create_ui_component.sql`; #1021 renumbers to 071+. Route inventory 34 (record 9 · outreach 12 · connectivity 11 · identity 2).

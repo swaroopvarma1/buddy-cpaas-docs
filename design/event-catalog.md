@@ -84,7 +84,8 @@ has ZERO operators: it is a template variable or nothing, never a filter, never 
 identity — the where-grammar still never receives an array. Registration laws: `item_format` only
 on type `list`; balanced braces and key-shaped blanks; two variables may not fill one blank; a
 yes-no is never a variable. The code layer phrases a cart as fixed derived fields (Shopify:
-`items` · `items_qty` · `items_priced` · `items_full`) through the SAME renderer. Supersedes the
+`items` · `items_qty` · `items_priced` — three; `items_full` was cut before merge, though
+`line_total` still rides beside each line for a vendor's own `item_format`) through the SAME renderer. Supersedes the
 "only through derived fields" line above and #1078 A/02 (`letter_facts`, fire-time read).
 
 ## Vendor events — registered at enrollment (RULED 1 Sep 2026, Swaroop)

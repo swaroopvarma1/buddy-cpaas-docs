@@ -74,7 +74,18 @@ catalog declares for the field's type; the engine implements exactly those; no l
 promises what another can't keep.
 
 Nested objects: flat dot-paths. Arrays: addressable ONLY through declared derived
-fields (`items_count`) — the matcher never learns array semantics.
+fields (`items_count`) — the matcher never learns array semantics. **Amended 9 Sep 2026 (G4 ruled by Swaroop: extraction at INGEST — built
+#1108)**: a seventh type, `list`, addresses an array and renders it as ONE scalar at decode —
+the values the path names, or each element through a declared `item_format` (`{title} x{quantity}`,
+blanks dot-walked into the element, an element missing a blank skipped whole), joined and
+truncated at the join with the overflow counted ("+N more"). The path walks THROUGH every array it
+crosses (`payload.loanApplications.offers.rate` reads every offer of every application). A `list`
+has ZERO operators: it is a template variable or nothing, never a filter, never a key, never an
+identity — the where-grammar still never receives an array. Registration laws: `item_format` only
+on type `list`; balanced braces and key-shaped blanks; two variables may not fill one blank; a
+yes-no is never a variable. The code layer phrases a cart as fixed derived fields (Shopify:
+`items` · `items_qty` · `items_priced` · `items_full`) through the SAME renderer. Supersedes the
+"only through derived fields" line above and #1078 A/02 (`letter_facts`, fire-time read).
 
 ## Vendor events — registered at enrollment (RULED 1 Sep 2026, Swaroop)
 
@@ -88,7 +99,7 @@ knows which one answered.
 
 **The registration is in OUR language, small and closed** — a field list (path ·
 type from the closed set: Text / Number / Choice(+values) / Yes-no / Date-time /
-Phone · label · keyable flag · usable-in-messages flag), because types must map
+Phone · label · keyable flag · usable-in-messages flag), because types must map (+ List with an optional item_format, 9 Sep 2026 — see §Types)
 one-to-one onto the where-grammar's operators. Unknown types are rejected AT
 REGISTRATION, never discovered at flow-publish. Identity keys follow the standard
 push contract (customer_mobile_number / customer_name → the generic extractor;

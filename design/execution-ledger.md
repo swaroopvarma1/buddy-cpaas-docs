@@ -457,6 +457,31 @@ col 6 trail); #1078 A/03 (`http` node with an author URL) is superseded and Swar
 should say so. Manas's blocker (the door writing a decoded `reply`) closed by REMOVAL — the
 meta bay is no longer in the diff (#1085 derives `reply`).
 
+**#1108 (Rahul — the `list` catalog type + `item_format`; Shopify 11 → 42 declared fields, four
+cart phrasings, `fulfillment_state`, `orders/updated`; context ceiling to live config) — Manas
+REQUEST CHANGES 8 Sep (G4 unruled; dark door) → APPROVE 9 Sep at `d9abf502`. MY REVIEW 9 Sep at
+the same head (one commit, clean on `ce556ce9`; gates on the merged tree: 1044 tests · pyrefly 0 ·
+boundaries · 72 migrations · black · isort): APPROVE WITH NITS — mergeable; advisory, not posted.**
+Laws hold: decode at processing time over the verbatim letter; `list` has zero ops (pinned to the
+predicate families) so the matcher never sees an array; `item_format` stored only where it means
+something (old T24 rows byte-identical); config through the resolver; registration refuses the
+four new mistakes. Two MINORs, both on the one dial this PR made live: (1)
+`CRM_CONTEXT_VALUE_MAX_CHARS` is read from Redis per consumed letter (1–2 GETs each; `get_config`
+has no in-process cache) — the FIRST live read on the spine's per-row path; fine at 1/s, 2–4k
+GETs/s at stage 2 for a value that changes once a year → the `CRM_SCHEMA_CACHE_SECONDS` shape (a
+process-local TTL) or read once per pass; (2) the getter has no floor, and the engine's join budget
+`VARIABLE_MAX_CHARS = 256` is static: set the live value below 256 and every full-length joined
+list is DROPPED from context — the exact "parks two modules away" the engine docstring guards
+against; set it to 0 and every run is born with empty context → clamp to `>= 256` in the getter
+(the validated-sibling shape, `META_GRAPH_TIMEOUT_SECONDS`). NITs: `order_currency` docstring
+argues for preferring `presentment_currency` while the code (correctly — REST `line_items.price`
+is SHOP currency) prefers `currency`, and Manas's approval repeats the docstring's claim; the
+99-backlog G4 row still says "needs a ruling" in the PR that implements the ruling; `orders/updated`
+advertised while nautilus#205 is OPEN (a plan on it sees 0 forever, and our own action-square tag
+will wake it once it flows) — state the dependency in the body; `catalog.py` 441 → 497 (at the
+line; the registration validator is the next split seam). G4 ruling RECORDED (event-catalog §Types
++ §Vendor events, canon T24 col 6) — #1078 A/02 `letter_facts` superseded.
+
 → rollout phase 18 message half · #1021 renumbered (070+, after #1047), rebased, extended
 with `may_contact()` (Rabi) → B5 → phase 19 · #1047 event catalog review (renumbers to
 068/069, rebases onto the outreach db/ split) · #1053 renumbered · X1 reshape on

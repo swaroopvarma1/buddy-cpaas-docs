@@ -461,7 +461,7 @@ meta bay is no longer in the diff (#1085 derives `reply`).
 cart phrasings, `fulfillment_state`, `orders/updated`; context ceiling to live config) — Manas
 REQUEST CHANGES 8 Sep (G4 unruled; dark door) → APPROVE 9 Sep at `d9abf502`. MY REVIEW 9 Sep at
 the same head (one commit, clean on `ce556ce9`; gates on the merged tree: 1044 tests · pyrefly 0 ·
-boundaries · 72 migrations · black · isort): APPROVE WITH NITS — mergeable; advisory, not posted.**
+boundaries · 72 migrations · black · isort): APPROVE WITH NITS — mergeable; POSTED 9 Sep on Swaroop's go as issuecomment-5599259612.**
 Laws hold: decode at processing time over the verbatim letter; `list` has zero ops (pinned to the
 predicate families) so the matcher never sees an array; `item_format` stored only where it means
 something (old T24 rows byte-identical); config through the resolver; registration refuses the

@@ -491,6 +491,34 @@ will wake it once it flows) — state the dependency in the body; `catalog.py` 4
 line; the registration validator is the next split seam). G4 ruling RECORDED (event-catalog §Types
 + §Vendor events, canon T24 col 6) — #1078 A/02 `letter_facts` superseded.
 
+**#1129 (Sharifajahan — titled "workflow leads dispatch immediately"; Manas REQUEST CHANGES 9 Sep at
+`90246f8e` → APPROVE 10 Sep 04:46Z at `f3d0a57b`) — MY REVIEW 10 Sep at head `4de1d0c6` (one commit,
+clean on `7abe5aa6`; gates on the merged tree: 1062 tests · pyrefly 0 · boundaries · 72 migrations):
+REQUEST CHANGES — advisory, not posted.** The head is NOT the approved head: the 12:37Z force-push
+DELETED the dispatch tap (`dispatch/taps.py`, its `main.py` import, `test_dispatch_schedule_tap.py`
+— the fix for prod's ~17k stale BACKLOG rows that Manas said "I want today") and ADDED an unreviewed
+change (`nodes/call.py` visit counter in the lead id + `test_workflow_call_visits.py` + a frozen-clock
+fix in `test_workflow_walker.py`), under the old title; the tap is in no open PR. Structure verdict
+on what IS here: `call_facts` + the `declared` merge in buddy's `crm_mirror.py` = RIGHT file (buddy
+translates; buddy imports crm contracts only); `unenumerable_squares` per SQUARE in
+`catalog_laws.py` = right file, right scope; the visit counter in `nodes/call.py` under the `lead_`
+bookkeeping prefix = right file, right key. Three findings: (1) MAJOR — the head is a different PR
+from the approved one and the title names the thing that left; (2) MAJOR, wrong layer —
+`call_facts(lead, max_chars)` reads OUTREACH's run-context dial (`CRM_CONTEXT_VALUE_MAX_CHARS`,
+"canon T20 col 12") from buddy and DROPS any declared answer over it from the letter, so the spine
+never receives it (T13 verbatim law; the function's own docstring cites T13 two paragraphs above
+the drop) while `entry.py` already enforces the same ceiling on the consumer side — a second reader
+of one ceiling, lossy, in the producer; fix = carry every declared scalar, delete the param and the
+import; (3) MAJOR — the top docstring of `call.execute` still says "a lease-retry after a crash
+re-issues the same insert and the PK absorbs it" while the PR's own comment 20 lines down proves the
+accessor swallows the PK violation to None (`except Exception: return None`, confirmed at
+`lead_call_tracker.py`) so a crash-retry raises "lead insert returned None" and PARKS after three
+attempts — the exactly-once property the corpus states for the call node is false today, and the
+test `test_the_same_visit_run_twice_still_raises` pins the hole as deliberate; fix = on None, ask
+`get_lead_by_id(lead_id)` (exists) — a row is ours, continue; none, raise. Also the module docstring
+"the reconciler heals within 60s" is known-false per Manas's prod trace. NITs: title/body; the
+frozen-clock test fix is right and unrelated (deserves its own line in the body).
+
 → rollout phase 18 message half · #1021 renumbered (070+, after #1047), rebased, extended
 with `may_contact()` (Rabi) → B5 → phase 19 · #1047 event catalog review (renumbers to
 068/069, rebases onto the outreach db/ split) · #1053 renumbered · X1 reshape on

@@ -494,7 +494,19 @@ line; the registration validator is the next split seam). G4 ruling RECORDED (ev
 **#1129 (Sharifajahan — titled "workflow leads dispatch immediately"; Manas REQUEST CHANGES 9 Sep at
 `90246f8e` → APPROVE 10 Sep 04:46Z at `f3d0a57b`) — MY REVIEW 10 Sep at head `4de1d0c6` (one commit,
 clean on `7abe5aa6`; gates on the merged tree: 1062 tests · pyrefly 0 · boundaries · 72 migrations):
-REQUEST CHANGES — POSTED 10 Sep on Swaroop's go as issuecomment-5619016424.** The head is NOT the approved head: the 12:37Z force-push
+REQUEST CHANGES — POSTED 10 Sep on Swaroop's go as issuecomment-5619016424.** **RE-VERIFIED 10 Sep at head `1607b339`** (two more force-pushes, retitled "events payload to get
+metadata and lead_id unique fix"; Manas APPROVED again 15:04Z at this head; one commit, clean on
+`7abe5aa6`; merged tree: 1063 tests · pyrefly 0 · boundaries · 72 migrations · black · isort): all
+three MAJORs closed IN THE DIFF and proven by execution — `call_facts(lead)` has no ceiling and no
+`dynamic` import, a 300-char declared answer reaches `record_event`'s payload whole while a declared
+`outcome` is refused with the warning (T13 holds; entry.py's ceiling is the only one); `call.execute`
+falls through to `get_lead_by_id` on None — a crash-retry with the accessor returning None ADOPTS its
+row (same id, one row), a revisit mints a new id; the top docstring says what the code does and the
+"reconciler heals within 60s" sentence is gone; the pinned-hole test flipped to
+`test_the_same_visit_run_twice_is_one_lead`. **The dispatch tap stays OUT of this PR by Manas's call
+("prod is dispatching") — it is in no open PR; if the backlog fix is still wanted it needs its own
+PR and its own review.** NIT left: the body is still CodeRabbit's text for the dispatch feature.
+**MERGEABLE.** The head is NOT the approved head: the 12:37Z force-push
 DELETED the dispatch tap (`dispatch/taps.py`, its `main.py` import, `test_dispatch_schedule_tap.py`
 — the fix for prod's ~17k stale BACKLOG rows that Manas said "I want today") and ADDED an unreviewed
 change (`nodes/call.py` visit counter in the lead id + `test_workflow_call_visits.py` + a frozen-clock

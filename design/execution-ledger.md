@@ -535,7 +535,7 @@ frozen-clock test fix is right and unrelated (deserves its own line in the body)
 at `1a8a43d7`, Rahul's empty APPROVE at the same SHA, four force-pushes since) — MY REVIEW 10 Sep at head
 `c19233ae` (one commit, clean on `967a86df`; CI RED = the walker date bomb #1129 fixed — locally on the
 merged tree 1088 tests · pyrefly 0 · boundaries · 72 migrations · black · isort, so a rebase goes green):
-REQUEST CHANGES — advisory, not posted.** Right in substance and proven on a live WABA: every FLOW
+REQUEST CHANGES — POSTED 10 Sep on Swaroop's go as issuecomment-5621749893.** Right in substance and proven on a live WABA: every FLOW
 button named by position, `flow_token` = the crm_message id (no wamid join), no placeholder token,
 byte-identical body without a flow, `nfm_reply` decoded, `reply` answers a branchable token, `flow_token`
 keyable for `match`. Manas's MAJOR (blob answer) closed by `form_submitted`; his two-BUTTONS MINOR closed

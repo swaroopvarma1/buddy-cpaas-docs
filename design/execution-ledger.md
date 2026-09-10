@@ -531,6 +531,41 @@ test `test_the_same_visit_run_twice_still_raises` pins the hole as deliberate; f
 "the reconciler heals within 60s" is known-false per Manas's prod trace. NITs: title/body; the
 frozen-clock test fix is right and unrelated (deserves its own line in the body).
 
+**#1128 (Rabi — WhatsApp Flow buttons: named at send, submissions readable; Manas REQUEST CHANGES 9 Sep
+at `1a8a43d7`, Rahul's empty APPROVE at the same SHA, four force-pushes since) — MY REVIEW 10 Sep at head
+`c19233ae` (one commit, clean on `967a86df`; CI RED = the walker date bomb #1129 fixed — locally on the
+merged tree 1088 tests · pyrefly 0 · boundaries · 72 migrations · black · isort, so a rebase goes green):
+REQUEST CHANGES — advisory, not posted.** Right in substance and proven on a live WABA: every FLOW
+button named by position, `flow_token` = the crm_message id (no wamid join), no placeholder token,
+byte-identical body without a flow, `nfm_reply` decoded, `reply` answers a branchable token, `flow_token`
+keyable for `match`. Manas's MAJOR (blob answer) closed by `form_submitted`; his two-BUTTONS MINOR closed
+(first component only). Structure: **MAJOR (1) — the #1050 spill again, one PR later, same author:
+`ApprovedTemplate.flow_button_indexes` is a Meta-shaped field on the channel-neutral registry-row shape,
+and the GENERIC `db/decoders/template.py` now walks Meta's component structure (`type == "BUTTONS"`,
+`button.type == "FLOW"`) — a decoder making a provider decision (rules/03 "decoders are dumb";
+modules/04 "the SendRoute carries the ROW, never one provider's field; provider quirks are normalised
+INSIDE the provider's face"). Extensible shape: `ApprovedTemplate.components` (T23 col 11, verbatim —
+the row's own column, which the query already selects) and `providers/whatsapp/payload.py` derives the
+positions (pure), so SMS-DLT reads its own thing from the same row and the decoder stays row → model.
+MAJOR (2) — `record/extractors/whatsapp.py` 386 → 522: the split trigger fires in this PR (the
+`nodes/` mirror rule): `extractors/whatsapp/` package, `flow.py` first (the ~110-line nfm_reply concern:
+`_nfm_reply` · `_submitted` · `flow_response` · `_readable` · `flow_token` · the two constants), ENTRIES +
+DERIVERS assembled in `__init__` — `SPEC_MODULES` reads only `module.ENTRIES`/`.DERIVERS`, so a package
+satisfies the contract unchanged. MINOR (3) — `_wake_on_reply` (unreviewed 49-line rewrite, and a
+behaviour change for EVERY source's listening square, not just WhatsApp — correct, it matches enrol) runs
+the declared half through `is_bookkeeping` only while enrol runs it through `_context_from_payload`
+(ceiling + scalar filter); the docstring says "the same bridge enrol uses" — make it so, one bridge.
+MINOR (4) — `form_submitted` is a bare literal inside `reply()`: no constant, no catalog `values`, no
+corpus word; an author must know it by folklore and the console cannot offer it — export
+`FORM_SUBMITTED`, put it on the field's description, list it in event-catalog.md. MINOR (5) —
+`flow_response` as one `text` variable: a multi-field form past 256 chars PARKS the run (honest, the
+comment says so) but a plan cannot name ONE form field; named trigger = the first form over 256 or the
+first template wanting `{address}` alone → a merchant-declared flow sub-spec, which needs the no-shadow
+law amended for ADDITIVE registration under a code topic (a ruling for Swaroop, not this PR). NIT — the
+`flow_token` wire key is spelled in `payload.py` (literal) and `extractors/whatsapp.py` (`FLOW_TOKEN_KEY`)
+with no cross-pin test; rule 12 forbids the import but a test may import both. NIT — Rahul's empty
+approval at a SHA under an open request-changes is noise; nobody has reviewed `c19233ae`.
+
 → rollout phase 18 message half · #1021 renumbered (070+, after #1047), rebased, extended
 with `may_contact()` (Rabi) → B5 → phase 19 · #1047 event catalog review (renumbers to
 068/069, rebases onto the outreach db/ split) · #1053 renumbered · X1 reshape on

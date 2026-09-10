@@ -494,7 +494,7 @@ line; the registration validator is the next split seam). G4 ruling RECORDED (ev
 **#1129 (Sharifajahan — titled "workflow leads dispatch immediately"; Manas REQUEST CHANGES 9 Sep at
 `90246f8e` → APPROVE 10 Sep 04:46Z at `f3d0a57b`) — MY REVIEW 10 Sep at head `4de1d0c6` (one commit,
 clean on `7abe5aa6`; gates on the merged tree: 1062 tests · pyrefly 0 · boundaries · 72 migrations):
-REQUEST CHANGES — advisory, not posted.** The head is NOT the approved head: the 12:37Z force-push
+REQUEST CHANGES — POSTED 10 Sep on Swaroop's go as issuecomment-5619016424.** The head is NOT the approved head: the 12:37Z force-push
 DELETED the dispatch tap (`dispatch/taps.py`, its `main.py` import, `test_dispatch_schedule_tap.py`
 — the fix for prod's ~17k stale BACKLOG rows that Manas said "I want today") and ADDED an unreviewed
 change (`nodes/call.py` visit counter in the lead id + `test_workflow_call_visits.py` + a frozen-clock

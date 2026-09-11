@@ -564,8 +564,15 @@ also removes a third JSON parse per letter (today `reply` parses via `flow_respo
 `flow_response` parses again as its own deriver, then `flow_token` a third time). Then `flow_response`
 stays None for a token-only form, which is honest — she submitted, there is nothing to render — and a
 plan mapping `{flow_response}` parks loudly as designed. Test: a token-only submission wakes the square.
-Everything else from the 10 Sep round remains closed and proven. **MERGEABLE after that one line + a
-rebase** (CI red only from the pre-#1129 base). Right in substance and proven on a live WABA: every FLOW
+Everything else from the 10 Sep round remains closed and proven. **#1128 MERGED 11 Sep 10:15Z as `2aeb9784`** with that line still open; the fix is
+**#1138** (`fix/crm-flow-submission-discriminant`, one commit `6ec7640a` cherry-picked onto the merge —
+not rebased, since the squash would replay #1128 whole): `flow._submitted` → public `raw_submission`
+documented AS the presence test, `inbound.reply` asks it instead of `flow_response`, two tests proven red
+before the change (the confirm-only shape wakes its square; every `response_json` shape is recognised by
+its envelope while a tap with a stray `nfm_reply` still answers its own id). Gates on release:
+1095 tests · pyrefly 0 · boundaries · 72 migrations · one commit. Flows are now in the corpus
+(event-catalog §In-chat forms: the three grains, the envelope law, four limits with triggers;
+modules/04 the button-position walk). Right in substance and proven on a live WABA: every FLOW
 button named by position, `flow_token` = the crm_message id (no wamid join), no placeholder token,
 byte-identical body without a flow, `nfm_reply` decoded, `reply` answers a branchable token, `flow_token`
 keyable for `match`. Manas's MAJOR (blob answer) closed by `form_submitted`; his two-BUTTONS MINOR closed

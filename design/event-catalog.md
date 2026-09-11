@@ -46,6 +46,39 @@ One API serves it (ETag-cached, version-stamped); the console renders ONLY what 
 catalog declares and never hardcodes a field. Adding Meta = the four-part PR; the
 trigger picker, filter builder and variable menus update themselves on next load.
 
+## In-chat forms (WhatsApp Flows) — as built 11 Sep 2026, #1128
+
+A template button may open a FORM inside the chat. Three facts reach a plan, at three
+grains, and the split is the design:
+
+| fact | grain | what a plan does with it |
+|---|---|---|
+| `reply` = `form_submitted` | a WORD | labels ONE arrow out of the listening square — the walker matches arrow labels, and a blob matches none |
+| `flow_response` | the whole form, rendered `key: value` per line, her words unrenamed | a message blank, an order note, a console card |
+| `flow_token` (keyable) | WHICH send opened the form | `match: {payload: flow_token, run: message_<send node>}` — one customer's form can never resolve another of her runs |
+
+Load-bearing choices. **The token is OUR `crm_message` id**, stamped at send and echoed back
+verbatim, so the join needs no wamid stamped anywhere later. **A submission is recognised by its
+ENVELOPE, never by its contents**: `response_json` always carries the token and may carry
+nothing else (a confirm-only Flow, an endpoint-backed one whose data went to the merchant's
+server mid-conversation), and both are completed forms — testing the rendered answers instead
+read a customer who acted as silence (the #1128 follow-up). **A send with no token sends no
+parameters** rather than a placeholder, which would be a join key every tokenless send shares.
+
+Limits, each with its trigger:
+- **One blank, not per-field.** Her field names are hers, so nothing in code declares them; past
+  the variable ceiling the engine drops the value and the square parks LOUDLY. Trigger for
+  per-field access (`{address}` alone): the first form past the cap, or the first template
+  wanting one field by itself. The door is ADDITIVE registration beneath a code-declared topic,
+  which the no-shadow law forbids today — **a ruling owed**.
+- **The FORM itself is authored in Meta's Flow Builder**, not our console: we send it and read
+  it, we do not own its definition. A merchant with many forms does that work there.
+- **Template-attached flows only.** Offering a form inside an open conversation (Meta's
+  `interactive` / `flow_id` / `flow_cta` mode) is not built; the read side is identical, so it
+  is a second builder beside `build_send_body` and nothing above changes.
+- **Endpoint-backed dynamic screens** (Meta calls the merchant's server mid-form for live slots)
+  would need a new inbound door.
+
 ## The where-grammar (v1, sealed)
 
 `entry.where` graduates from an equality map to typed conditions

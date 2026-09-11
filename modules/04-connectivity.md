@@ -68,7 +68,13 @@ Diagram: `../diagrams/04-connectivity.html`. Squad: Pod C.
   provider round-trip may separate them). Pinning paths hold the same key SHARED. Provider quirks (Meta's uppercase
   statuses, edit-in-place vs re-register, delete-by-name nuking every language) are
   normalised INSIDE the provider's template face, never in the generic registry
-  file. **Package shape (ruled 7 Sep 2026, Swaroop at #1084)**: the three root
+  file. **Flow buttons (#1128, 11 Sep 2026)**: Meta names a button component by
+  POSITION and refuses the WHOLE send (131009) when a FLOW button arrives unnamed. The
+  approved-row shape (`ApprovedTemplate`) therefore carries `components` VERBATIM (T23 col 11) and
+  the position walk lives in `providers/whatsapp/payload.py` — BUTTONS/FLOW are Meta's vocabulary,
+  so the row rides whole and each face reads its own words out of it (the #1050 lesson, re-applied
+  at review). Every flow button is named, from the first BUTTONS component only; `flow_token` is the
+  `crm_message` id, one per send. **Package shape (ruled 7 Sep 2026, Swaroop at #1084)**: the three root
   template files + the retire slot become `connectivity/templates/` — `lifecycle.py` (was
   `templates.py`), `reads.py` (was `template_reads.py`), `events.py` (was `template_events.py`,
   the spine consumer), `retire_guard.py`; `__init__` empty; `contracts.py` re-exports from

@@ -548,8 +548,24 @@ a test), every file ≤ 162 lines. `_wake_on_reply` runs BOTH halves through `_c
 bridge, one ceiling). `FORM_SUBMITTED` is exported and named in the `reply` field's own label, so the
 console can show it. The `flow_token` wire key is pinned equal across the send and read sides by a test.
 **CI is red ONLY because the branch's merge-base `7abe5aa6` predates #1129** (18 walker date-bomb
-failures + 1 ingest test); the merged tree is green, so a rebase clears it. **MERGEABLE — rebase first so
-the branch's own CI is green before the merge.** Right in substance and proven on a live WABA: every FLOW
+failures + 1 ingest test); the merged tree is green, so a rebase clears it. **SWEEP 11 Sep at the same head found ONE NEW MAJOR neither earlier pass caught, so: REQUEST
+CHANGES again.** `inbound.reply()` decides "was a form submitted?" by testing `flow_response(payload) is
+not None` — a CONTENT test, not a submission test — and `flow_response` answers None when the parsed
+object holds nothing but our own `flow_token`. Meta's `response_json` ALWAYS carries `flow_token` and
+carries only that for two documented shapes: a confirmation-only Flow (tap to accept, terms) and an
+endpoint-backed (`data_exchange`) Flow whose terminal `complete` payload is empty because the data was
+exchanged with the merchant's endpoint mid-flow. Proved by running all four shapes: token-only →
+`reply=None`, so the square never wakes and the run waits for its timeout — the EXACT failure this PR
+exists to fix ("a customer who FILLED THE FORM read as silent"), still live for one class of form.
+`flow_token` is extracted correctly in that case, so the letter even carries the join it cannot use.
+Fix: the discriminant is the submission, not its contents — `if _submitted(payload) is not None: return
+FORM_SUBMITTED` (one line in `inbound.reply`, `_submitted` already imported-adjacent in `flow`), which
+also removes a third JSON parse per letter (today `reply` parses via `flow_response`, then
+`flow_response` parses again as its own deriver, then `flow_token` a third time). Then `flow_response`
+stays None for a token-only form, which is honest — she submitted, there is nothing to render — and a
+plan mapping `{flow_response}` parks loudly as designed. Test: a token-only submission wakes the square.
+Everything else from the 10 Sep round remains closed and proven. **MERGEABLE after that one line + a
+rebase** (CI red only from the pre-#1129 base). Right in substance and proven on a live WABA: every FLOW
 button named by position, `flow_token` = the crm_message id (no wamid join), no placeholder token,
 byte-identical body without a flow, `nfm_reply` decoded, `reply` answers a branchable token, `flow_token`
 keyable for `match`. Manas's MAJOR (blob answer) closed by `form_submitted`; his two-BUTTONS MINOR closed

@@ -535,7 +535,21 @@ frozen-clock test fix is right and unrelated (deserves its own line in the body)
 at `1a8a43d7`, Rahul's empty APPROVE at the same SHA, four force-pushes since) — MY REVIEW 10 Sep at head
 `c19233ae` (one commit, clean on `967a86df`; CI RED = the walker date bomb #1129 fixed — locally on the
 merged tree 1088 tests · pyrefly 0 · boundaries · 72 migrations · black · isort, so a rebase goes green):
-REQUEST CHANGES — POSTED 10 Sep on Swaroop's go as issuecomment-5621749893.** Right in substance and proven on a live WABA: every FLOW
+REQUEST CHANGES — POSTED 10 Sep on Swaroop's go as issuecomment-5621749893.** **RE-VERIFIED 11 Sep at head `58e93971`** (force-pushed 10 Sep 17:40; Manas APPROVED at this head
+11 Sep 04:29; one commit, clean on `967a86df`; merged tree: 1093 tests · pyrefly 0 · boundaries · black ·
+isort · 72 migrations): BOTH MAJORs and all three MINORs closed IN THE DIFF and proven by execution.
+`ApprovedTemplate` now carries `components` (T23 col 11, verbatim) and NO Meta-shaped field; the decoder
+exports no flow walk and is row → model again; `flow_button_indexes` moved to
+`providers/whatsapp/payload.py` and takes the FIRST BUTTONS component only (proved: `[1, 2]` from a
+two-component blob, `[]` on malformed, and a template with no flow button posts a body byte-identical to
+plain). `extractors/whatsapp/` is a package — `shared · inbound · status · template · account · flow`,
+89-line `__init__` exporting exactly `SOURCE · ENTRIES · DERIVERS` (the SPEC_MODULES contract, pinned by
+a test), every file ≤ 162 lines. `_wake_on_reply` runs BOTH halves through `_context_from_payload` (one
+bridge, one ceiling). `FORM_SUBMITTED` is exported and named in the `reply` field's own label, so the
+console can show it. The `flow_token` wire key is pinned equal across the send and read sides by a test.
+**CI is red ONLY because the branch's merge-base `7abe5aa6` predates #1129** (18 walker date-bomb
+failures + 1 ingest test); the merged tree is green, so a rebase clears it. **MERGEABLE — rebase first so
+the branch's own CI is green before the merge.** Right in substance and proven on a live WABA: every FLOW
 button named by position, `flow_token` = the crm_message id (no wamid join), no placeholder token,
 byte-identical body without a flow, `nfm_reply` decoded, `reply` answers a branchable token, `flow_token`
 keyable for `match`. Manas's MAJOR (blob answer) closed by `form_submitted`; his two-BUTTONS MINOR closed

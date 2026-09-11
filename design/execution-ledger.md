@@ -658,8 +658,8 @@ in `entry.py`. **~240 app lines vs #1139's ~1,170; nothing declared by author, v
 no plan republished, no migration, no re-pinning** (a pre-deploy run is addressed by its own manifest
 row). `match` stays for the call half and keyed doors. Attribution only NARROWS, so five
 can't-address cases behave exactly as before and are each tested; both incident tests proven red with
-it disabled. `cod-confirm.json` now pins the ABSENCE of a match line. 1106 tests. **Swaroop to pick
-#1139 or #1140 and close the other** — the incident note, the worked plan and the `match.payload` law
+it disabled. `cod-confirm.json` now pins the ABSENCE of a match line. 1106 tests. **CHOSEN: #1140, MERGED 11 Sep 11:21Z as `e542b7bc` (release head); #1139 CLOSED with the
+reasoning** — the incident note, the worked plan and the `match.payload` law
 carry over either way. **CORRECTION found by Swaroop's question "does this fix the same issue?"** — testing the question
 against a realistic plan exposed a bug in my own first cut: it narrowed to the run AND the square
 the manifest named, but the manifest names the square that SENT while the square that WAITS is a
@@ -687,7 +687,9 @@ catalog: T24 068 + where→conditions 069 — merged 4 Sep 12:15Z as `2a00ef44`)
 topics — merged 7 Sep 06:39Z as `ff0aaf81`)**, **#1084 (the template webhook consumer +
 `connectivity/templates/` package — merged 7 Sep 09:13Z as `a55a9f53`)**, **#1057 (the `action` square + the Shopify
 connector's action face via nautilus + the `outreach/nodes/` package — merged 7 Sep 11:37Z as
-`f98b7ae1`)**. Owed from #1084's own
+`f98b7ae1`)**, **#1138 (a form that collects nothing is still a
+completed form — merged 11 Sep 10:24Z as `84ca4049`)**, **#1140 (phase 18's MESSAGE half: a reply
+addressed by the manifest — merged 11 Sep 11:21Z as `e542b7bc`)**. Owed from #1084's own
 backlog: the tombstone dead end (partial unique or reopen), the provider-clock column (the
-principled form of the skew), the `db/queries/template.py` split at its next builder. Next free migration = **073** (072 = `072_crm_customer_attributes_gin.sql`, 9 Sep)
+principled form of the skew), the `db/queries/template.py` split at its next builder. Next free migration = **073** (072 = `072_crm_customer_attributes_gin.sql`).
 release `4cfc0515`) took 070 as `070_create_ui_component.sql`; #1021 renumbers to 071+. Route inventory 34 (record 9 · outreach 12 · connectivity 11 · identity 2).

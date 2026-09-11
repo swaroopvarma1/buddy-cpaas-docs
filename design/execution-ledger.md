@@ -660,8 +660,18 @@ row). `match` stays for the call half and keyed doors. Attribution only NARROWS,
 can't-address cases behave exactly as before and are each tested; both incident tests proven red with
 it disabled. `cod-confirm.json` now pins the ABSENCE of a match line. 1106 tests. **Swaroop to pick
 #1139 or #1140 and close the other** — the incident note, the worked plan and the `match.payload` law
-carry over either way. Flagged against myself: `entry.py` ends at 524, 24 over the line I held two
-other PRs to this week. Retained from #1139 either way: the incident note, `cod-confirm.json`, and the
+carry over either way. **CORRECTION found by Swaroop's question "does this fix the same issue?"** — testing the question
+against a realistic plan exposed a bug in my own first cut: it narrowed to the run AND the square
+the manifest named, but the manifest names the square that SENT while the square that WAITS is a
+different node (the listener the send's edge leads to), so the addressed run's listener was skipped
+and nothing resolved. My own test had hidden it by naming the send after the listener. **Attribution
+now addresses the RUN and stops there** — which square resolves is the resume statement's own WHERE
+("the token is standing here"), which was always the better judge. Two behaviours added with it,
+both tested: an answered run that has ALREADY EXITED leaves the letter unaddressed (narrowing to a
+run nobody holds would silence it), and a receive-first "any inbound" square in another plan no
+longer hears a letter answering a different open run's send — **the one behavioural difference from
+#1139**, stated in the design note. 1107 tests. Flagged against myself: `entry.py` ends at 527, 27
+over the line I held two other PRs to this week. Retained from #1139 either way: the incident note, `cod-confirm.json`, and the
 `match.payload`-declared law. **Loom follow-up owed BEFORE this ships**: the workflow editor knows
 `match` on its type but cannot author it, so a merchant drawing send → wait-reply meets the new
 refusal with no way to satisfy it in the UI.

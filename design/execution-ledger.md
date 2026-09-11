@@ -624,7 +624,19 @@ without the gate); `docs/crm/reply-run-matching.md` written so the two docstring
 `docs/crm/plans/cod-confirm.json` is the worked board the refusal points at, validated by
 `test_plan_templates.py` with the match line pinned. Gates on release: 1123 tests · pyrefly 0 ·
 boundaries · 72 migrations · one commit. The Flow discriminant stays in **#1138** so the two do not
-collide (no file overlap). **Loom follow-up owed BEFORE this ships**: the workflow editor knows
+collide (no file overlap). **SELF-REVIEWED at Swaroop's ask and SIMPLIFIED before merge (head `b76f3133`)**: the
+observer half of Rabi's design is REMOVED — connectivity's send-observer slot, its Protocol and
+deadline dial, the dispatcher hook, `outreach/correlate.py` and the `worker_main` registration.
+A reply is a COLD path and the correlate is one point read on the dedupe unique, so the push
+saved a read and cost a cross-module slot + a hook + a dial + a registration — and, since the
+walker's advance rewrites context wholesale, it had to carry a reconcile against that same row
+anyway, leaving the recovery path running RARELY (the worst property a recovery path can have).
+Reading on demand makes it the only path, exercised on every reply; the memo on the run keeps it
+one read per send. **`dispatch.py`, `worker_main.py` and `outreach/contracts.py` are now untouched
+— 22 files → 17, the send path and the composition root out of the blast radius.** Also applied my
+own split rule to myself: `plans.py` would have hit 598, so the new publish laws are
+`reply_match_laws.py` (164, one subject) and plans.py is back to 470. Gates: 1116 tests · pyrefly 0
+· boundaries · one commit. **Loom follow-up owed BEFORE this ships**: the workflow editor knows
 `match` on its type but cannot author it, so a merchant drawing send → wait-reply meets the new
 refusal with no way to satisfy it in the UI.
 

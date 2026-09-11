@@ -603,6 +603,31 @@ law amended for ADDITIVE registration under a code topic (a ruling for Swaroop, 
 with no cross-pin test; rule 12 forbids the import but a test may import both. NIT — Rahul's empty
 approval at a SHA under an open request-changes is noise; nobody has reviewed `c19233ae`.
 
+**Phase 18's MESSAGE half — landed by me, on Swaroop's instruction, as #1139** (the author of #1134
+is away and that PR cannot be rebased: stacked on a stale #1128, conflicting in 11 files).
+**The incident, 10 Sep 2026**: one customer with several open COD orders → several live runs; her
+first tap resolved EVERY one, and a run on a `CANCEL` arrow cancelled a confirmed Shopify order.
+Cause: `match {payload, run}` was UNWRITABLE for a WhatsApp reply — the letter carries Meta's wamid
+(`replied_to`), the run carried OUR `crm_message` id, issued before the wamid exists. With nothing
+to compare the square carried no match and `_is_about` took its documented open default. **The fix
+(Rabi's design)**: connectivity owns a send-observer slot (`send_observers.py`) that `worker_main`
+fills — the retire-guard inversion; `dispatch` notifies only after an ACCEPTED outcome with a
+provider id, deadline-bounded, raises swallowed; `outreach/correlate.py` stamps
+`provider_message_id_<send node>` onto the run named by the dedupe key; the square says
+`match {payload: replied_to, run: provider_message_id_<node>}`. **The stamp is a CACHE, the manifest
+is the truth** — a miss reconciles from `crm_message` by the same dedupe key, which is also why runs
+opened BEFORE the deploy resolve on their next reply. Fail closed everywhere: no stamp and no
+manifest id = keep waiting; an unthreaded message claims nobody. Publish refuses six shapes, scoped
+by the edge graph. **Three findings from Manas's review closed by me**: `match.run` must name an
+UPSTREAM send (a downstream one publishes clean and is deaf forever — the silent incident; test red
+without the gate); `docs/crm/reply-run-matching.md` written so the two docstrings are not dead links;
+`docs/crm/plans/cod-confirm.json` is the worked board the refusal points at, validated by
+`test_plan_templates.py` with the match line pinned. Gates on release: 1123 tests · pyrefly 0 ·
+boundaries · 72 migrations · one commit. The Flow discriminant stays in **#1138** so the two do not
+collide (no file overlap). **Loom follow-up owed BEFORE this ships**: the workflow editor knows
+`match` on its type but cannot author it, so a merchant drawing send → wait-reply meets the new
+refusal with no way to satisfy it in the UI.
+
 → rollout phase 18 message half · #1021 renumbered (070+, after #1047), rebased, extended
 with `may_contact()` (Rabi) → B5 → phase 19 · #1047 event catalog review (renumbers to
 068/069, rebases onto the outreach db/ split) · #1053 renumbered · X1 reshape on

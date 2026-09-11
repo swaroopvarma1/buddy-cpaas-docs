@@ -636,7 +636,23 @@ one read per send. **`dispatch.py`, `worker_main.py` and `outreach/contracts.py`
 — 22 files → 17, the send path and the composition root out of the blast radius.** Also applied my
 own split rule to myself: `plans.py` would have hit 598, so the new publish laws are
 `reply_match_laws.py` (164, one subject) and plans.py is back to 470. Gates: 1116 tests · pyrefly 0
-· boundaries · one commit. **Loom follow-up owed BEFORE this ships**: the workflow editor knows
+· boundaries · one commit. **RULING OWED — and it decides whether #1139 ships at all.** Asked to judge whether this is the
+right design or a fix on top, the honest answer is: a fix on top. `crm_message` ALREADY answers
+"which run sent the message she is replying to": canon T16 col 7/8 carry `source_kind='workflow'`
+and `source_id=<run>`, col 14 carries the wamid, and migration 056 puts a PARTIAL UNIQUE on
+`provider_message_id` alone — whose canon note reads "How an inbound receipt finds this row". A
+reply is a receipt of a different kind. So `reply.replied_to` → that unique → the row → the run AND
+the square (`dedupe_key = <run>:<node>`), in ONE indexed read, with nothing declared by anyone.
+**The ideal shape is ATTRIBUTION, not declaration**: one connectivity contract
+(`send_behind(merchant, provider_message_id) -> source_kind · source_id · dedupe_key`) and a few
+lines in outreach's consumer — perhaps 60 lines, versus #1139's ~1,170. `match` stays as the general
+mechanism (the call half's `enrollment_id`, a keyed door's order key); the reply case simply stops
+needing it. What #1139 costs by comparison is all AUTHOR-VISIBLE and all retired later: a `match`
+line every author must write, five publish refusals policing it, a republish of every live plan with
+`on_publish: migrate`, and a loom feature to author a field that would disappear — the "surface you
+have to retire" pattern Swaroop's own scaling ruling forbids. **Recommendation: hold #1139, build the
+attribution instead.** Retained from #1139 either way: the incident note, `cod-confirm.json`, and the
+`match.payload`-declared law. **Loom follow-up owed BEFORE this ships**: the workflow editor knows
 `match` on its type but cannot author it, so a merchant drawing send → wait-reply meets the new
 refusal with no way to satisfy it in the UI.
 

@@ -650,8 +650,18 @@ mechanism (the call half's `enrollment_id`, a keyed door's order key); the reply
 needing it. What #1139 costs by comparison is all AUTHOR-VISIBLE and all retired later: a `match`
 line every author must write, five publish refusals policing it, a republish of every live plan with
 `on_publish: migrate`, and a loom feature to author a field that would disappear — the "surface you
-have to retire" pattern Swaroop's own scaling ruling forbids. **Recommendation: hold #1139, build the
-attribution instead.** Retained from #1139 either way: the incident note, `cod-confirm.json`, and the
+have to retire" pattern Swaroop's own scaling ruling forbids. **BUILT on Swaroop's go as #1140** (`fix/crm-reply-attributed-by-the-manifest`, one commit
+`6c37d17e` on release, build green): `connectivity.contracts.send_behind(merchant,
+provider_message_id)` — one point read on the 056 partial unique — plus
+`outreach/reply_attribution.py` (95 lines) turning it into (run, square), resolved ONCE per letter
+in `entry.py`. **~240 app lines vs #1139's ~1,170; nothing declared by author, validator or console;
+no plan republished, no migration, no re-pinning** (a pre-deploy run is addressed by its own manifest
+row). `match` stays for the call half and keyed doors. Attribution only NARROWS, so five
+can't-address cases behave exactly as before and are each tested; both incident tests proven red with
+it disabled. `cod-confirm.json` now pins the ABSENCE of a match line. 1106 tests. **Swaroop to pick
+#1139 or #1140 and close the other** — the incident note, the worked plan and the `match.payload` law
+carry over either way. Flagged against myself: `entry.py` ends at 524, 24 over the line I held two
+other PRs to this week. Retained from #1139 either way: the incident note, `cod-confirm.json`, and the
 `match.payload`-declared law. **Loom follow-up owed BEFORE this ships**: the workflow editor knows
 `match` on its type but cannot author it, so a merchant drawing send → wait-reply meets the new
 refusal with no way to satisfy it in the UI.

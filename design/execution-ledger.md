@@ -726,3 +726,43 @@ belong in the PR's own commit, not a second PR against the same files. The conso
 author a `window` or a `match`. Not built, and stated in the guide: the customer's own timezone
 (the ADR 0018 ladder), days of the week, a window on the `stages` ladder.
 
+## 17 Sep 2026 — a door asks a list one question (#1154, merged `1189023e`)
+
+**Ruled by Swaroop mid-review, and the ruling changed the SHAPE, not the wording.** A plan
+wanted "only baskets with a mobile" — a fact inside an array, which the door could not read, so
+the only option was a condition square that enrols everyone and withholds the call.
+
+The first cut obeyed the sealed "the where-grammar never receives an array" line *literally*: the
+door read the RENDERED template variable instead of the list, so the matcher never saw an array
+and the sentence stayed true. The cost of that obedience was four defects — the merchant's
+question moved into the vendor's schema as `item_where` (wrong document, wrong owner, wrong
+clock), a payload-shape type guess that **failed open** (a fridge-only basket sent as a bare
+object enrolled — proven by changing one element of the PR's own fixture), a coupling that let
+catalog deprecation switch a live door off in silence, and one filter shared by every plan on the
+topic. My review filed three of those as separate findings. **They were one finding**, and
+Swaroop read them as proof the mechanism was wrong rather than as questions to rule on.
+
+**The ruled shape:** a door asks a list ONE existential question, against the RAW array, with the
+value written in the PLAN. `includes` (any element equals the value) · `exists` (non-empty) ·
+`not_exists` (empty or absent). `includes` is the exact dual of `in`, runs on the same `_same()`,
+and a **scalar counts as a list of one** so a collapsed single-element array is judged, never
+routed around. An empty array reads as absent — the normalisation `_element_holds` already used.
+`item_where` keeps its one job: narrowing what the renderer joins. It never decides a door.
+
+`array-any` was in the corpus's own *"Explicitly NOT v1"* line — **deferred, never forbidden** —
+so this was a graduation, not a reversal of principle. Corpus: `design/event-catalog.md` §The
+`list` ruling (pushed `cc115af`), which also writes the SQL form down beside the op so the segment
+compiler cannot invent a different meaning, and defers correlated element fields ("a mobile over
+₹50,000") with the reason: our path flattening drops the link between two fields of one element.
+
+**The rewrite came out SMALLER than the first cut while deleting all three MAJORs** — the shape a
+correct simplification has. Round two verified by execution: 1268 crm tests, 26 genuinely red with
+`app/` reverted, trial merge clean, pyrefly identical to baseline, plus eleven probe shapes the
+PR's own table did not cover (nested arrays, nulls, no numeric coercion, a string where an array
+was expected, chained ANDs).
+
+**Owed:** `includes_any` — the dual of `in` for list fields, so "a mobile OR a tablet" can be said
+at the door — shape already decided, deliberately not built (nobody has asked). NIT left in the
+tree: `predicate.py` `LIST_OPS` is defined and unused; `catalog.py` spells `INCLUDES_OP` directly
+while every sibling type is spelled from a family.
+

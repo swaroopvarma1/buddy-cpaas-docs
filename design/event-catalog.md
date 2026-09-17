@@ -90,6 +90,7 @@ Limits, each with its trigger:
 | number | `>` · `≥` · `<` · `≤` · `=` |
 | yes-no | `is` · `is not` |
 | date-time | `>` · `≥` · `<` · `≤` |
+| list | `includes` · `exists` · `not exists` |
 | any | `exists` · `not exists` |
 
 *(Yes-no and date-time rows added 4 Sep 2026 as built — the sealed type set already had both.
@@ -110,7 +111,7 @@ offers" is `offers exists`, "has none" is `offers not_exists`. One `PRESENCE_OPS
 `shared/predicate.py` feeds the evaluator, `OPS_BY_TYPE`, the publish validator and the element
 filter, so the layers cannot drift.)*
 
-Explicitly NOT v1: regex, contains, array-any. The same predicate shape compiles to
+Explicitly NOT v1: regex, contains. (**`array-any` graduated 17 Sep 2026** — it was deferred here, never forbidden; see the `list` ruling below.) The same predicate shape compiles to
 SQL for segments (P2, per console-ui's segment-predicate rule) — so **an op lands in
 the catalog + validator + Python evaluator + SQL compiler in one PR, or not at all**
 (parity pin test when the segment compiler exists). The UI shows exactly the ops the
@@ -124,13 +125,55 @@ the values the path names, or each element through a declared `item_format` (`{t
 blanks dot-walked into the element, an element missing a blank skipped whole), joined and
 truncated at the join with the overflow counted ("+N more"). The path walks THROUGH every array it
 crosses (`payload.loanApplications.offers.rate` reads every offer of every application). A `list`
-has ZERO operators: it is a template variable or nothing, never a filter, never a key, never an
-identity — the where-grammar still never receives an array. Registration laws: `item_format` only
+held ZERO operators until 17 Sep 2026; see **The `list` ruling** below. Registration laws: `item_format` only
 on type `list`; balanced braces and key-shaped blanks; two variables may not fill one blank; a
 yes-no is never a variable. The code layer phrases a cart as fixed derived fields (Shopify:
 `items` · `items_qty` · `items_priced` — three; `items_full` was cut before merge, though
 `line_total` still rides beside each line for a vendor's own `item_format`) through the SAME renderer. Supersedes the
 "only through derived fields" line above and #1078 A/02 (`letter_facts`, fire-time read).
+
+## The `list` ruling (RULED 17 Sep 2026, Swaroop — reverses the 9 Sep zero-ops line)
+
+A door may ask a list field **one existential question, against the raw array, with the value
+written in the PLAN**:
+
+| op | means | absent / empty list |
+|---|---|---|
+| `includes` | any of the field's values equals the value | does not hold |
+| `exists` | the list is non-empty | does not hold |
+| `not exists` | the list is empty or absent | **holds** (the one absent-field exception, #1151) |
+
+`includes` is the exact dual of `in` — `in` asks "is the field's one value among these", `includes`
+asks "is this value among the field's many" — so both run on the same `_same()` comparison and the
+op set stays closed and dual-implementable. A **scalar counts as a list of one**: a vendor that
+collapses a single-element array to a bare object is judged on that one element, which is the
+right answer and not a special case. An **empty array reads as absent**, the rule the element
+filter and `item_where` already use.
+
+**Where the business question lives.** In the plan, always. The earlier design routed the door
+through the RENDERED template variable so the matcher would never see an array, which moved the
+merchant's question ("only mobiles") into the vendor's schema registration as `item_where`. That is
+the wrong document and the wrong owner: a registration describes what a vendor sends and changes
+once; a campaign question changes weekly, differs between two plans on the same topic, and belongs
+to the merchant. It also coupled a door's verdict to the extractor — a deprecated field renders
+nothing, so the door would go permanently false with no signal — and made the door guess a field's
+type from the payload's shape. Reading the raw array removes all three at once.
+
+`item_where` keeps its ONE job: narrowing which elements the renderer joins into the template
+variable. It never decides a door.
+
+**Explicitly not now: correlated element fields.** "A mobile over ₹50,000" cannot be said, because
+a path flattens as it walks — `products.sub_category` and `products.price` come back as two
+independent lists and the link between one element's category and its price is gone. This is our
+flattening, not a malformed payload; a payload sending *parallel* arrays (`prices[]` beside
+`products[]`) is separately wrong and we do not design for it. If the correlated case is ever
+needed the answer is a vendor-declared derived field, or a nested predicate — a new ruling, not a
+widening of this one.
+
+**SQL parity (the standing obligation).** `includes` compiles to an existential over the path's
+arrays — for a single level, `EXISTS (SELECT 1 FROM jsonb_array_elements(payload->'products') e
+WHERE e->>'sub_category' = $1)`, with the generator walking one lateral per array the path crosses.
+Written here so the segment compiler has no room to invent a different meaning.
 
 ## Vendor events — registered at enrollment (RULED 1 Sep 2026, Swaroop)
 

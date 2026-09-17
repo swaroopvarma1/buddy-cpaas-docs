@@ -693,3 +693,36 @@ addressed by the manifest — merged 11 Sep 11:21Z as `e542b7bc`)**. Owed from #
 backlog: the tombstone dead end (partial unique or reopen), the provider-clock column (the
 principled form of the skew), the `db/queries/template.py` split at its next builder. Next free migration = **073** (072 = `072_crm_customer_attributes_gin.sql`).
 release `4cfc0515`) took 070 as `070_create_ui_component.sql`; #1021 renumbers to 071+. Route inventory 34 (record 9 · outreach 12 · connectivity 11 · identity 2).
+
+## 17 Sep 2026 — the wait vocabulary folded, and a window that holds a timer (#1151, in review)
+
+**Ruled by Swaroop, in the PR that surfaced it.** `wait` was `wait_event` with no topics, and
+the calling window proved the cost: declared once, reasoned about twice, and its publish law
+already written against the `is_wait` flag rather than the word. One `wait` now, `topics` the
+discriminant, `minutes` optional and composing with the window rather than being shadowed by it
+(`minutes`/`topics` say how long, `window` says when that may act). `wait_event` stays readable
+forever — immutable T25 rows carry it — via a `mode="before"` alias, and publish refuses it in a
+new document, the shape the retired equality map already uses. `listens`/`branches` become
+node-derived, which closes the `unenumerable_squares` string match #1114's N1 retirement left
+behind. The full shape is in modules/05-outreach §One `wait`.
+
+**Two vocabulary additions rode in**: the calling window on a waiting square, and `not_exists`
+in the sealed where-grammar (design/event-catalog §The where-grammar — the one op that holds on
+an absent field, and the reason the "absent satisfies nothing" rule now carries an exception).
+
+**What the review cost, and what it bought.** Three rounds. Round one found the window guarding
+the TIMER and not the square — a letter edge onto a `call` queued exactly the lead the feature
+existed to prevent, proven by changing ONE edge in the PR's own fixture. That became a publish
+law rather than a corrected comment, because the invariant was already pinned in a single plan
+test and pinning it per-document is not pinning it. Round three found `window` shadowing
+`topics` when `minutes` was absent — a square that reported `listens() == True` and never
+listened during open hours. **That one was the ruling's fault, not the author's**: the spec
+listed "no minutes + window" and "no minutes + topics" as separate rows and never said what
+happens when both are present, and the implementation followed the table in the order it was
+written. A spec with an unstated overlap is a spec with a bug in it.
+
+**Owed:** `docs/crm/plans/README.md` and the rollout doc in clairvoyance carry the old word and
+belong in the PR's own commit, not a second PR against the same files. The console still cannot
+author a `window` or a `match`. Not built, and stated in the guide: the customer's own timezone
+(the ADR 0018 ladder), days of the week, a window on the `stages` ladder.
+

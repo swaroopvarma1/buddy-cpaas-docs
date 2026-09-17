@@ -90,14 +90,25 @@ Limits, each with its trigger:
 | number | `>` · `≥` · `<` · `≤` · `=` |
 | yes-no | `is` · `is not` |
 | date-time | `>` · `≥` · `<` · `≤` |
-| any | `exists` |
+| any | `exists` · `not exists` |
 
 *(Yes-no and date-time rows added 4 Sep 2026 as built — the sealed type set already had both.
 The `is` family compares like with like and never coerces: "007" is not "7", 1.0 is not "1",
 true is not "true"; numbers compare under `=` and the ordering ops, where numeric strings
 count (Shopify posts money as "1850.00"). A field absent from the payload satisfies nothing,
-not even `is not`. Record's `OPS_BY_TYPE` is spelled from the evaluator's own op families,
-so parity is structural.)*
+not even `is not` — with the single exception below. Record's `OPS_BY_TYPE` is spelled from the
+evaluator's own op families, so parity is structural.)*
+
+*(`not exists` added 17 Sep 2026, built in #1151 as `not_exists`. It is the ONE op that holds on
+an absent field, and it is why the "absent satisfies nothing" rule needs an exception rather than
+a rewrite: "only customers with no product" is a thing a plan must be able to say in ONE square,
+and saying it as the `else` of an `exists` rule costs a second rule and reads backwards. It takes
+no value. A field a later letter CLEARED reads absent too — that is the extractor's "declared, but
+this letter has nothing", so a stale value never keeps a rule alive. It is offered wherever
+`exists` is, including a list field's `item_where`, where an empty array reads as absent: "has
+offers" is `offers exists`, "has none" is `offers not_exists`. One `PRESENCE_OPS` tuple in
+`shared/predicate.py` feeds the evaluator, `OPS_BY_TYPE`, the publish validator and the element
+filter, so the layers cannot drift.)*
 
 Explicitly NOT v1: regex, contains, array-any. The same predicate shape compiles to
 SQL for segments (P2, per console-ui's segment-predicate rule) — so **an op lands in

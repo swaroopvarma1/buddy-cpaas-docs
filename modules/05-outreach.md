@@ -122,7 +122,8 @@ Where canon named the mechanism, #1029 chose the numbers and shapes. Sealed as b
   lease × 2^(attempts−1), capped 1h, ±20% jitter.
 - **Document shapes** (T19 names the sections; these are the words): `nodes[0]` is the
   start square; an edge is `[from, to]` (+ `on` only out of a `wait_event`); node
-  vocabulary `wait · send · call · wait_event`, registry-backed (ruling above);
+  vocabulary `wait · send · call · wait_event`, registry-backed (ruling above)
+  — **`wait_event` folded into `wait` on 17 Sep 2026, see "One wait" below**;
   `entry.where` = typed conditions `[{field, op, value}]` ANDed with the topic (#1047, 4 Sep
   2026; the equality map retired by migration 069). `wait_event` = topics +
   key + minutes (event OR timer, whichever first); the consumer writes
@@ -270,5 +271,66 @@ family.
   (`NodeSpec`, `NodeParked`) · `context.py` (`run_facts`, `send_variables`, `lead_request_id`,
   `reply_key`, `without_reply`, `is_bookkeeping`) · one file per word with its `validate` +
   `execute`. Importers name the file they mean.
+
+## One `wait` — the vocabulary folded (ruled by Swaroop 17 Sep 2026, built in #1151)
+
+`wait` was `wait_event` with no topics. Its whole validator was "minutes > 0"; the only other
+difference was two registry flags. That is a CONFIGURATION, not a word, and the cost showed the
+moment a wait-shaped feature arrived: the calling window had to be declared once and reasoned
+about twice, and its publish law was written against the `is_wait` FLAG rather than the word —
+the code already treated wait-ness as a property. Every future wait feature would have paid the
+same tax, and the half-retired string match in `unenumerable_squares` (left by #1114's N1
+retirement) was the trap waiting for the second listening word.
+
+**One word, three forms.** `topics` is the discriminant; everything else follows from it.
+
+| Field | Required | Meaning |
+|---|---|---|
+| `minutes` | see below | how long the alarm runs (> 0 when given) |
+| `topics` | optional | absent = a plain timer; present = it also listens |
+| `key` | when `topics` | how the letter answers (`$topic`, or a payload field) |
+| `match` | optional, only with `topics` | which letter is about THIS run |
+| `window` | optional | the hours the timer may fire in |
+
+**`minutes` is optional, and what fills it composes.** The duration and the hours answer
+different questions — `minutes`/`topics` decide HOW LONG, `window` decides WHEN THAT MAY ACT —
+so the window applies to whatever the duration resolved to rather than replacing it:
+
+    duration = now + minutes        if minutes
+             = run's end of life    elif topics     ("listen as long as this run may live")
+             = now                  else            (a bare window: "wait for the hours")
+    alarm    = opens_at(duration, window) if window else duration
+
+A wait with none of minutes, window or topics is refused at publish: it waits for nothing.
+`wake_at` is ALWAYS set — it is the timer AND the lease (canon T20), migration 058 CHECKs it,
+and the claim is `wake_at <= now()`, so a run with no alarm would never be claimed and the
+self-healing that means there is NO REAPER would be gone. The listening form's alarm is the
+run's own `max_age` plus a minute: the claim runs on the database clock and the max-age check on
+the worker's, and an alarm exactly at end-of-life could be claimed a moment before the worker
+agrees it expired — the run would then take a timeout arrow, or exit `completed` instead of
+`timed_out`. This replaces the workaround the first lending board shipped with, where `listen`
+carried `minutes: 43200` — the plan's own `max_age_days` copied by hand, which would have gone
+silently wrong the day that number moved.
+
+**The window holds the TIMER, never a letter.** A letter moves the run the moment it lands, so
+the night's newest event is what the morning acts on and a goal ends the run before any call
+exists. That asymmetry has a publish law behind it: a `call` reached from a windowed square by
+any arrow but its timer's — directly, or through squares that act in the same visit — is
+REFUSED, because a letter is never held and that call would be queued in the shut hours. The
+guarantee is the law's, not the comment's.
+
+**It reads the PLAN's clock, not the customer's.** This is a scheduling window, NOT the
+quiet-hours control: quiet hours for messages are permission's at send time (ADR 0018), voice
+sits outside that gate (ADR 0010) so its hours live in the plan, and the dialler's own calling
+hours remain the last check on when a phone actually rings. The customer's own timezone (the
+ADR 0018 ladder), days of the week, and a window on the `stages` ladder are NOT built.
+
+**`wait_event` stays readable forever.** T25 version rows are immutable and thousands of them
+carry the old word, so the `Literal` keeps it and a `mode="before"` validator reads it as a
+`wait` with topics — lossless, it always carried them. Publish REFUSES it in a new document, the
+shape the retired equality map already uses. `listens(node)` and `branches(node)` become
+node-derived (`condition` and `split` keep their static `branches`), which is what closes the
+`unenumerable_squares` string match in the same pass.
+
 
 Refs: 05-audiences.md + 06-outreach.md (corpus) · ADR 0004 / 0010 / 0016.

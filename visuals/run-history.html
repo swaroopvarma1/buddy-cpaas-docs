@@ -1,0 +1,960 @@
+<title>Where It's Been</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* ============================================================
+   Buddy CPaaS visual language — system flow (light) mode.
+   Tokens inlined from visual-language/tokens.css so this file
+   stays self-contained. The module color law is NOT re-assigned:
+   purple = the event side, blue = the run row / the walker,
+   green = what already leaves a trace, teal = the new table,
+   red = what is lost.
+   ============================================================ */
+:root {
+  --canvas:      #eef1f6;
+  --panel:       #e5e9f1;
+  --card:        #ffffff;
+  --card-border: #e2e6ee;
+  --shadow:      0 1px 3px rgba(31,42,68,.10), 0 4px 14px rgba(31,42,68,.06);
+
+  --ink:         #1f2a44;
+  --ink-soft:    #4b5568;
+  --muted:       #8a93a6;
+  --line:        #3a4661;
+  --hair:        #d7dde8;
+  --hair-strong: #c8d1e0;
+
+  --purple: #7c3aed;  --purple-soft: #ede4ff;  --purple-ink: #5b21b6;
+  --blue:   #2563eb;  --blue-soft:   #dce7fd;  --blue-ink:   #1d4ed8;
+  --green:  #10b981;  --green-soft:  #d8f3e6;  --green-ink:  #047857;
+  --teal:   #0d9488;  --teal-soft:   #d3f0ec;  --teal-ink:   #0f766e;
+  --amber:  #f59e0b;  --amber-soft:  #ffeacb;  --amber-ink:  #92400e;
+  --red:    #ef4444;  --red-soft:    #ffdcdc;  --red-ink:    #b91c1c;
+
+  --font: "Inter", "SF Pro Text", -apple-system, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono",
+          Menlo, Consolas, monospace;
+
+  /* diagram scale — corpus canonical, do not grow */
+  --fs-lane:  11px;
+  --fs-card:  13px;
+  --fs-body:  11px;
+  --fs-pill:  9.5px;
+
+  /* document scale — this brief is read, not just scanned */
+  --fs-h1:    clamp(30px, 4.4vw, 44px);
+  --fs-stand: clamp(16px, 1.9vw, 19px);
+  --fs-h2:    clamp(20px, 2.5vw, 25px);
+  --fs-h3:    15px;
+  --fs-prose: 16px;
+  --fs-small: 13px;
+  --fs-code:  12.5px;
+
+  --r-card: 10px;
+  --r-pill: 999px;
+  --r-panel: 14px;
+
+  --measure: 68ch;
+  --gutter: clamp(20px, 5vw, 56px);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: var(--fs-prose);
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 var(--gutter) 88px; }
+
+/* ---------- masthead ---------- */
+.masthead { padding: clamp(40px, 7vw, 76px) 0 0; }
+.eyebrow {
+  font-size: var(--fs-pill); font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--muted); margin: 0 0 18px;
+}
+h1 {
+  font-size: var(--fs-h1); font-weight: 700; line-height: 1.06;
+  letter-spacing: -.024em; margin: 0; text-wrap: balance; max-width: 15ch;
+}
+.standfirst {
+  font-size: var(--fs-stand); color: var(--ink-soft); line-height: 1.55;
+  max-width: 60ch; margin: 22px 0 0; text-wrap: pretty;
+}
+.factbar {
+  display: flex; flex-wrap: wrap; gap: 0;
+  margin: 34px 0 0; border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair);
+}
+.fact { flex: 1 1 170px; padding: 15px 20px 15px 0; border-right: 1px solid var(--hair); }
+.fact:last-child { border-right: 0; }
+.fact dt {
+  font-size: var(--fs-pill); font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--muted); margin: 0 0 5px;
+}
+.fact dd { margin: 0; font-size: var(--fs-small); font-weight: 600; color: var(--ink); }
+.fact dd.live { color: var(--red-ink); }
+.fact dd code { font-size: 12px; }
+
+/* ---------- sections ---------- */
+section { margin: clamp(46px, 6.5vw, 74px) 0 0; }
+.sec-head { display: flex; align-items: baseline; gap: 14px; margin: 0 0 8px; }
+.sec-num {
+  font-family: var(--mono); font-size: var(--fs-small); font-weight: 700;
+  color: var(--muted); font-variant-numeric: tabular-nums; flex: none;
+}
+h2 {
+  font-size: var(--fs-h2); font-weight: 700; letter-spacing: -.018em;
+  margin: 0; line-height: 1.2; text-wrap: balance;
+}
+h3 {
+  font-size: var(--fs-h3); font-weight: 700; letter-spacing: -.005em;
+  margin: 30px 0 6px; color: var(--ink);
+}
+p { max-width: var(--measure); margin: 14px 0 0; text-wrap: pretty; }
+p.lede { font-size: 17px; color: var(--ink-soft); margin-top: 10px; }
+strong { font-weight: 600; }
+code {
+  font-family: var(--mono); font-size: .88em; font-weight: 500;
+  background: #dfe5ef; color: var(--ink); padding: .1em .38em; border-radius: 4px;
+}
+
+/* ---------- the visit trace ---------- */
+.trace {
+  background: var(--panel); border-radius: var(--r-panel);
+  padding: 20px 20px 18px; margin: 26px 0 0;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+}
+.trace-lane {
+  font-size: var(--fs-lane); font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--muted); margin: 0 0 12px;
+}
+.trace-lane.second { margin-top: 22px; }
+.squares { display: flex; align-items: stretch; gap: 9px; min-width: 780px; }
+.sq {
+  flex: 1 1 0; background: var(--card); border: 1px solid var(--card-border);
+  border-radius: var(--r-card); box-shadow: var(--shadow);
+  padding: 12px 13px 13px; display: flex; flex-direction: column; gap: 6px;
+}
+.pill {
+  align-self: flex-start; font-size: var(--fs-pill); font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px;
+  border-radius: var(--r-pill); white-space: nowrap;
+}
+.p-purple { background: var(--purple-soft); color: var(--purple-ink); }
+.p-blue   { background: var(--blue-soft);   color: var(--blue-ink); }
+.p-green  { background: var(--green-soft);  color: var(--green-ink); }
+.p-teal   { background: var(--teal-soft);   color: var(--teal-ink); }
+.p-amber  { background: var(--amber-soft);  color: var(--amber-ink); }
+.p-red    { background: var(--red-soft);    color: var(--red-ink); }
+.sq b { font-family: var(--mono); font-size: var(--fs-card); font-weight: 700; }
+.sq span { font-size: var(--fs-body); color: var(--ink-soft); line-height: 1.45; }
+.sq .clock {
+  font-family: var(--mono); font-size: var(--fs-body); font-weight: 700;
+  color: var(--ink); font-variant-numeric: tabular-nums; margin-top: auto; padding-top: 6px;
+}
+.sq.lost { border: 1.5px dashed var(--red); box-shadow: none; background: #fff8f8; }
+
+.rail { position: relative; min-width: 780px; margin-top: 4px; }
+.rail-line { height: 2px; background: var(--hair-strong); border-radius: 2px; }
+.rail-marks { display: flex; gap: 9px; margin-top: 0; }
+.rail-cell { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 6px; padding-top: 8px; }
+.tick {
+  width: 11px; height: 11px; border-radius: 50%;
+  background: var(--canvas); border: 2px solid var(--hair-strong);
+}
+.tick.wrote { background: var(--blue); border-color: var(--blue); box-shadow: 0 0 0 4px var(--blue-soft); }
+.rail-cell em {
+  font-style: normal; font-size: var(--fs-body); color: var(--muted);
+  text-align: center; line-height: 1.35;
+}
+.rail-cell.wrote em { color: var(--blue-ink); font-weight: 700; }
+.tally {
+  display: flex; flex-wrap: wrap; gap: 8px 26px; margin: 18px 0 0;
+  padding-top: 14px; border-top: 1px solid #d2d9e4;
+}
+.tally div { display: flex; align-items: baseline; gap: 8px; }
+.tally b {
+  font-family: var(--mono); font-size: 21px; font-weight: 700;
+  font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+}
+.tally span { font-size: var(--fs-small); color: var(--ink-soft); }
+.tally .n-bad b { color: var(--red-ink); }
+.tally .n-ok b  { color: var(--blue-ink); }
+
+/* ---------- code panels ---------- */
+.panels { display: grid; gap: 16px; margin: 24px 0 0; }
+@media (min-width: 800px) { .panels.two { grid-template-columns: 1fr 1fr; } }
+.codepanel {
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: var(--r-card); box-shadow: var(--shadow); overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.codepanel > header {
+  padding: 11px 15px; border-bottom: 1px solid var(--card-border);
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.codepanel > header b { font-size: var(--fs-card); font-weight: 700; }
+.codepanel > header em {
+  font-style: normal; font-family: var(--mono); font-size: var(--fs-body);
+  color: var(--muted); margin-left: auto;
+}
+.codepanel.teal  > header { background: var(--teal-soft);  border-bottom-color: #bde3dd; }
+.codepanel.blue  > header { background: var(--blue-soft);  border-bottom-color: #c6d8fa; }
+pre {
+  margin: 0; padding: 15px; overflow-x: auto; font-family: var(--mono);
+  font-size: var(--fs-code); line-height: 1.66; color: var(--ink-soft); flex: 1;
+}
+pre .k   { color: var(--ink); font-weight: 700; }
+pre .c   { color: var(--muted); }
+pre .hit { background: #fff2c9; color: #6b4a00; font-weight: 700; border-radius: 3px; padding: 0 2px; }
+pre .no  { color: var(--red-ink); font-weight: 700; }
+pre .g   { color: var(--green-ink); font-weight: 700; }
+pre .t   { color: var(--teal-ink); font-weight: 700; }
+
+/* ---------- callouts ---------- */
+.note {
+  border-left: 3px solid var(--blue); background: #e8eefb;
+  padding: 15px 18px; border-radius: 0 8px 8px 0; margin: 24px 0 0;
+  max-width: var(--measure);
+}
+.note.warn { border-left-color: var(--red); background: #fdeaea; }
+.note.good { border-left-color: var(--green); background: #e3f5ec; }
+.note.rule { border-left-color: var(--teal); background: #e2f2ef; }
+.note p { margin: 0; max-width: none; font-size: 15px; }
+.note p + p { margin-top: 9px; }
+.note .tag {
+  display: block; font-size: var(--fs-pill); font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px;
+  color: var(--blue-ink);
+}
+.note.warn .tag { color: var(--red-ink); }
+.note.good .tag { color: var(--green-ink); }
+.note.rule .tag { color: var(--teal-ink); }
+
+/* ---------- tables ---------- */
+.tablewrap { overflow-x: auto; margin: 24px 0 0; -webkit-overflow-scrolling: touch; }
+table { border-collapse: collapse; width: 100%; min-width: 660px; font-size: var(--fs-small); }
+caption {
+  text-align: left; font-size: var(--fs-lane); font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--muted); padding-bottom: 10px;
+}
+th, td { text-align: left; padding: 11px 16px 11px 0; border-bottom: 1px solid var(--hair); vertical-align: top; }
+th {
+  font-size: var(--fs-lane); font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--hair-strong);
+}
+td:first-child { font-weight: 600; color: var(--ink); padding-right: 22px; }
+td code { font-size: 12px; }
+td.where { font-family: var(--mono); font-size: 11.5px; color: var(--ink-soft); white-space: nowrap; font-weight: 500; }
+.mark { font-weight: 700; font-family: var(--mono); }
+.mark.y { color: var(--green-ink); }
+.mark.n { color: var(--red-ink); }
+.mark.o { color: var(--muted); }
+tr.flush td { background: #eef8f4; }
+tr.danger td { background: #fdf2f2; }
+
+/* ---------- ledger cards ---------- */
+.ledger { display: grid; gap: 13px; margin: 24px 0 0; }
+@media (min-width: 780px) { .ledger.two { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 860px) { .ledger.three { grid-template-columns: repeat(3, 1fr); } }
+.ledger > div {
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: var(--r-card); padding: 16px 18px 18px; box-shadow: var(--shadow);
+  display: flex; flex-direction: column; gap: 7px;
+}
+.ledger > div.trap { border-top: 3px solid var(--red); }
+.ledger h3 { margin: 0; font-size: 15px; }
+.ledger p { margin: 0; font-size: 14px; color: var(--ink-soft); max-width: none; }
+.ledger .then { font-size: 13.5px; color: var(--ink); font-weight: 600; margin-top: auto; padding-top: 4px; }
+
+/* ---------- build steps ---------- */
+ol.steps { list-style: none; counter-reset: s; margin: 24px 0 0; padding: 0; max-width: var(--measure); }
+ol.steps li {
+  counter-increment: s; position: relative; padding: 0 0 20px 46px;
+  border-left: 1.5px solid #ccd5e3; margin-left: 13px;
+}
+ol.steps li:last-child { border-left-color: transparent; padding-bottom: 0; }
+ol.steps li::before {
+  content: counter(s, decimal-leading-zero);
+  position: absolute; left: -14px; top: -2px; width: 27px; height: 27px;
+  background: var(--ink); color: #fff; border-radius: 50%;
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  font-variant-numeric: tabular-nums;
+}
+ol.steps b { display: block; font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+ol.steps span { font-size: 14px; color: var(--ink-soft); }
+
+/* ---------- two timelines ---------- */
+.screens { display: grid; gap: 16px; margin: 24px 0 0; }
+@media (min-width: 800px) { .screens { grid-template-columns: 1fr 1fr; } }
+.screen {
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: var(--r-card); box-shadow: var(--shadow); overflow: hidden;
+}
+.screen > header {
+  padding: 11px 15px; border-bottom: 1px solid var(--card-border);
+  font-size: var(--fs-card); font-weight: 700;
+}
+.screen.now > header  { background: var(--red-soft);  color: var(--red-ink); }
+.screen.next > header { background: var(--teal-soft); color: var(--teal-ink); }
+.screen ul { list-style: none; margin: 0; padding: 12px 15px 14px; display: flex; flex-direction: column; gap: 9px; }
+.screen li {
+  display: grid; grid-template-columns: 62px 1fr; gap: 12px;
+  font-size: 13.5px; line-height: 1.45; align-items: baseline;
+}
+.screen li time {
+  font-family: var(--mono); font-size: 11.5px; font-weight: 700; color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.screen li.void { color: var(--red-ink); }
+.screen li.void time { color: #d09a9a; }
+.screen li b { font-weight: 600; color: var(--ink); }
+.screen li.void b { color: var(--red-ink); font-weight: 600; }
+
+footer {
+  margin: clamp(50px, 7vw, 80px) 0 0; padding-top: 22px;
+  border-top: 1px solid var(--hair); display: flex; flex-wrap: wrap; gap: 10px 34px;
+  font-size: var(--fs-small); color: var(--muted);
+}
+footer b { color: var(--ink-soft); font-weight: 600; }
+
+a { color: var(--blue-ink); }
+a:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 3px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <p class="eyebrow">Buddy CPaaS &middot; design brief &middot; 17 Sep 2026</p>
+  <h1>Where it's been</h1>
+  <p class="standfirst">
+    A run knows which square it stands on and nothing else. The square it just left, the
+    branch it picked, how long it waited, how many times it failed on the way &mdash; all of
+    it is overwritten by the statement that moves the token. Here is exactly what is lost,
+    what already survives, and the one table that fixes it without touching the hot path.
+  </p>
+  <dl class="factbar">
+    <div class="fact"><dt>Release</dt><dd><code>c1eca642</code></dd></div>
+    <div class="fact"><dt>Writes per visit</dt><dd class="live">One, for up to ten squares</dd></div>
+    <div class="fact"><dt>Proposed</dt><dd>Canon T26 &middot; migration 073</dd></div>
+    <div class="fact"><dt>Needs an ADR</dt><dd>0024 &mdash; T20 is no longer alone</dd></div>
+  </dl>
+</header>
+
+<main>
+
+<section>
+  <div class="sec-head"><span class="sec-num">01</span><h2>One visit, four squares, one row</h2></div>
+  <p class="lede">
+    A COD confirmation flow. She is asked to confirm, she answers 41 minutes later, and the
+    walker claims her run. This is what the walker does next, and what the database is told
+    about it.
+  </p>
+
+  <div class="trace">
+    <p class="trace-lane">What the walker walks &mdash; one claim, 09:41:07</p>
+    <div class="squares">
+      <div class="sq lost">
+        <span class="pill p-purple">wait &middot; listens</span>
+        <b>hear</b>
+        <span>Her &ldquo;yes&rdquo; arrived. The answer picks the edge, then is deleted.</span>
+        <span class="clock">arrived 09:00 &middot; left 09:41</span>
+      </div>
+      <div class="sq lost">
+        <span class="pill p-blue">condition</span>
+        <b>value</b>
+        <span>Cart over 5,000? Took the <code>big</code> edge. Nothing recorded.</span>
+        <span class="clock">09:41:07 &middot; 4 ms</span>
+      </div>
+      <div class="sq">
+        <span class="pill p-blue">split</span>
+        <b>arm</b>
+        <span>50/50. Arm survives as <code>split_arm</code> &mdash; no time, no order.</span>
+        <span class="clock">09:41:07 &middot; 1 ms</span>
+      </div>
+      <div class="sq">
+        <span class="pill p-amber">call</span>
+        <b>ring</b>
+        <span>Lead pushed. Survives as <code>lead_ring</code> and a tracker row.</span>
+        <span class="clock">09:41:07 &middot; 60 ms</span>
+      </div>
+      <div class="sq">
+        <span class="pill p-purple">wait</span>
+        <b>settle</b>
+        <span>24 hours. The token stops here, so the run row finally hears about it.</span>
+        <span class="clock">arrives 09:41:07</span>
+      </div>
+    </div>
+
+    <p class="trace-lane second">What <code>crm_workflow_enrollment</code> was told</p>
+    <div class="rail">
+      <div class="rail-line"></div>
+      <div class="rail-marks">
+        <div class="rail-cell"><span class="tick"></span><em>nothing</em></div>
+        <div class="rail-cell"><span class="tick"></span><em>nothing</em></div>
+        <div class="rail-cell"><span class="tick"></span><em>nothing</em></div>
+        <div class="rail-cell"><span class="tick"></span><em>nothing</em></div>
+        <div class="rail-cell wrote"><span class="tick wrote"></span><em>one UPDATE<br>current_node = settle</em></div>
+      </div>
+    </div>
+
+    <div class="tally">
+      <div class="n-bad"><b>4</b><span>squares finished this visit</span></div>
+      <div class="n-ok"><b>1</b><span>write to the run row</span></div>
+      <div class="n-bad"><b>2</b><span>branch answers deleted before it</span></div>
+      <div class="n-bad"><b>0</b><span>arrival times kept, anywhere</span></div>
+    </div>
+  </div>
+
+  <p>
+    The loop is <code>walker._advance</code>, lines 181&ndash;241: up to
+    <code>_MAX_STEPS_PER_VISIT = 10</code> squares are executed back to back, and the run row
+    is touched only when the next square is a wait. Four squares happened. The database heard
+    one sentence, and that sentence was <em>&ldquo;she is on <code>settle</code> now.&rdquo;</em>
+  </p>
+
+  <div class="screens">
+    <div class="screen now">
+      <header>What we can tell the merchant today</header>
+      <ul>
+        <li><time>09:00</time><span><b>Message queued</b> &mdash; cod_confirm, delivered 09:00</span></li>
+        <li class="void"><time>&mdash;</time><span><b>?</b> she answered something, at some point</span></li>
+        <li class="void"><time>&mdash;</time><span><b>?</b> a decision was taken, unknown which</span></li>
+        <li><time>09:41</time><span><b>Call pushed</b> &mdash; lead tracker row exists</span></li>
+        <li><time>now</time><span><b>Standing on</b> <code>settle</code>, since &mdash; unknown</span></li>
+      </ul>
+    </div>
+    <div class="screen next">
+      <header>What T26 lets us tell her</header>
+      <ul>
+        <li><time>09:00</time><span><b>hear</b> &mdash; arrived by door, listening</span></li>
+        <li><time>09:41</time><span><b>hear</b> &mdash; cut short by her reply, took <code>yes</code> after 41m</span></li>
+        <li><time>09:41</time><span><b>value</b> &mdash; cart 6,240, took <code>big</code></span></li>
+        <li><time>09:41</time><span><b>arm</b> &mdash; bucket 37, took <code>discount</code></span></li>
+        <li><time>09:41</time><span><b>ring</b> &mdash; lead pushed, 1 attempt, 60ms</span></li>
+        <li><time>09:41</time><span><b>settle</b> &mdash; waiting 24h, 0 attempts so far</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">02</span><h2>Five things the row forgets, and how</h2></div>
+  <p class="lede">
+    These are five different mechanisms, not one missing feature. Three of them are
+    deliberate and correct; they just have no counterpart anywhere that remembers.
+  </p>
+
+  <div class="tablewrap">
+    <table>
+      <caption>Release c1eca642</caption>
+      <thead>
+        <tr><th>Lost</th><th>Where</th><th>The mechanism</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>The square it left</td>
+          <td class="where">queries/enrollment.py:231</td>
+          <td><code>SET current_node = $2</code>. One row, updated in place. After it commits the previous value exists nowhere.</td>
+        </tr>
+        <tr>
+          <td>Squares walked mid&#8209;chain</td>
+          <td class="where">walker.py:181&ndash;241</td>
+          <td>The visit loop only writes when the next square is a wait. A send&nbsp;&rarr;&nbsp;condition&nbsp;&rarr;&nbsp;split&nbsp;&rarr;&nbsp;send chain is <strong>one</strong> UPDATE.</td>
+        </tr>
+        <tr>
+          <td>The branch it picked</td>
+          <td class="where">walker.py:210&ndash;214</td>
+          <td><code>without_reply(context, node.id)</code> runs <em>before</em> the write. Correct &mdash; a door may restart a run on a square it has already visited, and a stale reply would resolve the revisit instantly &mdash; but the answer never reaches disk.</td>
+        </tr>
+        <tr>
+          <td>When it arrived</td>
+          <td class="where">canon T20 col 9</td>
+          <td><code>entered_at</code> is the run's birth. <code>wake_at</code> is the next alarm, and the claim pushes it forward every lease, so it is not a stamp of anything. There is no arrival column.</td>
+        </tr>
+        <tr>
+          <td>Retries and holds</td>
+          <td class="where">queries/enrollment.py:236</td>
+          <td><code>attempts = 0, last_error = NULL</code> on every successful step. A run that failed four times and then moved looks pristine. And a windowed hold calls <code>advance_run</code> with its <em>own</em> node id &mdash; byte-identical to a step.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note warn">
+    <span class="tag">The consequence, in the merchant's words</span>
+    <p>
+      &ldquo;Why did this customer get the discount version?&rdquo; &mdash; unanswerable for a
+      condition. &ldquo;How long has she been sitting there?&rdquo; &mdash; no column holds it.
+      &ldquo;Did this run retry before it went through?&rdquo; &mdash; erased by the step that
+      succeeded.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">03</span><h2>What already survives &mdash; don't rebuild it</h2></div>
+  <p class="lede">
+    Outreach has been growing a history by accident, in the wrong place. Four of the five
+    bookkeeping prefixes in a run's context are per-square records. They have no times, no
+    order, and they sit inside the walker's own working state.
+  </p>
+
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Square</th><th>Recoverable today</th><th>How</th></tr>
+      </thead>
+      <tbody>
+        <tr class="flush">
+          <td>send</td>
+          <td><span class="mark y">yes</span> &mdash; with time, delivery and gate verdict</td>
+          <td>T16 <code>source_kind='workflow'</code>, <code>source_id = run.id</code>, and <code>dedupe_key = '&lt;run&gt;:&lt;node&gt;'</code> &mdash; the node id is in there, as a string nobody queries as a key</td>
+        </tr>
+        <tr class="flush">
+          <td>call</td>
+          <td><span class="mark y">yes</span> &mdash; with time</td>
+          <td><code>lead_call_tracker.meta_data.enrollment_id</code>, plus a uuid5 minted per visit</td>
+        </tr>
+        <tr>
+          <td>action</td>
+          <td><span class="mark o">outcome only</span></td>
+          <td><code>action_&lt;node&gt;</code> in context. No time, no order</td>
+        </tr>
+        <tr>
+          <td>split</td>
+          <td><span class="mark o">arm only</span></td>
+          <td><code>split_&lt;node&gt;</code> in context. No time, no order</td>
+        </tr>
+        <tr class="danger">
+          <td>condition</td>
+          <td><span class="mark n">nothing</span></td>
+          <td>The answer is cleared on the way out and never written</td>
+        </tr>
+        <tr class="danger">
+          <td>wait</td>
+          <td><span class="mark n">nothing</span></td>
+          <td>No arrival, no duration, no record that a letter cut it short</td>
+        </tr>
+        <tr class="danger">
+          <td>order, timing, retries, holds</td>
+          <td><span class="mark n">nothing</span></td>
+          <td>&mdash;</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note good">
+    <span class="tag">The codebase already knows the answer</span>
+    <p>
+      <code>split.execute</code> returns its answer <em>twice</em> &mdash; once as
+      <code>reply_&lt;node&gt;</code> for the walker, once as <code>split_&lt;node&gt;</code> as a
+      durable fact. Its docstring says why: <em>&ldquo;the reply is cleared when the token
+      leaves the square, and a report that groups runs by arm has to read it days
+      later.&rdquo;</em>
+    </p>
+    <p>
+      The right instinct is already in the file. It was applied to one of the two branching
+      squares, without a time, in the one jsonb blob that must stay small. T26 is that
+      instinct, finished.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">04</span><h2>Two shapes to refuse before starting</h2></div>
+
+  <div class="ledger two">
+    <div>
+      <span class="pill p-red">refused</span>
+      <h3>A <code>history</code> array on T20</h3>
+      <p>
+        That row is the only stateful row in outreach and the walker compare-and-swaps on it
+        every visit. Appending means rewriting the whole array under the lease, on the hottest
+        row in the module, forever.
+      </p>
+      <p class="then">It is the photocopy habit canon already refuses for <code>context</code>.</p>
+    </div>
+    <div>
+      <span class="pill p-red">refused</span>
+      <h3>Steps as letters on the spine</h3>
+      <p>
+        A walker step is not something that happened in the customer's world &mdash; it is our
+        machinery. On T13 it becomes a topic a door could listen for, a payload the decode
+        engine would try to walk, and a row the retention model treats like a checkout.
+      </p>
+      <p class="then">Keep the spine for letters.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="tag">The precedent that does fit</span>
+    <p>
+      Canon already has exactly this table for exactly this reason. <code>crm.decision_log</code>
+      (T14) is <em>&ldquo;the one genuinely unreconstructable table: the accountability bill
+      the inversion runs up, paid in rows.&rdquo;</em> The gate keeps a decision log. The walker
+      keeps none. T26 is the walker's.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">05</span><h2>The table</h2></div>
+  <p class="lede">
+    One row per <strong>completed</strong> step, inserted and never edited. The square the run
+    stands on right now is not in here &mdash; it is on the run row, where it already was.
+    That is what removes the update path entirely.
+  </p>
+
+  <div class="codepanel teal">
+    <header><b>073_create_crm_workflow_step.sql</b><em>canon T26</em></header>
+<pre><span class="c">-- 073: crm_workflow_step (canon T26) — where a run has BEEN.
+-- The token's position stays on T20; this is the trail behind it.
+-- Append-only: rows are inserted by the statement that moves the
+-- token and are never updated. The walker NEVER reads this table.</span>
+
+<span class="k">CREATE TABLE</span> crm_workflow_step (
+    id               bigserial    <span class="k">PRIMARY KEY</span>,
+    merchant_id      text         <span class="k">NOT NULL</span>,
+    enrollment_id    uuid         <span class="k">NOT NULL</span>,
+    workflow_id      uuid         <span class="k">NOT NULL</span>,
+    workflow_version integer      <span class="k">NOT NULL</span>,   <span class="c">-- a migrate re-pins mid-run</span>
+    node             text         <span class="k">NOT NULL</span>,
+    node_type        text         <span class="k">NOT NULL</span>,   <span class="c">-- render 40 steps without resolving 40 documents</span>
+    arrived_at       timestamptz  <span class="k">NOT NULL</span>,
+    left_at          timestamptz  <span class="k">NOT NULL</span>,   <span class="c">-- only closed steps are written</span>
+    arrived_by       text         <span class="k">NOT NULL</span>,   <span class="c">-- door | timer | letter | walk</span>
+    outcome          text,                    <span class="c">-- the edge label, timeout, else, the arm; NULL = plain square</span>
+    next_node        text,                    <span class="c">-- NULL = the run ended here</span>
+    attempts         smallint     <span class="k">NOT NULL DEFAULT</span> 1,
+    last_error       text,
+    <span class="k">CONSTRAINT</span> crm_workflow_step_run_fk
+        <span class="k">FOREIGN KEY</span> (enrollment_id)
+        <span class="k">REFERENCES</span> crm_workflow_enrollment (id) <span class="t">ON DELETE CASCADE</span>,
+    <span class="k">CHECK</span> (left_at &gt;= arrived_at)
+);
+
+<span class="c">-- The per-run read, AND the index the cascade delete needs: a FK
+-- column must LEAD its own index or the retention sweep seq-scans
+-- this table once per run it removes.</span>
+<span class="k">CREATE INDEX</span> crm_workflow_step_run_ix
+    <span class="k">ON</span> crm_workflow_step (enrollment_id, arrived_at);
+
+<span class="c">-- The per-square funnel: "how many runs reached this square, and
+-- where did they go from it" — merchant-first, tenancy law.</span>
+<span class="k">CREATE INDEX</span> crm_workflow_step_node_ix
+    <span class="k">ON</span> crm_workflow_step (merchant_id, workflow_id, node, left_at);
+</pre>
+  </div>
+
+  <div class="codepanel blue">
+    <header><b>T20 gains one column</b><em>col 19</em></header>
+<pre><span class="c">-- The batch has to know where it started. This is the only change
+-- to the run row, and the only place the current square's arrival
+-- time lives until the step closes.</span>
+
+<span class="k">ALTER TABLE</span> crm_workflow_enrollment
+    <span class="k">ADD COLUMN</span> node_arrived_at timestamptz;   <span class="c">-- NULL for runs that pre-date 073</span>
+</pre>
+  </div>
+
+  <div class="note rule">
+    <span class="tag">Three laws that keep it from rotting</span>
+    <p>
+      <strong>The walker never reads it.</strong> <code>current_node</code> stays authoritative
+      for execution; T26 is the record, exactly as <code>decision_log</code> is never read by
+      the decider. The day something on the hot path reads it, the design is wrong &mdash; and
+      it is what keeps the table droppable and partitionable without touching execution.
+    </p>
+    <p>
+      <strong>Rows are never edited.</strong> No open row, no partial unique, nothing to
+      reconcile against <code>current_node</code>.
+    </p>
+    <p>
+      <strong>Every read is a union.</strong> The past is N closed rows; the present is the run
+      row plus <code>node_arrived_at</code>. That union is a function in
+      <code>outreach/</code>, and any consumer that forgets it shows a timeline one square
+      short of the truth.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">06</span><h2>The flush &mdash; one statement, one round trip</h2></div>
+  <p class="lede">
+    The walker buffers finished squares in memory as it walks. When the token stops, the whole
+    batch rides into the database attached to the CAS that moves the run. Ten squares cost one
+    extra statement, not ten.
+  </p>
+
+  <div class="codepanel blue">
+    <header><b>advance_run_query</b><em>the lease is still the generation</em></header>
+<pre><span class="k">WITH</span> moved <span class="k">AS</span> (
+    <span class="k">UPDATE</span> crm_workflow_enrollment
+       <span class="k">SET</span> current_node    = $2,
+           wake_at         = $3,
+           context         = $4::jsonb,
+           <span class="t">node_arrived_at = $5</span>,          <span class="c">-- when the token lands on the NEW square</span>
+           attempts        = 0,
+           last_error      = <span class="k">NULL</span>
+     <span class="k">WHERE</span> id = $1
+       <span class="k">AND</span> status  = <span class="g">'waiting'</span>
+       <span class="k">AND</span> <span class="hit">wake_at = $6</span>                   <span class="c">-- THE LEASE. a stale one matches nothing</span>
+ <span class="k">RETURNING</span> id, merchant_id, workflow_id, workflow_version
+), wrote <span class="k">AS</span> (
+    <span class="k">INSERT INTO</span> <span class="t">crm_workflow_step</span>
+           (merchant_id, enrollment_id, workflow_id, workflow_version,
+            node, node_type, arrived_at, left_at, arrived_by,
+            outcome, next_node, attempts, last_error)
+    <span class="k">SELECT</span> m.merchant_id, m.id, m.workflow_id, m.workflow_version,
+           s.node, s.node_type, s.arrived_at, s.left_at, s.arrived_by,
+           s.outcome, s.next_node, s.attempts, s.last_error
+      <span class="k">FROM</span> moved m, <span class="k">jsonb_to_recordset</span>($7::jsonb) <span class="k">AS</span> s (
+               node text, node_type text,
+               arrived_at timestamptz, left_at timestamptz,
+               arrived_by text, outcome text, next_node text,
+               attempts smallint, last_error text)
+ <span class="k">RETURNING</span> 1
+)
+<span class="k">SELECT</span> (<span class="k">SELECT</span> id <span class="k">FROM</span> moved) <span class="k">AS</span> moved_id,
+       (<span class="k">SELECT</span> count(*) <span class="k">FROM</span> wrote) <span class="k">AS</span> steps;
+</pre>
+  </div>
+
+  <p>
+    <code>moved</code> is empty when the lease is stale &mdash; a reply or a repeat landed
+    mid-visit and moved <code>wake_at</code>. The join then produces no rows and the history is
+    discarded with the move it belonged to. <strong>A step row exists if and only if the move
+    committed.</strong> No dual write, no drift, nothing to reconcile, no reaper.
+  </p>
+
+  <div class="note">
+    <span class="tag">Where the numbers come from</span>
+    <p>
+      <code>attempts</code> and <code>last_error</code> ride in the buffered payload, read off
+      the run <em>before</em> the reset in the same statement &mdash; the walker already holds
+      both from its claim. <code>attempts</code> is only ever zeroed by this UPDATE, so the
+      number on a flushed row is exactly &ldquo;how many claims this square cost.&rdquo;
+    </p>
+  </div>
+
+  <div class="note good">
+    <span class="tag">What the manifest already guarantees</span>
+    <p>
+      A send commits on its own connection, before the advance. If the visit dies in between,
+      the message exists and the step does not &mdash; and the retry's <code>dedupe_key</code>
+      absorbs the duplicate send, then flushes the step. So <strong>T26 records commits and the
+      manifest records attempts</strong>, which is a clean seam and not an accident.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">07</span><h2>Every site that touches a run</h2></div>
+  <p class="lede">
+    The failure mode this design has is a flush honoured at some call sites and not others
+    &mdash; the exact shape of #1143's finding. So: all of them, with the answer, including the
+    ones that are correctly silent.
+  </p>
+
+  <div class="tablewrap">
+    <table>
+      <caption>Nine walker sites, five event-side, two publish-side</caption>
+      <thead>
+        <tr><th>Site</th><th>Where</th><th>Moves?</th><th>Flush</th></tr>
+      </thead>
+      <tbody>
+        <tr class="flush">
+          <td><code>insert_enrollment</code></td><td class="where">enrol.py:149</td>
+          <td><span class="mark y">opens</span></td>
+          <td>No row &mdash; stamp <code>node_arrived_at</code>. <code>arrived_by = door</code> on the first flush</td>
+        </tr>
+        <tr><td><code>claim_due_runs</code></td><td class="where">walker.py:68</td>
+          <td><span class="mark n">no</span></td><td>None. Pushes the lease, counts the attempt</td></tr>
+        <tr class="flush">
+          <td><code>advance_run</code> &mdash; a move</td><td class="where">walker.py:236</td>
+          <td><span class="mark y">yes</span></td>
+          <td><strong>Flush the chain, restamp the arrival</strong></td></tr>
+        <tr class="danger">
+          <td><code>advance_run</code> &mdash; a window hold</td><td class="where">walker.py:199</td>
+          <td><span class="mark n">no</span></td>
+          <td><strong>None &mdash; and it must not restamp.</strong> Same node id; see trap 1</td></tr>
+        <tr class="flush">
+          <td><code>exit_run</code> &mdash; max age</td><td class="where">walker.py:153</td>
+          <td><span class="mark y">ends</span></td><td>Close the current square, <code>outcome = timed_out</code></td></tr>
+        <tr class="flush">
+          <td><code>exit_run</code> &mdash; a goal tier</td><td class="where">walker.py:173</td>
+          <td><span class="mark y">ends</span></td><td>Close it, <code>outcome</code> = the tier's reason</td></tr>
+        <tr class="flush">
+          <td><code>exit_run</code> &mdash; completed</td><td class="where">walker.py:216</td>
+          <td><span class="mark y">ends</span></td><td>Flush the chain, last row has <code>next_node = NULL</code></td></tr>
+        <tr class="flush">
+          <td><code>exit_run</code> &mdash; ejected</td><td class="where">walker.py:96</td>
+          <td><span class="mark y">ends</span></td><td>Close it, <code>outcome = ejected</code></td></tr>
+        <tr><td><code>park_run</code></td><td class="where">walker.py:110</td>
+          <td><span class="mark n">no</span></td><td>None &mdash; the run is still standing there</td></tr>
+        <tr><td><code>record_run_error</code></td><td class="where">walker.py:124</td>
+          <td><span class="mark n">no</span></td><td>None. The count reaches the row it belongs to at the next flush</td></tr>
+        <tr class="danger">
+          <td><code>cancel_run</code> &mdash; the goal</td><td class="where">entry.py:196</td>
+          <td><span class="mark y">ends</span></td>
+          <td><strong>Flush &mdash; the one outside the walker entirely.</strong> It already reads <code>current_node</code>; the new stamp gives it <code>arrived_at</code></td></tr>
+        <tr><td><code>resume_run_by_id</code> &mdash; a letter</td><td class="where">entry.py:271</td>
+          <td><span class="mark n">no</span></td><td>None. It sets <code>arrived_by = letter</code> for the flush that follows</td></tr>
+        <tr><td><code>refresh_run_facts</code></td><td class="where">entry.py:299</td>
+          <td><span class="mark n">no</span></td><td>None</td></tr>
+        <tr class="danger">
+          <td><code>patch_open_run</code> &mdash; a repeat</td><td class="where">repeat.py</td>
+          <td><span class="mark o">re-arms</span></td>
+          <td><strong>Ruling owed.</strong> Under <code>restart_on_repeat</code> it re-arms the square in place &mdash; is that a fresh arrival?</td></tr>
+        <tr class="danger">
+          <td><code>resume_run</code> &mdash; a human</td><td class="where">runs.py:49</td>
+          <td><span class="mark n">no</span></td>
+          <td><strong>Forgives <code>attempts</code>.</strong> See trap 2</td></tr>
+        <tr><td><code>repin_open_runs</code> / <code>repin_runs_on_version</code></td><td class="where">plans.py &middot; versions.py</td>
+          <td><span class="mark n">no</span></td><td>None &mdash; but the version changes under the run; see the note below</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <span class="tag">One known imprecision, stated rather than hidden</span>
+    <p>
+      A <code>migrate</code> publish can re-pin an open run between its arrival and its
+      departure, so a flushed row names the version in force <em>when the step closed</em>, not
+      when the token landed. Node ids are minted once and never regenerated, and migrate
+      refuses to delete an occupied node, so rendering is safe either way. Recording the
+      arrival version too would mean a second column on the hot row for a rare case; not worth
+      it, but it belongs in the column's canon note.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">08</span><h2>Three traps</h2></div>
+  <p class="lede">
+    Each of these produces a plausible-looking timeline that is wrong, which is worse than no
+    timeline. All three are cheap to prevent and expensive to discover.
+  </p>
+
+  <div class="ledger three">
+    <div class="trap">
+      <span class="pill p-red">trap 1</span>
+      <h3>The hold restamps the arrival</h3>
+      <p>
+        A windowed square calls <code>advance_run</code> with its <em>own</em> node id
+        (<code>walker.py:191&ndash;203</code>). Key the flush on &ldquo;we called advance&rdquo;
+        and every overnight hold writes a zero-length step and resets the clock.
+      </p>
+      <p class="then">
+        Rule: flush and restamp only when <code>next_id != current_id</code>. &ldquo;Waiting
+        since Friday&rdquo; must not render as &ldquo;waiting since 9am&rdquo;.
+      </p>
+    </div>
+    <div class="trap">
+      <span class="pill p-red">trap 2</span>
+      <h3>Resume erases the park</h3>
+      <p>
+        <code>resume_run_query</code> sets <code>attempts = 0</code>; the letter path
+        (<code>resume_run_by_id_query</code>) sets <code>attempts = 0, last_error = NULL</code>
+        for a parked run. Both fire <em>before</em> any step row exists.
+      </p>
+      <p class="then">
+        So a run that parked, sat visible for a day and was resumed flushes a row claiming one
+        clean attempt. Either the resume paths flush their own row, or a park is only visible
+        while it is happening. Rule it; don't discover it.
+      </p>
+    </div>
+    <div class="trap">
+      <span class="pill p-red">trap 3</span>
+      <h3>The goal ends runs without the walker</h3>
+      <p>
+        <code>cancel_run_query</code> is the event side: unconditional, fires when the goal
+        event lands, exits the run wherever it stands. No claim, no visit, no flush.
+      </p>
+      <p class="then">
+        Every converted run &mdash; the ones that matter most &mdash; would lose its final
+        square. This is the site that gets missed.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">09</span><h2>Rulings owed, and the order to build in</h2></div>
+
+  <div class="ledger two">
+    <div>
+      <h3>Does a hold get its own row?</h3>
+      <p>
+        The run has not left the square, so strictly no &mdash; stamp <code>held_until</code>
+        instead. But &ldquo;we held her overnight for calling hours&rdquo; is exactly what a
+        merchant asks about, and it may deserve to be visible as its own line.
+      </p>
+    </div>
+    <div>
+      <h3>Does a step carry the letter that cut it short?</h3>
+      <p>
+        A <code>cut_short_by</code> uuid into <code>crm_event_raw</code> is a pointer, not a
+        photocopy, and it is the deep link the timeline wants. Recommended: take it.
+      </p>
+    </div>
+    <div>
+      <h3>Backfill, or honest nulls?</h3>
+      <p>
+        Open runs have no arrival stamp. <code>NULL</code> is honest. Defaulting to
+        <code>entered_at</code> is a lie for a run that has been walking nine days &mdash; and
+        it is the kind of lie that ends up in a merchant-facing &ldquo;waiting since&rdquo;.
+      </p>
+    </div>
+    <div>
+      <h3>Retention: cascade now, partition later?</h3>
+      <p>
+        <code>sweep_exited_runs_query</code> deletes runs in batches; the cascade removes their
+        steps for free. RANGE partitioning on <code>arrived_at</code> is the stage-2 move
+        &mdash; written down now, built when volume asks, the way scaling-stages handles
+        everything else.
+      </p>
+    </div>
+  </div>
+
+  <ol class="steps">
+    <li><b>Corpus first</b><span>ADR 0024 (T20 stops being the only stateful row in outreach), canon T26, the module section in 05-outreach, the ledger entry.</span></li>
+    <li><b>Migration 073</b><span>The table, the two indexes, and T20's one new column.</span></li>
+    <li><b>The walker</b><span>Buffer the visit, flush on the CAS, restamp only on a real move. Plus the three sites outside the walker.</span></li>
+    <li><b>The reads</b><span><code>GET /workflows/{id}/runs/{run_id}/steps</code>, and the union that appends the open square. Then the per-square funnel, which is a GROUP BY rather than resolving every run's document.</span></li>
+    <li><b>Loom</b><span>The run timeline and parked triage, built on data that now exists.</span></li>
+  </ol>
+
+  <div class="note warn">
+    <span class="tag">Sequencing flag</span>
+    <p>
+      The U-lane runs-monitor prompt is sitting with Swaroop awaiting screenshots. Its entire
+      content is waits, decisions, retries and timing &mdash; <strong>it is being designed
+      against data that does not exist.</strong> Land T26 before that prompt is answered, or
+      the design will quietly specify a screen we cannot populate.
+    </p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <span><b>Canon</b> 06-outreach T20 &middot; T25 &middot; T14 precedent &middot; proposed T26</span>
+  <span><b>ADR</b> 0023 version pinning &middot; 0024 proposed</span>
+  <span><b>Code</b> walker.py &middot; nodes/split.py &middot; db/queries/enrollment.py &middot; entry.py</span>
+  <span><b>Migrations</b> 058 &middot; 063 &middot; 073 proposed</span>
+  <span><b>Release</b> c1eca642</span>
+</footer>
+
+</div>

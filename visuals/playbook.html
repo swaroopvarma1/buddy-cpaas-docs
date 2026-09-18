@@ -1,0 +1,586 @@
+<title>One Actor, One Playbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* ============================================================
+   Buddy CPaaS visual language — system flow (light) mode.
+   Tokens inlined from visual-language/tokens.css. Module color
+   law NOT re-assigned: purple = the event / the letter, blue = the
+   plan / the walker, green = what reaches the customer, teal =
+   the playbook (stored words), amber = the agent (an external
+   provider to the plan), red = refusals and what goes wrong.
+   ============================================================ */
+:root {
+  --canvas:#eef1f6; --panel:#e5e9f1; --card:#fff; --card-border:#e2e6ee;
+  --shadow:0 1px 3px rgba(31,42,68,.10),0 4px 14px rgba(31,42,68,.06);
+  --ink:#1f2a44; --ink-soft:#4b5568; --muted:#8a93a6; --line:#3a4661;
+  --hair:#d7dde8; --hair-strong:#c8d1e0;
+  --purple:#7c3aed; --purple-soft:#ede4ff; --purple-ink:#5b21b6;
+  --blue:#2563eb;   --blue-soft:#dce7fd;   --blue-ink:#1d4ed8;
+  --green:#10b981;  --green-soft:#d8f3e6;  --green-ink:#047857;
+  --teal:#0d9488;   --teal-soft:#d3f0ec;   --teal-ink:#0f766e;
+  --amber:#f59e0b;  --amber-soft:#ffeacb;  --amber-ink:#92400e;
+  --red:#ef4444;    --red-soft:#ffdcdc;    --red-ink:#b91c1c;
+  --font:"Inter","SF Pro Text",-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --fs-lane:11px; --fs-card:13px; --fs-body:11px; --fs-pill:9.5px;
+  --fs-h1:clamp(30px,4.4vw,44px); --fs-stand:clamp(16px,1.9vw,19px);
+  --fs-h2:clamp(20px,2.5vw,25px); --fs-h3:15px; --fs-prose:16px; --fs-small:13px; --fs-code:12.5px;
+  --r-card:10px; --r-pill:999px; --r-panel:14px;
+  --measure:68ch; --gutter:clamp(20px,5vw,56px);
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--font);font-size:var(--fs-prose);line-height:1.62;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1040px;margin:0 auto;padding:0 var(--gutter) 88px}
+.masthead{padding:clamp(40px,7vw,76px) 0 0}
+.eyebrow{font-size:var(--fs-pill);font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 18px}
+h1{font-size:var(--fs-h1);font-weight:700;line-height:1.06;letter-spacing:-.024em;margin:0;text-wrap:balance;max-width:16ch}
+.standfirst{font-size:var(--fs-stand);color:var(--ink-soft);line-height:1.55;max-width:60ch;margin:22px 0 0;text-wrap:pretty}
+.factbar{display:flex;flex-wrap:wrap;margin:34px 0 0;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)}
+.fact{flex:1 1 170px;padding:15px 20px 15px 0;border-right:1px solid var(--hair)}
+.fact:last-child{border-right:0}
+.fact dt{font-size:var(--fs-pill);font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 5px}
+.fact dd{margin:0;font-size:var(--fs-small);font-weight:600;color:var(--ink)}
+.fact dd.live{color:var(--green-ink)}
+section{margin:clamp(46px,6.5vw,74px) 0 0}
+.sec-head{display:flex;align-items:baseline;gap:14px;margin:0 0 8px}
+.sec-num{font-family:var(--mono);font-size:var(--fs-small);font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;flex:none}
+h2{font-size:var(--fs-h2);font-weight:700;letter-spacing:-.018em;margin:0;line-height:1.2;text-wrap:balance}
+h3{font-size:var(--fs-h3);font-weight:700;letter-spacing:-.005em;margin:30px 0 6px;color:var(--ink)}
+p{max-width:var(--measure);margin:14px 0 0;text-wrap:pretty}
+p.lede{font-size:17px;color:var(--ink-soft);margin-top:10px}
+strong{font-weight:600}
+code{font-family:var(--mono);font-size:.88em;font-weight:500;background:#dfe5ef;color:var(--ink);padding:.1em .38em;border-radius:4px}
+.pill{display:inline-block;align-self:flex-start;font-size:var(--fs-pill);font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:var(--r-pill);white-space:nowrap}
+.p-purple{background:var(--purple-soft);color:var(--purple-ink)}
+.p-blue{background:var(--blue-soft);color:var(--blue-ink)}
+.p-green{background:var(--green-soft);color:var(--green-ink)}
+.p-teal{background:var(--teal-soft);color:var(--teal-ink)}
+.p-amber{background:var(--amber-soft);color:var(--amber-ink)}
+.p-red{background:var(--red-soft);color:var(--red-ink)}
+
+/* ---- the script with holes ---- */
+.stage{display:grid;gap:16px;margin:24px 0 0}
+@media(min-width:860px){.stage{grid-template-columns:1fr auto 1fr;align-items:stretch}}
+.script{background:var(--card);border:1px solid var(--card-border);border-radius:var(--r-card);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.script>header{padding:11px 15px;border-bottom:1px solid var(--card-border);font-size:var(--fs-card);font-weight:700;display:flex;align-items:center;gap:10px}
+.script.tmpl>header{background:var(--amber-soft);color:var(--amber-ink)}
+.script.heard>header{background:var(--green-soft);color:var(--green-ink)}
+.script pre{margin:0;padding:14px 15px;font-family:var(--mono);font-size:12px;line-height:1.7;color:var(--ink-soft);white-space:pre-wrap;word-break:break-word;flex:1}
+.hole{background:var(--red-soft);color:var(--red-ink);font-weight:700;border-bottom:2px dashed var(--red);padding:0 3px;border-radius:3px}
+.filled{background:var(--green-soft);color:var(--green-ink);font-weight:600;padding:0 3px;border-radius:3px}
+.between{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px 4px;min-width:150px}
+.between .book{background:var(--teal-soft);border:1.5px solid var(--teal);border-radius:var(--r-card);padding:12px 14px;text-align:center;box-shadow:var(--shadow)}
+.between .book b{display:block;font-size:var(--fs-card);color:var(--teal-ink)}
+.between .book span{font-size:var(--fs-body);color:var(--ink-soft);line-height:1.4;display:block;margin-top:4px}
+.between svg{display:block;color:var(--line)}
+
+/* ---- code panels ---- */
+.codepanel{background:var(--card);border:1px solid var(--card-border);border-radius:var(--r-card);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;margin:24px 0 0}
+.codepanel>header{padding:11px 15px;border-bottom:1px solid var(--card-border);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.codepanel>header b{font-size:var(--fs-card);font-weight:700}
+.codepanel>header em{font-style:normal;font-family:var(--mono);font-size:var(--fs-body);color:var(--muted);margin-left:auto}
+.codepanel.teal>header{background:var(--teal-soft);border-bottom-color:#bde3dd}
+.codepanel.blue>header{background:var(--blue-soft);border-bottom-color:#c6d8fa}
+.codepanel.amber>header{background:var(--amber-soft);border-bottom-color:#f3dcb0}
+pre.code{margin:0;padding:15px;overflow-x:auto;font-family:var(--mono);font-size:var(--fs-code);line-height:1.66;color:var(--ink-soft)}
+pre .k{color:var(--ink);font-weight:700} pre .c{color:var(--muted)} pre .t{color:var(--teal-ink);font-weight:700}
+pre .g{color:var(--green-ink);font-weight:700} pre .no{color:var(--red-ink);font-weight:700}
+pre .hit{background:#fff2c9;color:#6b4a00;font-weight:700;border-radius:3px;padding:0 2px}
+
+/* ---- callouts ---- */
+.note{border-left:3px solid var(--blue);background:#e8eefb;padding:15px 18px;border-radius:0 8px 8px 0;margin:24px 0 0;max-width:var(--measure)}
+.note.warn{border-left-color:var(--red);background:#fdeaea}
+.note.good{border-left-color:var(--green);background:#e3f5ec}
+.note.rule{border-left-color:var(--teal);background:#e2f2ef}
+.note p{margin:0;max-width:none;font-size:15px}
+.note p+p{margin-top:9px}
+.note .tag{display:block;font-size:var(--fs-pill);font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;color:var(--blue-ink)}
+.note.warn .tag{color:var(--red-ink)} .note.good .tag{color:var(--green-ink)} .note.rule .tag{color:var(--teal-ink)}
+
+/* ---- tables ---- */
+.tablewrap{overflow-x:auto;margin:24px 0 0;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;min-width:660px;font-size:var(--fs-small)}
+caption{text-align:left;font-size:var(--fs-lane);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding-bottom:10px}
+th,td{text-align:left;padding:11px 16px 11px 0;border-bottom:1px solid var(--hair);vertical-align:top}
+th{font-size:var(--fs-lane);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--hair-strong)}
+td:first-child{font-weight:600;color:var(--ink);padding-right:22px}
+td code{font-size:12px}
+.mark{font-weight:700;font-family:var(--mono)} .mark.y{color:var(--green-ink)} .mark.n{color:var(--red-ink)} .mark.o{color:var(--amber-ink)}
+table.compare th:not(:first-child){width:27%}
+table.compare td.win{background:#eef8f4}
+table.compare tr.verdict td{font-weight:700;border-bottom:0;padding-top:16px}
+
+/* ---- ledger cards ---- */
+.ledger{display:grid;gap:13px;margin:24px 0 0}
+@media(min-width:780px){.ledger.two{grid-template-columns:1fr 1fr}}
+@media(min-width:860px){.ledger.three{grid-template-columns:repeat(3,1fr)}}
+.ledger>div{background:var(--card);border:1px solid var(--card-border);border-radius:var(--r-card);padding:16px 18px 18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:7px}
+.ledger>div.law{border-top:3px solid var(--teal)}
+.ledger>div.trap{border-top:3px solid var(--red)}
+.ledger h3{margin:0;font-size:15px}
+.ledger p{margin:0;font-size:14px;color:var(--ink-soft);max-width:none}
+.ledger .then{font-size:13.5px;color:var(--ink);font-weight:600;margin-top:auto;padding-top:4px}
+
+/* ---- build steps ---- */
+ol.steps{list-style:none;counter-reset:s;margin:24px 0 0;padding:0;max-width:var(--measure)}
+ol.steps li{counter-increment:s;position:relative;padding:0 0 20px 46px;border-left:1.5px solid #ccd5e3;margin-left:13px}
+ol.steps li:last-child{border-left-color:transparent;padding-bottom:0}
+ol.steps li::before{content:counter(s,decimal-leading-zero);position:absolute;left:-14px;top:-2px;width:27px;height:27px;background:var(--ink);color:#fff;border-radius:50%;font-family:var(--mono);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+ol.steps b{display:block;font-size:15px;font-weight:700;margin-bottom:2px}
+ol.steps span{font-size:14px;color:var(--ink-soft)}
+
+/* ---- the fire-time trace ---- */
+.trace{background:var(--panel);border-radius:var(--r-panel);padding:20px;margin:24px 0 0;overflow-x:auto}
+.squares{display:flex;gap:9px;min-width:820px;align-items:stretch}
+.sq{flex:1 1 0;background:var(--card);border:1px solid var(--card-border);border-radius:var(--r-card);box-shadow:var(--shadow);padding:12px 13px 13px;display:flex;flex-direction:column;gap:6px}
+.sq b{font-size:var(--fs-card);font-weight:700}
+.sq span{font-size:var(--fs-body);color:var(--ink-soft);line-height:1.45}
+.sq .pill{align-self:flex-start}
+.arrow{flex:0 0 18px;align-self:center;color:var(--line);display:flex;align-items:center;justify-content:center}
+
+footer{margin:clamp(50px,7vw,80px) 0 0;padding-top:22px;border-top:1px solid var(--hair);display:flex;flex-wrap:wrap;gap:10px 34px;font-size:var(--fs-small);color:var(--muted)}
+footer b{color:var(--ink-soft);font-weight:600}
+a{color:var(--blue-ink)} a:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <p class="eyebrow">Buddy CPaaS &middot; design brief &middot; 18 Sep 2026</p>
+  <h1>One actor, one playbook</h1>
+  <p class="standfirst">
+    One agent for every lender and every stage. The words it says &mdash; the opening
+    line, the twelve-step walk, the lender's notes &mdash; are chosen by the workflow
+    from what the event said, filled in, and handed over finished. The agent never
+    picks. The agent template is only ever edited to change how the agent behaves.
+  </p>
+  <dl class="factbar">
+    <div class="fact"><dt>Release</dt><dd><code>1189023e</code></dd></div>
+    <div class="fact"><dt>New tables</dt><dd class="live">None</dd></div>
+    <div class="fact"><dt>New node types</dt><dd class="live">None</dd></div>
+    <div class="fact"><dt>Agent templates</dt><dd class="live">One</dd></div>
+    <div class="fact"><dt>Where it lives</dt><dd>the plan document, key <code>playbook</code></dd></div>
+  </dl>
+</header>
+
+<main>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">01</span><h2>Like you're ten</h2></div>
+  <p class="lede">
+    The agent is an <strong>actor</strong>. The agent template is its <strong>script</strong>.
+    The script has <strong>holes</strong> in it.
+  </p>
+
+  <div class="stage">
+    <div class="script tmpl">
+      <header><span class="pill p-amber">the script</span> the agent template, written once</header>
+<pre>CALL PROFILE: lender=<span class="hole">{lender_name}</span> state=<span class="hole">{loan_state}</span>
+
+THE HOOK — speak verbatim, once:
+<span class="hole">{hook_line}</span>
+
+THE WALK — one step per turn, in this order:
+<span class="hole">{walk}</span>
+
+THE ENDING: the last step's confirmation is the
+END tool, tool-only, never one turn early…
+
+LENDER NOTES:
+<span class="hole">{lender_notes}</span></pre>
+    </div>
+
+    <div class="between">
+      <div class="book">
+        <b>the playbook</b>
+        <span>lives in the plan. Reads the event, picks the right words, fills the small holes inside them.</span>
+      </div>
+      <svg width="28" height="60" viewBox="0 0 28 60" aria-hidden="true"><path d="M14 4v48M6 44l8 10 8-10" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+    </div>
+
+    <div class="script heard">
+      <header><span class="pill p-green">what she hears</span> the same script, holes filled</header>
+<pre>CALL PROFILE: lender=<span class="filled">Fibe</span> state=<span class="filled">KYC_COMPLETED</span>
+
+THE HOOK — speak verbatim, once:
+<span class="filled">जी आपने Galaxy S24 के लिए Flipkart EMI पर checkout शुरू किया था. Fibe की तरफ से आपका EMI offer already approved है…</span>
+
+THE WALK — one step per turn, in this order:
+<span class="filled">- step_open_app: "सबसे पहले Flipkart app खोलिए…"
+- step_cart_order: "अब cart में जाइए, आपका Galaxy S24…"
+- step_fibe_verify_bank: "Bank account details verify…"
+- …</span>
+
+THE ENDING: (unchanged — it's how the actor behaves)
+
+LENDER NOTES:
+<span class="filled">DigiLocker account missing → Sign Up takes about two minutes; …</span></pre>
+    </div>
+  </div>
+
+  <p>
+    Some holes are easy &mdash; the product name comes straight from the event, and that
+    works today. The hard holes are <strong>choices</strong>: which opening line, which
+    walk, whose notes. The choice depends on the lender, the stage she stopped at, and
+    whether the offer is no-cost. None of that is <em>in</em> the event; it has to be
+    <em>decided from</em> the event.
+  </p>
+  <p>
+    The playbook is where that decision is written down. When it's time to call, the walker
+    reads the playbook, picks the right words, fills the little holes inside them, and hands
+    the actor a finished page. <strong>The actor reads. It never decides.</strong>
+  </p>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">02</span><h2>Three places the decision could live</h2></div>
+  <p class="lede">
+    The words are the same in all three. What differs is who owns them, what they can key
+    on, and what it costs to change a sentence.
+  </p>
+
+  <div class="tablewrap">
+    <table class="compare">
+      <caption>compared on what actually happens when someone edits</caption>
+      <thead>
+        <tr>
+          <th></th>
+          <th><span class="pill p-purple">vendor's form</span><br>event schema <code>item_lookup</code></th>
+          <th><span class="pill p-blue">new box on the board</span><br>a transformer node</th>
+          <th><span class="pill p-teal">note on the plan</span><br><code>playbook</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Who owns the words</td>
+          <td><span class="mark n">the vendor</span> &mdash; our sales pitch on their data description</td>
+          <td class="win"><span class="mark y">the merchant's plan</span></td>
+          <td class="win"><span class="mark y">the merchant's plan</span></td></tr>
+        <tr><td>Keys on lender <em>and</em> stage <em>and</em> no-cost</td>
+          <td><span class="mark n">no</span> &mdash; one field (<code>lender_name</code>)</td>
+          <td class="win"><span class="mark y">yes</span></td>
+          <td class="win"><span class="mark y">yes</span> &mdash; the sealed where-grammar</td></tr>
+        <tr><td>Room for a twelve-step walk</td>
+          <td><span class="mark n">no</span> &mdash; <code>item_format</code> caps at 160 chars</td>
+          <td><span class="mark o">yes, as node JSON</span> &mdash; every step is board structure</td>
+          <td class="win"><span class="mark y">yes</span> &mdash; a <code>lines</code> library</td></tr>
+        <tr><td>Reword one step</td>
+          <td><span class="mark n">re-register the vendor's schema</span> &mdash; an ops action for a copy edit</td>
+          <td><span class="mark o">edit every node that carries it</span></td>
+          <td class="win"><span class="mark y">one entry in <code>lines</code></span></td></tr>
+        <tr><td>Add a lender</td>
+          <td><span class="mark n">re-register</span></td>
+          <td><span class="mark o">add nodes and edges</span></td>
+          <td class="win"><span class="mark y">its lines + one <code>when</code> row per block</span></td></tr>
+        <tr><td>Versioned with the run</td>
+          <td><span class="mark n">no</span> &mdash; a registration is live; it changes under open runs</td>
+          <td class="win"><span class="mark y">yes</span> &mdash; the T25 pin</td>
+          <td class="win"><span class="mark y">yes</span> &mdash; the T25 pin</td></tr>
+        <tr><td>Two plans on one topic, different words</td>
+          <td><span class="mark n">impossible</span> &mdash; the registration is shared (the #1154 failure)</td>
+          <td class="win"><span class="mark y">yes</span></td>
+          <td class="win"><span class="mark y">yes</span></td></tr>
+        <tr><td>Reaches WhatsApp, webhooks, not just voice</td>
+          <td><span class="mark o">as a template variable only</span></td>
+          <td><span class="mark o">if every node learns the transformer</span></td>
+          <td class="win"><span class="mark y">yes</span> &mdash; a block is a fact</td></tr>
+        <tr><td>A DSL in jsonb</td>
+          <td><span class="mark y">no</span></td>
+          <td><span class="mark n">yes</span> &mdash; "transform anything" has no validator; the corpus refuses the shape</td>
+          <td class="win"><span class="mark y">no</span> &mdash; where-grammar in, line names out</td></tr>
+        <tr><td>Migration &middot; new node &middot; new table</td>
+          <td>none &middot; none &middot; none</td>
+          <td>none &middot; <span class="mark n">one</span> &middot; none</td>
+          <td class="win">none &middot; none &middot; none</td></tr>
+        <tr class="verdict"><td>Verdict</td>
+          <td><span class="mark n">wrong owner</span> &mdash; the ruling we made on 17 Sep</td>
+          <td><span class="mark n">clutter + a DSL</span></td>
+          <td class="win"><span class="mark y">this one</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note warn">
+    <span class="tag">And the fourth idea, dismissed on the way</span>
+    <p>
+      <strong>One agent template per lender.</strong> It puts the words where prompt
+      engineering lives, which is tempting. But the core agent &mdash; turn-taking, the
+      ending rule, the tie-break &mdash; gets copied five times, and a fix to any of it is
+      five edits. The constraint that decides it: <em>one agent, edited only to change how
+      it behaves.</em> Words are not behaviour.
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">03</span><h2>Why it isn't only for voice</h2></div>
+  <p class="lede">
+    A block is never sent to the agent. It becomes a <strong>fact on the run</strong>. Every
+    node type already reads facts through one function, <code>run_facts</code>. Nothing else
+    has to learn the playbook exists.
+  </p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Node</th><th>How it uses a block</th><th>Change to the node</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill p-amber">call</span> voice or chat agent</td>
+          <td>the lead payload <em>is</em> <code>run_facts</code>, so <code>{hook_line}</code> and <code>{walk}</code> land in the prompt like any variable</td>
+          <td><span class="mark y">none</span></td></tr>
+        <tr><td><span class="pill p-green">send</span> WhatsApp</td>
+          <td><code>"variables": { "1": "hook_line" }</code> &mdash; the existing blank&rarr;fact map</td>
+          <td><span class="mark y">none</span></td></tr>
+        <tr><td><span class="pill p-purple">action</span> webhook / connector</td>
+          <td><code>"args": { "message": "{hook_line}" }</code> &mdash; args already resolve <code>{fact}</code></td>
+          <td><span class="mark y">none</span></td></tr>
+        <tr><td>email, SMS, anything later</td>
+          <td>reads facts</td>
+          <td><span class="mark y">none</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <span class="tag">The one limit, already enforced</span>
+    <p>
+      A WhatsApp template parameter may carry no line break &mdash; a law the send node
+      already has. So a multi-line block like <code>walk</code> can go to a call or a
+      webhook, and publish refuses it if mapped to a WhatsApp blank. A single-line block like
+      <code>hook_line</code> goes anywhere. Same playbook: the voice agent gets the walk, the
+      WhatsApp nudge gets the hook, the webhook gets the notes.
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">04</span><h2>The shape</h2></div>
+  <p class="lede">
+    One key on the plan document. A library of named lines, and blocks that choose from
+    it. Two rules hold it together, and both are one sentence long.
+  </p>
+
+  <div class="codepanel teal">
+    <header><b>crm_workflow.definition</b><em>beside entry · nodes · edges · goals · exits · stages</em></header>
+<pre class="code"><span class="k">"playbook"</span>: {
+  <span class="k">"lines"</span>: {                       <span class="c">-- every piece of text, exactly once</span>
+    <span class="t">"hook_offered_free"</span>:      "जी आपने {product_name} के लिए Flipkart EMI पर checkout शुरू किया था. {lender_name} की तरफ से आपका EMI offer already available है, और इस पर {no_cost_emi_tenures} तक no-cost EMI है…",
+    <span class="t">"hook_offered_plain"</span>:     "जी आपने {product_name} के लिए Flipkart EMI पर checkout शुरू किया था. {lender_name} की तरफ से…",
+    <span class="t">"hook_default"</span>:           "जी आपने {product_name} के लिए Flipkart EMI पर checkout शुरू किया था. क्या मैं आपको app में guide कर दूँ?",
+    <span class="t">"step_open_app"</span>:          "सबसे पहले Flipkart app खोलिए. बताइए जब खुल जाए.",
+    <span class="t">"step_cart_order"</span>:        "अब cart में जाइए, आपका {product_name} वहीं होगा. Place order पर tap कीजिए…",
+    <span class="t">"step_emi_select"</span>:        "Payment page पर EMI section में Flipkart EMI select कीजिए, वहाँ {lender_name} का नाम दिखेगा…",
+    <span class="t">"step_fibe_verify_bank"</span>:  "Bank account details verify करने हैं, दो options हैं: UPI से verify करें या account details enter करें.",
+    <span class="t">"step_fibe_upi_one_rupee"</span>: "[UPI autopay only — skip when they pick another method] UPI app में एक रुपये का request आएगा…",
+    <span class="t">"step_fibe_autopay"</span>:      "अब Setup auto-debit पर click कीजिए…",
+    <span class="t">"step_fibe_order_placed"</span>: "Redirect to Flipkart पर click कीजिए, order place हो जाएगा. Order confirmation screen दिख रही है?",
+    <span class="t">"fibe_notes"</span>:             "DigiLocker account missing → Sign Up takes about two minutes; PIN forgotten → PIN-less authentication…"
+  },
+
+  <span class="k">"blocks"</span>: {                      <span class="c">-- a block names lines; it never holds text</span>
+    <span class="k">"hook_line"</span>: [
+      { <span class="k">"when"</span>: [ {"field":"context.loan_state","op":"is","value":"OFFERED"},
+                  {"field":"context.no_cost_emi_applicable","op":"is","value":"yes"} ],
+        <span class="k">"say"</span>: <span class="t">"hook_offered_free"</span> },
+      { <span class="k">"when"</span>: [ {"field":"context.loan_state","op":"is","value":"OFFERED"} ],
+        <span class="k">"say"</span>: <span class="t">"hook_offered_plain"</span> },
+      { <span class="k">"say"</span>: <span class="t">"hook_default"</span> }                           <span class="c">-- no when: the default, mandatory</span>
+    ],
+    <span class="k">"walk"</span>: [
+      { <span class="k">"when"</span>: [ {"field":"context.lender_name","op":"is","value":"Fibe"} ],
+        <span class="k">"say"</span>: [ <span class="t">"step_open_app"</span>, <span class="t">"step_cart_order"</span>, <span class="t">"step_emi_select"</span>, <span class="t">"step_plan_select"</span>,
+                 <span class="t">"step_fibe_verify_bank"</span>, <span class="t">"step_fibe_upi_one_rupee"</span>, <span class="t">"step_fibe_autopay"</span>,
+                 <span class="t">"step_fibe_sms_link_upi"</span>, <span class="t">"step_fibe_kfs"</span>, <span class="t">"step_fibe_otp"</span>, <span class="t">"step_fibe_order_placed"</span> ] },
+      { <span class="k">"when"</span>: [ {"field":"context.lender_name","op":"is","value":"DMI"} ],  <span class="k">"say"</span>: [ <span class="c">…DMI's steps…</span> ] },
+      { <span class="k">"say"</span>: [ <span class="c">…the generic walk…</span> ] }
+    ],
+    <span class="k">"pivot_walk"</span>:   [ { <span class="k">"when"</span>: [ <span class="c">lender is Fibe</span> ], <span class="k">"say"</span>: [ <span class="t">"step_open_app"</span>, <span class="t">"step_click_account_details"</span>, <span class="c">…</span> ] }, <span class="c">…</span> ],
+    <span class="k">"lender_notes"</span>: [ { <span class="k">"when"</span>: [ <span class="c">lender is Fibe</span> ], <span class="k">"say"</span>: <span class="t">"fibe_notes"</span> }, { <span class="k">"say"</span>: <span class="t">"generic_notes"</span> } ]
+  }
+}</pre>
+  </div>
+
+  <div class="ledger two">
+    <div class="law">
+      <span class="pill p-teal">rule 1</span>
+      <h3>Every piece of text lives in <code>lines</code>, once</h3>
+      <p>A block never contains a sentence &mdash; it names one. Reword <code>step_open_app</code> and every walk that uses it changes. Add a lender: its lines, then one <code>when</code> row per block.</p>
+    </div>
+    <div class="law">
+      <span class="pill p-teal">rule 2</span>
+      <h3><code>say</code> is a name, or an ordered list of names</h3>
+      <p>One name renders as that line's text. A list renders as <code>- name: "text"</code>, one per line, in order &mdash; the ORDER and LINES sections of the prompt, generated. First <code>when</code> that holds wins; the last entry has no <code>when</code>.</p>
+    </div>
+  </div>
+
+  <p>
+    Nothing here is new vocabulary. <code>when</code> is the where-grammar over the condition
+    square's field grammar (<code>context.*</code>, <code>facts.&lt;node&gt;.*</code>,
+    <code>customer.*</code>). First-match-wins with a mandatory default is the condition
+    square's <code>else</code>. A line with <code>{holes}</code> is the send node's blank
+    law. The only new words are <code>playbook</code>, <code>lines</code>, <code>blocks</code>
+    and <code>say</code>.
+  </p>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">05</span><h2>At fire time</h2></div>
+  <p class="lede">
+    The walker reaches a call square. Here is exactly what happens, in the order it
+    happens, and where each thing already exists in the code.
+  </p>
+
+  <div class="trace">
+    <div class="squares">
+      <div class="sq"><span class="pill p-blue">1 · walker</span><b>run_facts()</b><span>Builds the facts dict it already builds: event scalars, the latest letter's facts, <code>current_stage</code>. <code>nodes/context.py</code></span></div>
+      <div class="arrow"><svg width="18" height="14" viewBox="0 0 18 14"><path d="M0 7h14M9 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></div>
+      <div class="sq"><span class="pill p-teal">2 · playbook</span><b>pick</b><span>For each block, the first row whose <code>when</code> holds &mdash; the condition square's own evaluator, <code>predicates.choose</code>.</span></div>
+      <div class="arrow"><svg width="18" height="14" viewBox="0 0 18 14"><path d="M0 7h14M9 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></div>
+      <div class="sq"><span class="pill p-teal">3 · playbook</span><b>render</b><span>Pull the named lines, fill <code>{product_name}</code> and friends from the facts dict. A leftover <code>{hole}</code> parks the run, naming it.</span></div>
+      <div class="arrow"><svg width="18" height="14" viewBox="0 0 18 14"><path d="M0 7h14M9 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></div>
+      <div class="sq"><span class="pill p-amber">4 · call node</span><b>lead payload</b><span>The finished blocks ride in the payload beside the scalars. <strong>Never into the run context</strong> &mdash; it has a size ceiling and the row stays small.</span></div>
+      <div class="arrow"><svg width="18" height="14" viewBox="0 0 18 14"><path d="M0 7h14M9 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></div>
+      <div class="sq"><span class="pill p-green">5 · agent</span><b>loader.py</b><span>The template loader does what it does today: <code>{hook_line}</code> &rarr; the text. The LLM receives the page. It picks nothing.</span></div>
+    </div>
+  </div>
+
+  <div class="codepanel amber">
+    <header><b>what the lead payload carries</b><em>lead_call_tracker.payload</em></header>
+<pre class="code">{
+  "product_name":        "Galaxy S24",
+  "lender_name":         "Fibe",
+  "loan_state":          "KYC_COMPLETED",
+  "no_cost_emi_applicable": "yes",
+  "pending_steps":       "bank_verify, autopay, kfs, otp",
+  <span class="g">"hook_line"</span>:           "जी आपने Galaxy S24 के लिए Flipkart EMI पर checkout शुरू किया था. Fibe की तरफ से आपका EMI offer already approved है…",
+  <span class="g">"walk"</span>:                "- step_open_app: \"सबसे पहले Flipkart app खोलिए…\"\n- step_cart_order: \"अब cart में जाइए, आपका Galaxy S24…\"\n- …",
+  <span class="g">"pivot_walk"</span>:          "- step_open_app: …\n- step_click_account_details: …",
+  <span class="g">"lender_notes"</span>:        "DigiLocker account missing → Sign Up takes about two minutes; …",
+  "customer_mobile_number": "+91…"
+}</pre>
+  </div>
+
+  <div class="note warn">
+    <span class="tag">Why we fill the small holes on our side, and never leave it to the agent</span>
+    <p>
+      The template loader's substitution is one pass: <code>text.replace("{key}", value)</code>
+      looping over the variables dict (<code>template/utils.py:24</code>). There is no second
+      pass. A <code>hook_line</code> that still contains <code>{product_name}</code> gets that
+      inner hole filled <em>only if</em> <code>product_name</code> happens to sit later in the
+      dict &mdash; which depends on the order of <code>expected_payload_schema</code>. It would
+      work in testing and break when someone reorders a field, and the failure is the agent
+      saying <em>"आपने {product_name} के लिए"</em> aloud on a live call.
+    </p>
+    <p>So the playbook renders every hole before the text leaves. The agent's single pass has nothing left to guess.</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">06</span><h2>The laws</h2></div>
+
+  <div class="ledger three">
+    <div class="law"><span class="pill p-teal">publish</span><h3>Every block ends in a default</h3><p>The last entry has no <code>when</code>, or publish refuses. It's the condition square's <code>else</code>, and it's what guarantees the agent never speaks a literal <code>{hook_line}</code>.</p></div>
+    <div class="law"><span class="pill p-teal">publish</span><h3>Every name in <code>say</code> exists in <code>lines</code></h3><p>A typo is a 422 at publish, never a blank page on a call.</p></div>
+    <div class="law"><span class="pill p-teal">publish</span><h3>Every <code>{hole}</code> is a declared fact</h3><p>The same right-hand-side law the send node's <code>variables</code> already has: a catalog variable for the plan's topics, or a run fact.</p></div>
+    <div class="law"><span class="pill p-teal">publish</span><h3>Every <code>when</code> field is one the grammar accepts</h3><p>Reuse <code>predicates.field_problems</code>. A block reads what a condition square can read, nothing more.</p></div>
+    <div class="law"><span class="pill p-teal">publish</span><h3>A single-line block only, into a WhatsApp blank</h3><p>The existing newline law. <code>walk</code> to a call is fine; <code>walk</code> mapped to a WhatsApp parameter is refused.</p></div>
+    <div class="trap"><span class="pill p-red">fire time</span><h3>A leftover <code>{hole}</code> parks the run</h3><p>With the hole named in <code>last_error</code>, readable on the merchant's screen. The agent will not catch it, so we must.</p></div>
+  </div>
+
+  <div class="note rule">
+    <span class="tag">Two more, so it stays simple</span>
+    <p><strong>A line fills from facts only, never from another line.</strong> No chains, no cycles, always total.</p>
+    <p><strong>Blocks render into the payload, never into the run context.</strong> Context scalars are capped (<code>CRM_CONTEXT_VALUE_MAX_CHARS</code>) and canon says the row stays small. The name of the chosen row can be recorded &mdash; <code>hook_&lt;node&gt;</code>, beside <code>split_&lt;node&gt;</code> &mdash; for the funnel; the text never is.</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">07</span><h2>Who edits what</h2></div>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Change</th><th>Where</th><th>Agent template touched?</th></tr></thead>
+      <tbody>
+        <tr><td>Reword a step</td><td><code>playbook.lines</code>, one entry</td><td><span class="mark y">no</span></td></tr>
+        <tr><td>Add lender HDB</td><td>HDB's lines + one <code>when</code> row per block</td><td><span class="mark y">no</span></td></tr>
+        <tr><td>New hook for a new stage</td><td>one line + one row</td><td><span class="mark y">no</span></td></tr>
+        <tr><td>Fix a typo in a live campaign</td><td>edit the line, publish with <code>on_publish: migrate</code> so open runs take it</td><td><span class="mark y">no</span></td></tr>
+        <tr><td>Change turn-taking, the ending rule, tone</td><td>the agent template</td><td><span class="mark o">yes &mdash; and only then</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">08</span><h2>Why it suffices &mdash; and what it deliberately leaves alone</h2></div>
+
+  <div class="ledger two">
+    <div>
+      <h3>Steps already done</h3>
+      <p>The prompt already reads <code>pending={pending_steps}</code> from the event and says <em>"never re-walk anything the profile shows as done."</em> So start with <strong>one walk per lender</strong>. If trimming on our side ever proves necessary, that's more <code>when</code> rows keyed on <code>loan_state</code> &mdash; no code change.</p>
+    </div>
+    <div>
+      <h3>UPI versus bank, mid-call</h3>
+      <p>Stays with the LLM. The <code>[UPI autopay only — skip]</code> annotations on the lines already do this, and it's a decision made from what the customer says, not from the event.</p>
+    </div>
+    <div>
+      <h3>The version pin</h3>
+      <p>The playbook is part of the document, so it's copied into the T25 version row at publish. A journey that started on script v3 keeps saying v3. A wording fix that should reach open runs goes out with <code>migrate</code>. Both behaviours already exist.</p>
+    </div>
+    <div>
+      <h3>Size</h3>
+      <p>Fifty lines of Hindi at ~200 chars is ~10KB in the document, copied per publish. Canon: T25 is <em>"tens of versions, not millions of rows."</em> The rendered walk is ~3KB in a jsonb lead payload. Neither is a number worth designing around.</p>
+    </div>
+    <div>
+      <h3>Sharing lines across plans</h3>
+      <p>Not now. If the same Fibe walk is needed by three plans, the honest move is to promote <code>lines</code> to a merchant-owned store and let plans reference it &mdash; a later ruling with its own table. Starting there would be building the store before the second plan exists.</p>
+    </div>
+    <div>
+      <h3>The console</h3>
+      <p>Loom needs a playbook editor: a lines list and blocks with <code>when</code> rows. Same gap it already has for <code>window</code> and <code>match</code>; the shape is a form, not a canvas.</p>
+    </div>
+  </div>
+
+  <div class="note good">
+    <span class="tag">What this buys, in one line</span>
+    <p>
+      One agent, edited only for behaviour. Every word it says for every lender at every
+      stage, chosen by the plan from the event and handed over finished &mdash; and the same
+      chosen words reach WhatsApp and webhooks without any node learning anything.
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">09</span><h2>Build order</h2></div>
+
+  <ol class="steps">
+    <li><b>Corpus first</b><span>Canon T19 col 6 gains <code>playbook?</code> beside <code>stages?</code>; a §Playbook section in <code>modules/05-outreach.md</code> carrying the shape and the six laws above; the ledger entry.</span></li>
+    <li><b><code>outreach/schemas.py</code></b><span><code>PlaybookBlock{when, say}</code>, <code>Playbook{lines, blocks}</code>, <code>WorkflowDefinition.playbook: Optional[Playbook]</code>. <code>say</code> is <code>str | List[str]</code>.</span></li>
+    <li><b><code>outreach/plans.py</code></b><span>The five publish laws, beside the existing catalog laws. Reuse <code>predicates.field_problems</code> for <code>when</code>; reuse the send-variables right-hand-side check for holes.</span></li>
+    <li><b><code>outreach/nodes/context.py</code></b><span>A resolver (~60 lines): pick per block, render text or list, refuse a leftover hole. <code>run_facts</code> gains the definition as a parameter and adds the rendered blocks. <code>hook_</code> joins <code>_BOOKKEEPING_PREFIXES</code> in the same PR.</span></li>
+    <li><b>One fixture plan</b><span><code>docs/crm/plans/line-nudge-playbook.json</code> and its README row &mdash; the Fibe walk above, verbatim, so the laws are exercised by a real document.</span></li>
+    <li><b>Tests that prove the laws by injecting what they forbid</b><span>Drop the default row &rarr; publish refuses. Misspell a line name &rarr; refuses. Map <code>walk</code> to a WhatsApp blank &rarr; refuses. Remove <code>product_name</code> from the event &rarr; the run parks naming the hole. And the red check: every one of these green with <code>app/</code> reverted is a test that tests nothing.</span></li>
+  </ol>
+</section>
+
+</main>
+
+<footer>
+  <span><b>Canon</b> T19 col 6 (the document's keys) &middot; T25 (the pin) &middot; T20 col 12 (context stays small)</span>
+  <span><b>Design</b> event-catalog §The where-grammar &middot; §The `list` ruling (why not the vendor's form)</span>
+  <span><b>Code</b> nodes/context.py <code>run_facts</code> &middot; predicates.py &middot; template/loader.py &middot; template/utils.py</span>
+  <span><b>Release</b> 1189023e</span>
+</footer>
+
+</div>

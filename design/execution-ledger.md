@@ -766,3 +766,20 @@ at the door — shape already decided, deliberately not built (nobody has asked)
 tree: `predicate.py` `LIST_OPS` is defined and unused; `catalog.py` spells `INCLUDES_OP` directly
 while every sibling type is spelled from a family.
 
+## 18 Sep 2026 — the playbook: the plan fills the agent's holes (ruled, not built)
+
+Requirement (Swaroop): one static agent; its instructions carry `{holes}`; the workflow decides,
+from the event, what goes in them — an opening hook by state and no-cost, a twelve-step lender
+walk, lender notes — and pushes finished text via the payload so the LLM never chooses. People
+edit step wording and add lenders without touching the agent template.
+
+Three designs priced (`visuals/playbook.html`): the vendor's schema (`item_lookup`) — wrong owner,
+keys on one field, 160-char cap, shared by every plan on the topic, the #1154 failure again; a
+transformer node — a DSL in jsonb and a box that neither sends nor waits; one agent template per
+lender — the core agent copied N times. Ruled: **`playbook` on the plan document**: a `lines`
+library (every text once) and `blocks` that name lines, chosen by the where-grammar with a
+mandatory default row; rendered at fire time into the node's outgoing payload (never context);
+a block is a fact, so call, send and action all consume it with no node changes. The load-bearing
+finding: the agent's placeholder substitution is a single pass in dict order
+(`template/utils.py:24`), so every hole inside a line is filled on our side before it leaves, and
+a leftover hole parks the run. Corpus: canon T19 col 6 (`playbook?`), modules/05 §The playbook.

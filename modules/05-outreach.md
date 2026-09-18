@@ -334,3 +334,82 @@ node-derived (`condition` and `split` keep their static `branches`), which is wh
 
 
 Refs: 05-audiences.md + 06-outreach.md (corpus) · ADR 0004 / 0010 / 0016.
+
+## The playbook — the plan fills the agent's holes (ruled by Swaroop 18 Sep 2026)
+
+**One agent template, edited only to change how the agent behaves.** Every word it says that
+depends on the customer — the opening hook, the step-by-step walk, the lender's screen notes —
+is chosen by the PLAN from the event and handed over finished. The agent never picks and never
+function-calls for it. Brief: `visuals/playbook.html`.
+
+**Why not the two obvious places.** Not the vendor's schema registration (`item_lookup`): the
+words are the merchant's, the registration keys on one field, `item_format` caps at 160 chars,
+and one registration is shared by every plan on the topic — the exact failure §The `list` ruling
+removed. Not a transformer node: a square that transforms anything is a DSL in jsonb with no
+validator, and a box that neither sends nor waits nor calls is clutter. Not one agent template
+per lender either: the core agent gets copied N times and a turn-taking fix becomes N edits.
+
+**The shape** — one key on the document, beside `stages`:
+
+```json
+"playbook": {
+  "lines":  { "hook_offered_free": "जी आपने {product_name} के लिए …", "step_open_app": "सबसे पहले Flipkart app खोलिए…", "fibe_notes": "…" },
+  "blocks": {
+    "hook_line": [ { "when": [ {"field":"context.loan_application_status","op":"is","value":"OFFERED"},
+                               {"field":"context.no_cost_emi_applicable","op":"is","value":"yes"} ], "say": "hook_offered_free" },
+                   { "say": "hook_default" } ],
+    "walk":      [ { "when": [ {"field":"context.lender_name","op":"is","value":"Fibe"} ],
+                     "say": ["step_open_app","step_cart_order","step_fibe_verify_bank", "…"] },
+                   { "say": ["…generic…"] } ]
+  }
+}
+```
+
+Two rules hold it: **every piece of text lives in `lines`, exactly once** (a block names lines and
+never holds text — reword `step_open_app` once and every walk changes); **`say` is a line name or an
+ordered list of names** (one name renders as its text; a list renders as `- name: "text"` per line,
+in order — the ORDER/LINES sections of a prompt, generated). Rows are judged in document order;
+the first whose `when` holds wins; **the last row has no `when`** (the condition square's `else`).
+`when` is the sealed where-grammar over the condition square's field grammar (`context.*`,
+`facts.<node>.*`, `customer.*`) — no new vocabulary beyond the four words `playbook` · `lines` ·
+`blocks` · `say`.
+
+**A block is a fact.** It is never sent to the agent as such: at fire time the node that builds
+outward data merges the rendered blocks into what it already builds — the call node's lead
+payload (`{hook_line}` lands in the prompt like any variable), the send node's `variables`
+right-hand side, the action node's `args`. No node learns the playbook exists. The one limit is
+the existing one: a WhatsApp blank may carry no line break, so a list-block (`walk`) mapped into a
+send is refused at publish and a single-line block (`hook_line`) goes anywhere.
+
+**Laws.** Publish: every block ends in a row with no `when`; every name in `say` exists in
+`lines`; every `{hole}` in a line is a declared fact (the send-variables right-hand-side law:
+a catalog variable for the plan's topics or a run fact); every `when` field is one
+`predicates.field_problems` accepts; a list-block is never mapped into a WhatsApp blank; no line
+break inside a single line. Fire time: **a leftover `{hole}` parks the run** naming the hole —
+the agent's substitution is one pass (`template/utils.py`) and will not catch it; a line fills
+from facts only, never from another line; **blocks render into the payload, never into context**
+(T20 col 12: the row stays small); the chosen line name of each single-line block is recorded as
+`playbook_<node>` (bookkeeping, beside `split_<node>`) for the funnel.
+
+**Deliberately not built.** Trimming the walk to the steps still pending: the prompt already
+reads `pending_steps` from the event and says "never re-walk what the profile shows as done";
+if server-side trimming is ever wanted it is more `when` rows keyed on the state, no code. UPI
+versus bank mid-call stays with the LLM. Sharing `lines` across plans: promote to a
+merchant-owned store WHEN a second plan needs the same walk, not before. The console needs a
+playbook editor (a lines list, blocks with `when` rows) — the same gap as `window` and `match`.
+
+**As fitted to `flipkart-checkout-nudge-new` (Sharifa, v3, paused).** The board is untouched:
+`call-1` · `call-2` · `call-3` already share one template (the constraint, already in practice),
+every wait already listens on fifteen topics with `match`, and `on_repeat: refresh_latest` keeps
+`context.loan_application_status` / `line_status` / `lender_name` current — the same keys
+`retarget-route` already reads, so the `when`s read facts proven present. With the playbook, the
+three call squares say different hooks as she progresses — `call-2` after a `KYC_COMPLETED`
+letter speaks the KYC hook — with zero edges added.
+
+**Build.** `outreach/playbook.py` (PURE: `laws()`, `resolve()`, `HOLE`); `schemas.py`
+`PlaybookBlock{when, say}` · `Playbook{lines, blocks}` · `WorkflowDefinition.playbook`;
+`plans.validate_definition` extends with `playbook.laws`; three merge sites — `nodes/call.py`,
+`nodes/send.py` (via `send_variables(..., extra=)`), `nodes/action.py` — pinned by one test
+(a precondition honoured at one call site and not the others is the #1143 finding); `playbook_`
+joins `_BOOKKEEPING_PREFIXES` in the same PR; a fixture plan under `docs/crm/plans/` and its README
+row. Tests prove each law by injecting what it forbids, and the red check.

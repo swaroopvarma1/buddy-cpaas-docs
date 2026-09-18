@@ -330,7 +330,7 @@ LENDER NOTES:
       <thead><tr><th>Node</th><th>How it uses a block</th><th>Change to the node</th></tr></thead>
       <tbody>
         <tr><td><span class="pill p-amber">call</span> voice or chat agent</td>
-          <td>the lead payload <em>is</em> <code>run_facts</code>, so <code>{hook_line}</code> and <code>{walk}</code> land in the prompt like any variable</td>
+          <td>lists what it takes &mdash; <code>"blocks": ["hook_line","walk",&hellip;]</code> &mdash; and those land in the lead payload, so <code>{hook_line}</code> and <code>{walk}</code> fill in the prompt like any variable</td>
           <td><span class="mark y">none</span></td></tr>
         <tr><td><span class="pill p-green">send</span> WhatsApp</td>
           <td><code>"variables": { "1": "hook_line" }</code> &mdash; the existing blank&rarr;fact map</td>
@@ -343,6 +343,17 @@ LENDER NOTES:
           <td><span class="mark y">none</span></td></tr>
       </tbody>
     </table>
+  </div>
+
+  <div class="note">
+    <span class="tag">Only what a node asks for</span>
+    <p>
+      A block is rendered <strong>only where a node names it</strong>: a send on the right-hand side of
+      <code>variables</code>, an action inside <code>args</code>, a call in its <code>blocks</code> list.
+      Nothing implicit &mdash; the send node's own philosophy. A block nobody asks for is never
+      evaluated, never in a payload, never in a log. The ladder sets <code>blocks</code> for every call
+      square the way it sets <code>template_id</code>.
+    </p>
   </div>
 
   <div class="note">
@@ -594,7 +605,9 @@ LENDER NOTES:
   <div class="codepanel teal">
     <header><b>definition &mdash; the diff</b><em>crm_workflow.definition, workflow 234c3732</em></header>
 <pre class="code">  "entry":   { "topic": "OFFERED", "where": [ { "field": "payload.products.category", "op": "includes", "value": "Mobile" } ], … },
-  "nodes":   [ retarget-route · quiet-15m · call-1 · gap-30m · call-2 · gap-6h · call-3 · listen ],   <span class="c">-- unchanged</span>
+  "nodes":   [ retarget-route · quiet-15m · gap-30m · gap-6h · listen ],                                <span class="c">-- unchanged</span>
+<span class="g">+            { "id": "call-1", "type": "call", "template_id": "78478877-…",
++              "blocks": ["hook_line", "walk", "pivot_walk", "lender_notes"] },                         <span class="c">-- each call LISTS what it takes (×3)</span></span>
   "edges":   [ … 68 edges … ],                                                                        <span class="c">-- unchanged</span>
   "goals":   [ … ], "exits": { "max_age_days": 30 }, "purpose_key": "utility.loan.checkout_nudge",   <span class="c">-- unchanged</span>
 <span class="g">+ "playbook": {
@@ -726,13 +739,15 @@ def list_blocks(definition: WorkflowDefinition) -> Set[str]:
     return {n for n, rows in (pb.blocks.items() if pb else []) if any(isinstance(r.say, list) for r in rows)}
 
 
-def resolve(definition, facts, stage_facts, customer) -> Dict[str, str]:
-    """PURE: every block rendered, {block: text}. Raises NodeParked naming a leftover hole."""
+def resolve(definition, wanted: Iterable[str], facts, stage_facts, customer) -> Dict[str, str]:
+    """PURE: ONLY the blocks a node asked for, rendered — {block: text}. A block nobody
+    asks for is never evaluated. Raises NodeParked naming a leftover hole."""
     pb = definition.playbook
     if pb is None:
         return {}
     out: Dict[str, str] = {}
-    for name, rows in pb.blocks.items():
+    for name in wanted:
+        rows = pb.blocks[name]
         row = next(r for r in rows if matches(r.when, lambda p: predicates.lookup(p, facts, stage_facts, customer)))
         names = _names(row.say)
         rendered = [_fill(pb.lines[n], facts, n) for n in names]
@@ -765,13 +780,13 @@ def _fill(text: str, facts: Dict[str, Any], line: str) -> str:
     <header><b>the three merge sites</b><em>call.py:94 · send.py + context.py:143 · action.py:110 — one test pins all three</em></header>
 <pre class="code"><span class="c"># nodes/call.py — into the LEAD PAYLOAD, never the run context</span>
      payload: Dict[str, Any] = run_facts(run.context, node)
-<span class="g">+    payload.update(await blocks_for(run, node, definition))</span>
+<span class="g">+    payload.update(await blocks_for(run, node, definition, node.blocks))   <span class="c"># the call node LISTS what it takes</span></span>
      payload["customer_mobile_number"] = phone
 
 <span class="c"># nodes/send.py — a blank may map to a block; the existing newline check refuses a walk</span>
 <span class="no">-    variables = send_variables(node.variables, run.context, node)</span>
 <span class="g">+    variables = send_variables(node.variables, run.context, node,
-+                               extra=await blocks_for(run, node, definition))</span>
++                               extra=await blocks_for(run, node, definition, node.variables.values()))</span>
 
 <span class="c"># nodes/context.py — send_variables reads the blocks as facts</span>
 <span class="no">-def send_variables(mapping, context, node=None):
@@ -784,16 +799,19 @@ def _fill(text: str, facts: Dict[str, Any], line: str) -> str:
 
 <span class="c"># nodes/action.py — args resolve {fact} from the same merged dict</span>
      facts = run_facts(run.context, node)
-<span class="g">+    facts.update(await blocks_for(run, node, definition))</span>
+<span class="g">+    facts.update(await blocks_for(run, node, definition, holes_in(node.args)))</span>
 
 <span class="c"># nodes/context.py — the one async seam (the customer read only when a `when` asks)</span>
-<span class="g">+async def blocks_for(run, node, definition) -> Dict[str, str]:
-+    if definition.playbook is None:
+<span class="g">+async def blocks_for(run, node, definition, asked: Iterable[str]) -> Dict[str, str]:
++    """Only the blocks this node asked for; a send names them in `variables`, an action in
++    `args`, a call in its `blocks` list. Nothing implicit — the send node's own philosophy."""
++    wanted = [b for b in asked if definition.playbook and b in definition.playbook.blocks]
++    if not wanted:
 +        return {}
 +    facts = run_facts(run.context, node)
 +    stage_facts = run.context.get("facts") if isinstance(run.context.get("facts"), dict) else {}
-+    customer = await customer_facts(run.merchant_id, str(run.customer_id)) if playbook.needs_customer(definition) else None
-+    return playbook.resolve(definition, facts, stage_facts, customer)</span></pre>
++    customer = await customer_facts(run.merchant_id, str(run.customer_id)) if playbook.needs_customer(definition, wanted) else None
++    return playbook.resolve(definition, wanted, facts, stage_facts, customer)</span></pre>
   </div>
 
   <div class="note">

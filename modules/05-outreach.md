@@ -374,14 +374,22 @@ the first whose `when` holds wins; **the last row has no `when`** (the condition
 `facts.<node>.*`, `customer.*`) — no new vocabulary beyond the four words `playbook` · `lines` ·
 `blocks` · `say`.
 
-**A block is a fact.** It is never sent to the agent as such: at fire time the node that builds
-outward data merges the rendered blocks into what it already builds — the call node's lead
+**A block is a fact, rendered only where a node ASKS for it** (ruled 18 Sep, on Swaroop's
+question): a send node asks by naming the block on the right-hand side of `variables`; an action
+node by naming it in `args`; a call node by listing it — `"blocks": ["hook_line", "walk",
+"pivot_walk", "lender_notes"]` — because its payload has no map (the small facts flow implicitly
+as today; the big blocks flow explicitly, the send node's own philosophy: exactly what was mapped,
+nothing implicit). The ladder sets `blocks` for every call square the way it sets `template_id`.
+A block nobody asks for is never evaluated, never rendered, never in a payload or a log — and the
+customer read a `when` on `customer.*` costs is paid only for the blocks asked for. It is never
+sent to the agent as such: at fire time the node that builds
+outward data merges the rendered blocks it asked for into what it already builds — the call node's lead
 payload (`{hook_line}` lands in the prompt like any variable), the send node's `variables`
 right-hand side, the action node's `args`. No node learns the playbook exists. The one limit is
 the existing one: a WhatsApp blank may carry no line break, so a list-block (`walk`) mapped into a
 send is refused at publish and a single-line block (`hook_line`) goes anywhere.
 
-**Laws.** Publish: every block ends in a row with no `when`; every name in `say` exists in
+**Laws.** Publish: every block a node asks for exists; every block ends in a row with no `when`; every name in `say` exists in
 `lines`; every `{hole}` in a line is a declared fact (the send-variables right-hand-side law:
 a catalog variable for the plan's topics or a run fact); every `when` field is one
 `predicates.field_problems` accepts; a list-block is never mapped into a WhatsApp blank; no line
@@ -395,7 +403,10 @@ from facts only, never from another line; **blocks render into the payload, neve
 reads `pending_steps` from the event and says "never re-walk what the profile shows as done";
 if server-side trimming is ever wanted it is more `when` rows keyed on the state, no code. UPI
 versus bank mid-call stays with the LLM. Sharing `lines` across plans: promote to a
-merchant-owned store WHEN a second plan needs the same walk, not before. The console needs a
+merchant-owned store WHEN a second plan needs the same walk, not before. A guard worth adding next: at publish, read the call template's `expected_payload_schema`
+(call.py already fetches the template) and refuse a declared hole that is neither a run fact nor a
+listed block — the T23 approved-template check, for the agent side; without it a forgotten `blocks`
+entry leaves `{walk}` literal in the prompt and spoken aloud. The console needs a
 playbook editor (a lines list, blocks with `when` rows) — the same gap as `window` and `match`.
 
 **As fitted to `flipkart-checkout-nudge-new` (Sharifa, v3, paused).** The board is untouched:

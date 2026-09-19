@@ -783,3 +783,51 @@ a block is a fact, so call, send and action all consume it with no node changes.
 finding: the agent's placeholder substitution is a single pass in dict order
 (`template/utils.py:24`), so every hole inside a line is filled on our side before it leaves, and
 a leftover hole parks the run. Corpus: canon T19 col 6 (`playbook?`), modules/05 §The playbook.
+
+## 18 Sep 2026 — the playbook BUILT (#1158, merged `b44c5582`)
+
+Sharifa built the 18 Sep ruling the same day: `outreach/playbook.py` (resolve pure, one async
+seam that pays the identity read only when a `when` asks), `lines` + `blocks` on the plan
+document, the where-grammar choosing the row with a mandatory default, rendered at fire time
+into the node's outgoing payload and never into context, and every publish law proven by
+injecting what it forbids. Review round (three MAJORs, all closed in the diff before merge and
+verified on release): the chosen line name IS written as `playbook_<node>` by all three squares
+(call, send, action), a block may not shadow a declared fact or a bookkeeping key, and one test
+drives all three merge sites. `blocks_for` moved to `nodes/blocks.py` so `context.py` stays the
+leaf it says it is; the ladder sets `blocks` on the calls it mints; `blocks` on a non-call is
+refused. Fixture: `docs/crm/plans/line-nudge-playbook.json`. **Owed:** `schemas.py` (616) and
+`plans.py` (542) are past the line — a named structure PR splitting `schemas/` by concept
+(definition · playbook · stages · run); modules/05 §The playbook as-built trail.
+
+## 19 Sep 2026 — where a run has been, built before it was sealed (#1153, in review)
+
+Rahul built T26 from the brief (`visuals/run-history.html`) — `crm_workflow_step`, migration 073,
+the flush riding the lease-CAS as a CTE arm so a row exists if and only if the move committed,
+`node_arrived_at` as T20 col 19, the three sites outside the walker's visit loop, and
+`GET /workflows/{id}/runs/{run_id}/steps` as the one union read. The core was PROVEN by execution
+against Postgres with the PR's own builders (fresh lease → move + rows; stale lease → nothing,
+and the statement still returns a row, which is why the CAS answer is the UPDATE's id; the hold
+keeps the arrival and puts the letter back; the goal-cancel exits unconditionally and writes its
+closing row only while the snapshot holds). 1295 tests; every gate.
+
+**Review posted 19 Sep (REQUEST CHANGES).** One MAJOR: 073 declares the trail append-only and
+ships no `BEFORE UPDATE` guard — 064's twelve lines were the precedent, the bot flagged it, and
+the thread was closed with "Not needed"; a plain UPDATE rewrites the trail today, proven. Minors:
+T26's own read/decoder/accessor live in T20's per-table files (the split lands in the PR that
+creates the table); oldest-first LIMIT with the open square appended leaves a silent gap at the
+recent end; the timeline route calls `definition_for` unguarded where the eject path guards it;
+the goal-cancel's closing row never names the goal letter as `cut_short_by`.
+
+**RULING OWED — corpus-first, and the order was reversed.** The brief was a proposal; canon has
+no T26, there is no ADR 0024, this guide has no section. The PR answered SEVEN of the brief's open
+questions on its own and wrote one into the migration header as "Ruled 17 Sep 2026", which it was
+not: a hold gets no row and keeps the arrival · a park is visible only while it happens, never
+recorded afterwards · `cut_short_by` taken as a pointer, no FK · the founding letter stays in
+`context.source_event_id`, never on the door row · a `dispatch_id` column the brief lacked (the
+lead or manifest id, read off the visit's own patch) · honest NULLs, no backfill · a
+`restart_on_repeat` re-arm is not a fresh arrival. All seven recommended as built. Two more for
+the same seal: the FK to T20 is plain where every other crm→crm FK is tenant-pinned (T20 has no
+`(merchant_id, id)` unique, so it is a decision, not a one-liner), and retention (cascade now,
+RANGE partition on `arrived_at` at stage 2). **On the ruling: canon T26 (16 columns as built),
+T20 col 19 + the `cut_short_by` bookkeeping key, ADR 0024, modules/05 §Where a run has been.**
+Next free migration after #1153: 074.
